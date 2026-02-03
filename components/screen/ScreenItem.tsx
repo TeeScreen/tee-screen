@@ -33,7 +33,7 @@ export function ScreenItem({
                     {screen.screenLogin}
                     {isLoaded && (
                         <span className="ml-2 text-xs text-primary font-semibold">
-              (Loaded)
+              (Editting)
             </span>
                     )}
                 </p>
@@ -47,7 +47,7 @@ export function ScreenItem({
                 {/* Load Screen */}
                 <form action={() => onLoad(screen.screenLogin)}>
                     <Button type="submit" variant={isLoaded ? "secondary" : "default"}>
-                        {isLoaded ? "Loaded" : "Load Screen"}
+                        {isLoaded ? "Editting" : "Edit Screen"}
                     </Button>
                 </form>
 

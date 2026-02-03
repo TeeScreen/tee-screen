@@ -17,8 +17,8 @@ export interface ScreenData {
 }
 
 const ScreenDataSchema = new Schema<ScreenData>({
-    screenLogin: { type: String},
-    screenPW: { type: String}
+    screenLogin: { type: String, required: true },
+    screenPW: { type: String, required: true },
 });
 
 const UserSchema = new Schema<UserInfo>(

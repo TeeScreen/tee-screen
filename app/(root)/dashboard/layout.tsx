@@ -17,13 +17,17 @@ import { ThemeSwitcher } from "@/components/sidebar/theme-switcher";
 import {redirect} from "next/navigation";
 import {auth} from "@/lib/better-auth/auth";
 import {headers} from "next/dist/server/request/headers";
+import {getUserInfo} from "@/lib/actions/user.actions";
 
 export default async function Layout({ children }: Readonly<{ children: ReactNode }>) {
 
   const session = await auth.api.getSession({headers: await headers()})
   if(!session?.user) redirect("/sign-in");
 
+  const userInfo = await getUserInfo();
 
+  const loadedScreen = userInfo?.loadedScreen ?? "";
+  console.log("loadedScreen", loadedScreen);
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
   const [variant, collapsible] = await Promise.all([
@@ -33,7 +37,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <AppSidebar variant={variant} collapsible={collapsible} />
+      <AppSidebar variant={variant} collapsible={collapsible} loadedScreen={loadedScreen} />
       <SidebarInset
         className={cn(
           "[html[data-content-layout=centered]_&]:mx-auto! [html[data-content-layout=centered]_&]:max-w-screen-2xl!",

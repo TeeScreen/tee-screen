@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 
 import { CircleHelp, ClipboardList, Command, Database, File, Search, Settings } from "lucide-react";
@@ -24,6 +23,7 @@ import { NavUser } from "./nav-user";
 import Image from "next/image";
 import {Button} from "@/components/ui/button";
 import {useScreen} from "@/stores/screen-store";
+import {getUserInfo} from "@/lib/actions/user.actions";
 
 const _data = {
   navSecondary: [
@@ -62,7 +62,11 @@ const _data = {
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+                             loadedScreen,
+                             ...props
+                           }: React.ComponentProps<typeof Sidebar> & { loadedScreen: string }) {
+
   const { sidebarVariant, sidebarCollapsible, isSynced } = usePreferencesStore(
     useShallow((s) => ({
       sidebarVariant: s.sidebarVariant,

@@ -104,7 +104,7 @@ export async function addScreenData(screen: ScreenData) {
     if (existing) {
         throw new Error(`Screen login "${screen.screenLogin}" already exists for this user.`);
     }
-
+    console.log(screen.screenLogin);
     // 2. Add new screen
     const updated = await UserInfoModel.findOneAndUpdate(
         { userId },

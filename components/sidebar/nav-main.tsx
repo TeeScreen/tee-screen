@@ -30,6 +30,7 @@ import {useScreen} from "@/stores/screen-store";
 
 interface NavMainProps {
   readonly items: readonly NavGroup[];
+  loadedScreen?: string;
 }
 
 const IsComingSoon = () => (
@@ -40,12 +41,14 @@ const NavItemExpanded = ({
   item,
   isActive,
   isSubmenuOpen,
+  loadedScreen,
 }: {
   item: NavMainItem;
   isActive: (url: string, subItems?: NavMainItem["subItems"]) => boolean;
   isSubmenuOpen: (subItems?: NavMainItem["subItems"]) => boolean;
+  loadedScreen: string;
 }) => {
-  const isLoaded = useScreen((s)=>(s.loaded));
+  const isLoaded = loadedScreen !== "";
   return (
     <Collapsible key={item.title} asChild defaultOpen={isSubmenuOpen(item.subItems)} className="group/collapsible">
       <SidebarMenuItem>
@@ -101,11 +104,13 @@ const NavItemExpanded = ({
 const NavItemCollapsed = ({
   item,
   isActive,
+    loadedScreen
 }: {
   item: NavMainItem;
   isActive: (url: string, subItems?: NavMainItem["subItems"]) => boolean;
+  loadedScreen: string;
 }) => {
-  const isLoaded = useScreen((s)=>(s.loaded));
+  const isLoaded = loadedScreen !== "";
   return (
     <SidebarMenuItem key={item.title}>
       <DropdownMenu>
@@ -144,7 +149,7 @@ const NavItemCollapsed = ({
   );
 };
 
-export function NavMain({ items }: NavMainProps) {
+export function NavMain({ items, loadedScreen }: NavMainProps) {
   const path = usePathname();
   const { state, isMobile } = useSidebar();
 
@@ -158,6 +163,8 @@ export function NavMain({ items }: NavMainProps) {
   const isSubmenuOpen = (subItems?: NavMainItem["subItems"]) => {
     return subItems?.some((sub) => path.startsWith(sub.url)) ?? false;
   };
+
+  const screenName: string = loadedScreen ?? "";
 
   return (
     <>
@@ -187,11 +194,18 @@ export function NavMain({ items }: NavMainProps) {
                     );
                   }
                   // Otherwise, render the dropdown as before
-                  return <NavItemCollapsed key={item.title} item={item} isActive={isItemActive} />;
+                  return <NavItemCollapsed key={item.title}
+                                           item={item}
+                                           isActive={isItemActive}
+                                           loadedScreen={screenName}/>;
                 }
                 // Expanded view
                 return (
-                  <NavItemExpanded key={item.title} item={item} isActive={isItemActive} isSubmenuOpen={isSubmenuOpen} />
+                    <NavItemExpanded key={item.title}
+                                     item={item}
+                                     isActive={isItemActive}
+                                     isSubmenuOpen={isSubmenuOpen}
+                                     loadedScreen={screenName}/>
                 );
               })}
             </SidebarMenu>

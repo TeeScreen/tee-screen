@@ -28,6 +28,11 @@ export default async function HomePage() {
     // Delete Screen
     async function handleDeleteScreen(screenLogin: string) {
         "use server";
+
+        if(screenLogin === loadedScreen) {
+            await saveUserInfo({ loadedScreen: "" });
+        }
+
         await removeScreenData(screenLogin);
         revalidatePath("/");
     }
