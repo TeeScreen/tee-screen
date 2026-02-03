@@ -132,6 +132,7 @@ export {
     formatFileSize,
     sanitizeFileName,
     groupFilesByType,
+    getFileType,
     isAllowedMimeType,
     getMimeTypeFromExtension,
     canShowInBrowser,

@@ -3,6 +3,7 @@
 import {auth} from "@/lib/better-auth/auth";
 //import {inngest} from "@/lib/inngest/client";
 import {headers} from "next/headers";
+import {addUserInfo, saveUserInfo} from "@/lib/actions/user.actions";
 
 export const signUpWithEmail = async ({email, password, fullName, phoneNumber, clubName, clubType, role}:SignUpFormData) => {
     try {
@@ -14,17 +15,16 @@ export const signUpWithEmail = async ({email, password, fullName, phoneNumber, c
             }
         })
 
-        /*if (response) {
-            await inngest.send({
-                name: 'app/user.created',
-                data: {
-                    email,
-                    name:fullName,
-                    clubName,
-                    clubType
-                }
-            })
-        }*/
+        if(response?.user?.id){
+            await addUserInfo({
+                userId: response.user.id,
+                fullName: fullName,
+                phoneNumber: phoneNumber,
+                clubName: clubName,
+                clubType: clubType,
+                role: role,
+            });
+        }
 
         return {
             success: true,

@@ -61,9 +61,9 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
             };
         }
 
-        const originalExtension = path.extname(file.name).toLowerCase();
+        const originalExtension = path.extname(file.name);
         const allowedExtensions = ALLOWED_TYPES[file.type];
-        if (!allowedExtensions.includes(originalExtension)) {
+        if (!allowedExtensions.includes(originalExtension.toLowerCase())) {
             return {
                 success: false,
                 message: `Invalid file extension. Expected: ${allowedExtensions.join(
@@ -76,7 +76,7 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
 
 
         const timestamp = Date.now();
-        const safeFileName = `${timestamp}-${sanitizeFileName(newFileName)}`;
+        const safeFileName = `${timestamp}-${(newFileName)}`;
         const filePath = path.join(`${UPLOAD_DIR}/${clubName}`, safeFileName);
 
         await fs.mkdir(`${UPLOAD_DIR}/${clubName}`, { recursive: true });

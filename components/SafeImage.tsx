@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 import React, { useState } from "react";
 import type {ImageProps} from "next/dist/shared/lib/get-img-props";

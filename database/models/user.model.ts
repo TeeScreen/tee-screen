@@ -12,12 +12,12 @@ export interface UserInfo extends Document {
 }
 
 export interface ScreenData {
-    screenName?: string;
-    screenPW?: string;
+    screenLogin: string;
+    screenPW: string;
 }
 
 const ScreenDataSchema = new Schema<ScreenData>({
-    screenName: { type: String},
+    screenLogin: { type: String},
     screenPW: { type: String}
 });
 
