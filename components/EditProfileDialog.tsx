@@ -1,5 +1,6 @@
-"use client";
-import { Button } from "@/components/ui/button"
+'use client';
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogClose,
@@ -9,52 +10,63 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {useUserState} from "@/stores/user-store";
-import {useForm} from "react-hook-form";
+} from "@/components/ui/dialog";
 import InputField from "@/components/forms/InputField";
-import SelectField from "@/components/forms/SelectField";
-import {CLUB_TYPES} from "@/lib/constants";
+import { saveUserInfo } from "@/lib/actions/user.actions";
+import {Input} from "postcss";
+import {useState} from "react";
 
-export function EditProfile() {
+type EditProfileProps = {
+    fullName: string;
+    phoneNumber: string;
+    clubName: string;
+    role: string;
+};
 
-    const {userData, setUser} = useUserState();
-
+export function EditProfile({ fullName, phoneNumber, clubName, role }: EditProfileProps) {
     const {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
     } = useForm<UserData>({
-        defaultValues:{
-            fullName: '',
-            email: '',
-            phoneNumber: '',
-            clubName: '',
-            role: '',
+        defaultValues: {
+            fullName,
+            phoneNumber,
+            clubName,
+            role,
         },
-        mode: 'onBlur'
-    })
+        mode: "onBlur",
+    });
+
+    const [open, setOpen] = useState(false);
 
     const onSubmit = async (data: UserData) => {
-        setUser(data);
-    }
+        console.log(data);
+        await saveUserInfo({
+            fullName: data.fullName,
+            phoneNumber: data.phoneNumber,
+            clubName: data.clubName,
+            role: data.role,
+        });
+
+        setOpen(false);
+    };
 
     return (
-        <Dialog>
-            <form onSubmit={handleSubmit(onSubmit)} id="edit-profile" >
-                <DialogTrigger asChild>
-                    <Button variant="outline">Edit Profile</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline">Edit Profile</Button>
+            </DialogTrigger>
+                <DialogContent className="flex flex-col gap-2">
+                    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+
                     <DialogHeader>
                         <DialogTitle>Edit profile</DialogTitle>
                         <DialogDescription>
-                            Make changes to your profile here. Click save when you&apos;re
-                            done.
+                            Make changes to your profile here. Click save when you're done.
                         </DialogDescription>
                     </DialogHeader>
+
                     <div className="grid gap-4">
                         <InputField
                             name="fullName"
@@ -62,52 +74,44 @@ export function EditProfile() {
                             placeholder="John Doe"
                             register={register}
                             error={errors.fullName}
-                            validation={{required: 'Full Name is required', minLength: 2}}
                         />
-                        <InputField
-                            name="email"
-                            label="Email"
-                            placeholder="johndoe@gmail.com"
-                            type="email"
-                            register={register}
-                            error={errors.email}
-                            validation={{required: 'Email is required', pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ , message: 'Email address is required'}}
-                        />
+
                         <InputField
                             name="phoneNumber"
                             label="Phone Number"
                             placeholder="Please enter a phone number"
-                            type="phoneNumber"
                             register={register}
                             error={errors.phoneNumber}
                         />
+
                         <InputField
                             name="clubName"
                             label="Club Name"
                             placeholder="Enter your club's name"
-                            type="clubName"
                             register={register}
                             error={errors.clubName}
                         />
+
                         <InputField
                             name="role"
                             label="Role"
                             placeholder="Enter your role in the club"
-                            type="role"
                             register={register}
                             error={errors.role}
                         />
                     </div>
-                    <DialogFooter>
+
+                    <DialogFooter className="gap-4">
                         <DialogClose asChild>
                             <Button variant="outline">Cancel</Button>
                         </DialogClose>
-                        <Button type="submit" disabled={isSubmitting} form="edit-profile">
-                            {isSubmitting ? 'Saving Changes' : 'Save changes'}
+
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Saving Changes" : "Save changes"}
                         </Button>
                     </DialogFooter>
+                </form>
                 </DialogContent>
-            </form>
         </Dialog>
-    )
+    );
 }

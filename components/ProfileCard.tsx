@@ -1,14 +1,14 @@
-"use client";
 import React from 'react'
 import {EditProfile} from "@/components/EditProfileDialog";
 import {auth} from "@/lib/better-auth/auth";
 import {headers} from "next/dist/server/request/headers";
 import {useUserState} from "@/stores/user-store";
+import {getUserInfo} from "@/lib/actions/user.actions";
+import {redirect} from "next/navigation";
 
-const ProfileCard = () => {
+const ProfileCard = async () => {
 
-    const user = useUserState();
-
+    const userInfo = await getUserInfo();
     return (
         <div className="p-5 border border-muted rounded-2xl lg:p-6">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -23,16 +23,7 @@ const ProfileCard = () => {
                                 Full Name
                             </p>
                             <p className="text-sm font-medium ">
-                                {user.userData.fullName}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p className="mb-2 text-xs leading-normal text-muted-foreground">
-                                Email
-                            </p>
-                            <p className="text-sm font-medium">
-                                {user.userData.email}
+                                {userInfo.fullName}
                             </p>
                         </div>
 
@@ -41,7 +32,7 @@ const ProfileCard = () => {
                                 Phone Number
                             </p>
                             <p className="text-sm font-medium ">
-                                {user.userData.phoneNumber}
+                                {userInfo.phoneNumber}
                             </p>
                         </div>
 
@@ -50,7 +41,7 @@ const ProfileCard = () => {
                                 Club Name
                             </p>
                             <p className="text-sm font-medium">
-                                {user.userData.clubName}
+                                {userInfo.clubName}
                             </p>
                         </div>
 
@@ -59,12 +50,12 @@ const ProfileCard = () => {
                                 Role
                             </p>
                             <p className="text-sm font-medium">
-                                {user.userData.role}
+                                {userInfo.role}
                             </p>
                         </div>
                     </div>
                 </div>
-                <EditProfile/>
+                <EditProfile fullName={userInfo.fullName} phoneNumber={userInfo.phoneNumber} clubName={userInfo.clubName} role={userInfo.role}/>
             </div>
         </div>
     )

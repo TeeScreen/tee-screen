@@ -2,7 +2,7 @@ import React from 'react'
 import {UploadCard} from "@/components/upload/UploadCard";
 import {FilePreview} from "@/components/upload/FilePreview";
 
-const UploadSection = ({clubName, fileName, label} : {clubName: string, fileName: string, label: string}) => {
+const UploadSection = ({folderName, fileName, label} : {folderName: string, fileName: string, label: string}) => {
     return (
         <div className="p-5 border border-muted rounded-2xl lg:p-6">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -12,8 +12,8 @@ const UploadSection = ({clubName, fileName, label} : {clubName: string, fileName
                     </h4>
 
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
-                        <UploadCard clubName={clubName} newFileName={fileName}/>
-                        <FilePreview clubName={clubName} fileName={fileName}/>
+                        <UploadCard folderName={folderName} newFileName={fileName}/>
+                        <FilePreview folderName={folderName} fileName={fileName}/>
                     </div>
                 </div>
             </div>

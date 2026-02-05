@@ -10,7 +10,7 @@ type Params = Promise<{ slug: string[] }>;
 const GET = async (_: NextRequest, { params }: { params: Params }) => {
     try {
         const { slug } = await params;
-        const clubName = slug[0];
+        const folderName = slug[0];
         const fileName = slug[1];
 
         if (!fileName) {
@@ -20,21 +20,21 @@ const GET = async (_: NextRequest, { params }: { params: Params }) => {
             );
         }
 
-        if (!clubName) {
+        if (!folderName) {
             return NextResponse.json(
                 { error: "Club name is required" },
                 { status: 400 }
             );
         }
 
-        const safeFileName = await findFileSafeName(clubName, fileName);
+        const safeFileName = await findFileSafeName(folderName, fileName);
         const fileExt = path.extname(safeFileName).toLowerCase();
         const contentType = getMimeTypeFromExtension(fileExt);
         if (!contentType) {
             return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
         }
 
-        const filePath = path.join(process.cwd(), UPLOAD_DIR, clubName, safeFileName);
+        const filePath = path.join(process.cwd(), UPLOAD_DIR, folderName, safeFileName);
         console.log("filePath", filePath);
 
         try {

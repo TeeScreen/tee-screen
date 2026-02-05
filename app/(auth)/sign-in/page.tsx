@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import InputField from '@/components/forms/InputField';
 import FooterLink from '@/components/forms/FooterLink';
-import {signInWithEmail} from "@/lib/actions/auth.actions";
+import {signInWithEmail, signUpWithEmail} from "@/lib/actions/auth.actions";
 import {toast} from "sonner";
 import {useRouter} from "next/navigation";
 
@@ -24,14 +24,21 @@ const SignIn = () => {
     });
 
     const onSubmit = async (data: SignInFormData) => {
+        console.log("signing in: ", data);
+
         try {
+            console.log("signing in: ", data);
             const result = await signInWithEmail(data);
-            if(result.success) router.push('/');
+            if(result.success) {
+                router.push("/");
+                toast("Sign in was successful");
+            }
         } catch (e) {
-            console.error(e);
-            toast.error('Sign in failed', {
-                description: e instanceof Error ? e.message : 'Failed to sign in.'
-            })
+            console.log(e);
+            toast.error("Sign in failed", {
+                description: e instanceof Error ? e.message : "Failed to sign in",
+            });
+
         }
     }
 
@@ -43,10 +50,11 @@ const SignIn = () => {
                 <InputField
                     name="email"
                     label="Email"
+                    type="email"
                     placeholder="Enter your email"
                     register={register}
                     error={errors.email}
-                    validation={{ required: 'Email is required', pattern: /^\w+@\w+\.\w+$/ }}
+                    validation={{required: 'Email is required', pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ , message: 'Email address is required'}}
                 />
 
                 <InputField

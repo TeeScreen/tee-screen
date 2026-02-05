@@ -82,12 +82,6 @@ export const sidebarItems: NavGroup[] = [
         needsLoad: true,
       },
       {
-        title: "Text & Fonts",
-        url: "/dashboard/text-fonts",
-        icon: ALargeSmall,
-        needsLoad: true,
-      },
-      {
         title: "Screensavers",
         url: "/dashboard/screensavers",
         icon: Eye,
@@ -101,17 +95,17 @@ export const sidebarItems: NavGroup[] = [
     items: [
       {
         title: "Account Settings",
-        url: "/dashboard/settings",
+        url: "/pages/settings",
         icon: BadgeCheck,
       },
       {
         title: "Report Bug",
-        url: "/dashboard/reportBug",
+        url: "/pages/reportBug",
         icon: Bug,
       },
       {
         title: "Contact Us",
-        url: "/dashboard/contact",
+        url: "/pages/contact",
         icon: Contact,
       },
 

@@ -14,3 +14,17 @@ export const useUserState = create<UserState>()(
         })),
     }),
     { name: 'user-storage' }))
+
+interface DirtyState {
+    dirty: boolean
+    setDirty: (isChanged: boolean) => void;
+}
+
+export const useDirtyState = create<DirtyState>()(
+    persist((set) => ({
+            dirty: false,
+            setDirty: (isChanged: boolean) => set((s) => ({
+                dirty: isChanged,
+            })),
+        }),
+        { name: 'dirty-storage' }))

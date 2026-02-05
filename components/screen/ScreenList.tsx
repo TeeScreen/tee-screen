@@ -1,32 +1,24 @@
 "use client";
 
-import { ScreenData } from "@/database/models/user.model";
 import { ScreenItem } from "./ScreenItem";
 
 export function ScreenList({
                                screens,
                                loadedScreen,
-                               onLoad,
-                               onDelete,
+                               onLoadScreen,
                            }: {
-    screens: ScreenData[];
+    screens: string[];
     loadedScreen: string | null;
-    onLoad: (login: string) => void;
-    onDelete: (login: string) => void;
+    onLoadScreen: (screenName: string) => void;
 }) {
-    if (screens.length === 0) {
-        return <p>No screens added yet.</p>;
-    }
-
     return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             {screens.map((screen) => (
                 <ScreenItem
-                    key={screen.screenLogin}
-                    screen={screen}
-                    isLoaded={loadedScreen === screen.screenLogin}
-                    onLoad={onLoad}
-                    onDelete={onDelete}
+                    key={screen}
+                    screenName={screen}
+                    loadedScreen={loadedScreen}
+                    onLoadScreen={onLoadScreen}
                 />
             ))}
         </div>

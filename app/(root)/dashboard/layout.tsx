@@ -12,12 +12,14 @@ import { getPreference } from "@/lib/actions/server-actions";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { AccountSwitcher } from "@/components/sidebar/account-switcher";
 import { LayoutControls } from "@/components/sidebar/layout-controls";
-import { SearchDialog } from "@/components/sidebar/search-dialog";
 import { ThemeSwitcher } from "@/components/sidebar/theme-switcher";
 import {redirect} from "next/navigation";
 import {auth} from "@/lib/better-auth/auth";
 import {headers} from "next/dist/server/request/headers";
-import {getUserInfo} from "@/lib/actions/user.actions";
+import {applyScreenChange, getUserInfo} from "@/lib/actions/user.actions";
+import { ApplyDialog } from "@/components/ApplyDialogue";
+import {toast} from "sonner";
+import { DiscardDialog } from "@/components/DiscardDialogue";
 
 export default async function Layout({ children }: Readonly<{ children: ReactNode }>) {
 
@@ -27,7 +29,6 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
   const userInfo = await getUserInfo();
 
   const loadedScreen = userInfo?.loadedScreen ?? "";
-  console.log("loadedScreen", loadedScreen);
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
   const [variant, collapsible] = await Promise.all([
@@ -57,6 +58,12 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
             <div className="flex items-center gap-1 lg:gap-2">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
+              {loadedScreen && (
+                  <ApplyDialog/>
+              )}
+              {loadedScreen && (
+                  <DiscardDialog/>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <LayoutControls />

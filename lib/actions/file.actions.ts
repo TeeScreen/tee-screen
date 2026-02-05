@@ -4,14 +4,11 @@ import { ALLOWED_TYPES, MAX_FILE_SIZE, UPLOAD_DIR } from "@/lib/constants";
 import { isAllowedMimeType, sanitizeFileName } from "@/lib/utils";
 import fs from "fs/promises";
 import {createWriteStream,createReadStream} from "fs";
-
+import archiver from "archiver";
 import { revalidatePath } from "next/cache";
 import path from "path";
 
 import unzipper from "unzipper";
-import { Transform} from "node:stream";
-import {file} from "zod";
-
 type UploadResult = {
     success: boolean;
     message: string;
@@ -19,30 +16,39 @@ type UploadResult = {
 };
 
 const findFileSafeName = async (folderName:string, fileName: string): Promise<string> => {
-    const files = await fs.readdir(`${UPLOAD_DIR}/${folderName}`);
+    try {
+        const files = await fs.readdir(`${UPLOAD_DIR}/${folderName}`);
+        files.forEach(function(file) {
+            if(file.substring(file.indexOf("-") + 1) === fileName) {
+                fileName = file;
+            }
+        });
+        return fileName;
 
-    files.forEach(function(file) {
-        if(file.substring(file.indexOf("-") + 1) === fileName) {
-            fileName = file;
-        }
-    });
-    return fileName;
+    } catch {
+        return fileName;
+    }
 }
 
 
 const upload = async (formData: FormData): Promise<UploadResult> => {
     try {
         const file = formData.get("file") as File;
-        const clubName = formData.get("clubName") as string;
-        const newFileName = formData.get("newFileName") as string;
+        const folderName = formData.get("folderName") as string;
+        let newFileName = formData.get("newFileName") as string;
 
         if (!file) {
             return { success: false, message: "No file uploaded" };
         }
 
-        if(!clubName||!newFileName) {
+        if(!folderName) {
             return { success: false, message: "No club or new file name provided" };
         }
+
+        if(!newFileName) {
+            newFileName = file.name;
+        }
+
         if (!isAllowedMimeType(file.type)) {
             return {
                 success: false,
@@ -72,14 +78,14 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
             };
         }
 
-        await deleteFile(clubName, newFileName);
+        await deleteFile(folderName, newFileName);
 
 
         const timestamp = Date.now();
         const safeFileName = `${timestamp}-${(newFileName)}`;
-        const filePath = path.join(`${UPLOAD_DIR}/${clubName}`, safeFileName);
+        const filePath = path.join(`${UPLOAD_DIR}/${folderName}`, safeFileName);
 
-        await fs.mkdir(`${UPLOAD_DIR}/${clubName}`, { recursive: true });
+        await fs.mkdir(`${UPLOAD_DIR}/${folderName}`, { recursive: true });
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
@@ -110,18 +116,23 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
 const downloadClubImages = async (folderName: string) => {
 
     const url = `${process.env.SERVER_URL}/download_images?folderName=${folderName}`
+    console.log(url);
     await fetch(url).then(async (res) => {
         const data = await res.blob();
         const _testFile = new File([data], "images.zip", {
             type: "application/zip",
         });
+
         const formData = new FormData();
-        formData.append('clubName', folderName);
+        formData.append('folderName', folderName);
         formData.append('file', _testFile);
         await upload(formData).then(async (result : UploadResult) => {
             const fileName : string = result.fileName ?? '';
             if (result?.success) {
                await unpackZip(folderName, fileName)
+            }
+            else if(result) {
+                console.log(result.message);
             }
         })
     })
@@ -132,8 +143,10 @@ const unpackZip = async (folderName: string, fileName:string) => {
     .on('entry', function (entry) {
         const filePath = path.basename(entry.path);
         const type = entry.type; // 'Directory' or 'File'
+        const timestamp = Date.now();
+
         if (type === "File") {
-            entry.pipe(createWriteStream(`${UPLOAD_DIR}/${folderName}/${filePath}`)).on('finish', function () {
+            entry.pipe(createWriteStream(`${UPLOAD_DIR}/${folderName}/${timestamp}-${filePath}`)).on('finish', function () {
                 console.log("File uploaded successfully");
             });
         }
@@ -142,6 +155,67 @@ const unpackZip = async (folderName: string, fileName:string) => {
         await deleteFile(folderName, fileName);
     });
 }
+
+const zipFolder = async (
+    folderName: string
+): Promise<{ success: boolean; zipName?: string; message: string }> => {
+    try {
+        const folderPath = path.join(UPLOAD_DIR, folderName);
+
+        // Ensure folder exists
+        try {
+            await fs.access(folderPath);
+        } catch {
+            return { success: false, message: "Folder does not exist" };
+        }
+
+        // Create ZIP name
+        const timestamp = Date.now();
+        const zipName = `${timestamp}-images.zip`;
+        const zipPath = path.join(folderPath, zipName);
+
+        // Create write stream for ZIP
+        const output = createWriteStream(zipPath);
+        const archive = archiver("zip", { zlib: { level: 9 } });
+
+        const archivePromise = new Promise<void>((resolve, reject) => {
+            output.on("close", resolve);
+            archive.on("error", reject);
+        });
+
+        archive.pipe(output);
+
+        // Read all files in folder
+        const files = await fs.readdir(folderPath);
+
+        for (const file of files) {
+            if (file === zipName) continue; // avoid zipping the zip itself
+
+            const filePath = path.join(folderPath, file);
+            const stat = await fs.stat(filePath);
+
+            if (!stat.isFile()) continue;
+
+            // Extract original filename (after the first "-")
+            const dashIndex = file.indexOf("-");
+            const originalName =
+                dashIndex !== -1 ? file.substring(dashIndex + 1) : file;
+
+            archive.file(filePath, { name: originalName });
+        }
+
+        await archive.finalize();
+        await archivePromise;
+
+        return { success: true, zipName, message: "Folder zipped successfully" };
+    } catch (error) {
+        return {
+            success: false,
+            message: error instanceof Error ? error.message : "Unknown error while zipping folder",
+        };
+    }
+};
+
 
 const deleteFile = async (folderName: string, fileName:string) => {
     try {
@@ -167,4 +241,4 @@ const deleteFolder = async (folderName: string) => {
     }
 };
 
-export { upload, deleteFile, deleteFolder,downloadClubImages, unpackZip, findFileSafeName};
+export { upload, deleteFile, deleteFolder,downloadClubImages, unpackZip, zipFolder, findFileSafeName};

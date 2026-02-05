@@ -78,13 +78,6 @@ export function AppSidebar({
   const variant = isSynced ? sidebarVariant : props.variant;
   const collapsible = isSynced ? sidebarCollapsible : props.collapsible;
 
-  const { loaded, screenName, setLoad, setName } = useScreen();
-
-  const Clicked = () =>{
-    setLoad(!loaded);
-    setName("test");
-  }
-
   return (
     <Sidebar {...props} variant={variant} collapsible={collapsible}>
       <SidebarHeader>
@@ -100,10 +93,9 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={sidebarItems} />
+        <NavMain items={sidebarItems} loadedScreen={loadedScreen} />
         {/* <NavDocuments items={data.documents} /> */}
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
-        <Button onClick={Clicked}>Load Test Screen</Button>
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={rootUser} />

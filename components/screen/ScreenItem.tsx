@@ -1,82 +1,116 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
-    DialogTrigger,
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogFooter,
+    DialogTrigger,
 } from "@/components/ui/dialog";
-import { ScreenData } from "@/database/models/user.model";
+import { Loader2 } from "lucide-react";
+import { useDirtyState } from "@/stores/user-store";
 
 export function ScreenItem({
-                               screen,
-                               isLoaded,
-                               onLoad,
-                               onDelete,
+                               screenName,
+                               loadedScreen,
+                               onLoadScreen,
                            }: {
-    screen: ScreenData;
-    isLoaded: boolean;
-    onLoad: (login: string) => void;
-    onDelete: (login: string) => void;
+    screenName: string;
+    loadedScreen: string | null;
+    onLoadScreen: (screenName: string) => void;
 }) {
+    const { dirty, setDirty } = useDirtyState();
+    const [open, setOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const isLoaded = loadedScreen === screenName;
+
+    async function handleLoad() {
+        setIsLoading(true);
+
+        try {
+            await onLoadScreen(screenName);
+            setDirty(false);
+        } finally {
+            setIsLoading(false);
+            setOpen(false);
+        }
+    }
+
+    function handleClick() {
+        if (dirty && !isLoaded) {
+            // Show confirmation dialog
+            setOpen(true);
+        } else {
+            // Load immediately
+            handleLoad();
+        }
+    }
+
     return (
         <div
             className={`p-4 border rounded-lg flex justify-between items-center ${
                 isLoaded ? "bg-muted border-primary/10" : ""
             }`}
         >
-            <div>
-                <p className="font-medium">
-                    {screen.screenLogin}
-                    {isLoaded && (
-                        <span className="ml-2 text-xs text-primary font-semibold">
-              (Editting)
-            </span>
-                    )}
-                </p>
-
-                {screen.screenLogin && (
-                    <p className="text-sm">Login: {screen.screenLogin}</p>
+            <p className="font-medium">
+                {screenName}
+                {isLoaded && (
+                    <span className="ml-2 text-xs text-primary font-semibold">
+                        (Loaded)
+                    </span>
                 )}
-            </div>
+            </p>
 
-            <div className="flex gap-2">
-                {/* Load Screen */}
-                <form action={() => onLoad(screen.screenLogin)}>
-                    <Button type="submit" variant={isLoaded ? "secondary" : "default"}>
-                        {isLoaded ? "Editting" : "Edit Screen"}
-                    </Button>
-                </form>
+            {/* MAIN BUTTON */}
+            <Button
+                variant={isLoaded ? "secondary" : "default"}
+                disabled={isLoaded || isLoading}
+                onClick={handleClick}
+            >
+                {isLoading && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {isLoaded ? "Loaded" : isLoading ? "Loading..." : "Load Screen"}
+            </Button>
 
-                {/* Delete Dialog */}
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="destructive">Delete</Button>
-                    </DialogTrigger>
+            {/* CONFIRMATION DIALOG */}
+            <Dialog open={open} onOpenChange={(v) => !isLoading && setOpen(v)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Unsaved Changes</DialogTitle>
+                        <DialogDescription>
+                            Loading a new screen will discard your unsaved changes.
+                            Do you want to continue?
+                        </DialogDescription>
+                    </DialogHeader>
 
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Delete Screen</DialogTitle>
-                        </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                            disabled={isLoading}
+                        >
+                            Cancel
+                        </Button>
 
-                        <p>
-                            Are you sure you want to delete{" "}
-                            <strong>{screen.screenLogin}</strong>?
-                        </p>
-
-                        <DialogFooter>
-                            <form action={() => onDelete(screen.screenLogin)}>
-                                <Button variant="destructive" type="submit">
-                                    Confirm Delete
-                                </Button>
-                            </form>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            </div>
+                        <Button
+                            variant="destructive"
+                            onClick={handleLoad}
+                            disabled={isLoading}
+                        >
+                            {isLoading && (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
+                            {isLoading ? "Loading..." : "Continue"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

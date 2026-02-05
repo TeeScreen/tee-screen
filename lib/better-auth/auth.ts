@@ -27,9 +27,15 @@ export const getAuth = async () => {
             autoSignIn: true
         },
         plugins: [nextCookies()],
-        emailVerification: {
-            sendOnSignUp: true
-        }
+        user: {
+            changeEmail: {
+                enabled: true,
+                updateEmailWithoutVerification: true
+            },
+            deleteUser: {
+                enabled: true
+            }
+        },
     });
 
     return authInstance;

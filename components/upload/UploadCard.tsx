@@ -15,19 +15,22 @@ import {Input} from "@/components/ui/input";
 import {deleteFile, upload} from "@/lib/actions/file.actions";
 import {useState} from "react";
 import {Upload} from "lucide-react";
+import {useDirtyState} from "@/stores/user-store";
 
-export function UploadCard({clubName, newFileName}: {clubName: string, newFileName: string}) {
+export function UploadCard({folderName, newFileName}: {folderName: string, newFileName: string}) {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const {dirty, setDirty} = useDirtyState();
 
     const handleUpload = async (formData: FormData) => {
 
-        formData.append('clubName', clubName);
+        formData.append('folderName', folderName);
         formData.append('newFileName', newFileName);
         const result = await upload(formData);
         if (!result.success) {
             setErrorMessage(result.message);
         } else {
             setErrorMessage(null);
+            setDirty(true);
         }
     };
 
@@ -43,7 +46,7 @@ export function UploadCard({clubName, newFileName}: {clubName: string, newFileNa
                 <CardContent>
                     <Field className="flex gap-2">
                         <FieldLabel htmlFor="file">File</FieldLabel>
-                        <Input name ="file" id={clubName} type="file" className="hover:file:text-primary" />
+                        <Input name ="file" id={folderName} type="file" className="hover:file:text-primary" />
                         <FieldDescription>Select a file to upload.</FieldDescription>
                         {errorMessage && <p className="text-destructive">{errorMessage}</p>}
                     </Field>

@@ -5,27 +5,28 @@ import Image from "next/image";
 import { UPLOAD_DIR } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import path from "path";
+import {useDirtyState} from "@/stores/user-store";
 
 const FilePreview = async ({
-                               clubName,
+                               folderName,
                                fileName,
                            }: {
-    clubName: string;
+    folderName: string;
     fileName: string;
 }) => {
-    const safeFileName = await findFileSafeName(clubName, fileName);
+    const safeFileName = await findFileSafeName(folderName, fileName);
 
     // Ensure folder exists
     try {
-        await fs.access(`${UPLOAD_DIR}/${clubName}`);
+        await fs.access(`${UPLOAD_DIR}/${folderName}`);
     } catch {
-        await fs.mkdir(`${UPLOAD_DIR}/${clubName}`, { recursive: true });
+        await fs.mkdir(`${UPLOAD_DIR}/${folderName}`, { recursive: true });
     }
 
     // Check if file exists
     let fileExists = true;
     try {
-        await fs.access(`${UPLOAD_DIR}/${clubName}/${safeFileName}`);
+        await fs.access(`${UPLOAD_DIR}/${folderName}/${safeFileName}`);
     } catch {
         fileExists = false;
     }
@@ -41,9 +42,10 @@ const FilePreview = async ({
     const ext = path.extname(safeFileName).toLowerCase();
     const type = getFileType(ext);
 
+
     const handleDelete = async () => {
         "use server";
-        await deleteFile(clubName, safeFileName);
+        await deleteFile(folderName, safeFileName);
     };
 
     return (
@@ -61,8 +63,8 @@ const FilePreview = async ({
                 <form action={handleDelete}>
                     <Button
                         type="submit"
-                        variant="destructive"
-                        className="ml-2 px-3 py-1 rounded-lg"
+                        variant="outline"
+                        className="ml-2 px-3 py-1 rounded-lg destructive-button"
                     >
                         Delete
                     </Button>
@@ -72,8 +74,8 @@ const FilePreview = async ({
             {type === "image" && (
                 <div className="relative aspect-video rounded-md">
                     <Image
-                        src={`/api/downloads/${clubName}/${safeFileName}`}
-                        alt={clubName}
+                        src={`/api/downloads/${folderName}/${safeFileName}`}
+                        alt={folderName}
                         fill
                         className="rounded-md object-contain"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -85,7 +87,7 @@ const FilePreview = async ({
                 <video
                     className="w-full rounded-md"
                     controls
-                    src={`/api/downloads/${clubName}/${safeFileName}`}
+                    src={`/api/downloads/${folderName}/${safeFileName}`}
                 />
             )}
 
@@ -93,7 +95,7 @@ const FilePreview = async ({
                 <audio
                     className="w-full mt-3"
                     controls
-                    src={`/api/downloads/${clubName}/${safeFileName}`}
+                    src={`/api/downloads/${folderName}/${safeFileName}`}
                     preload="none"
                 />
             )}
@@ -101,7 +103,7 @@ const FilePreview = async ({
             {(type === "document" || type === "other") && (
                 <div className="mt-2">
                     <a
-                        href={`/api/downloads/${clubName}/${safeFileName}`}
+                        href={`/api/downloads/${folderName}/${safeFileName}`}
                         className="text-sm"
                         target="_blank"
                         rel="noopener noreferrer"

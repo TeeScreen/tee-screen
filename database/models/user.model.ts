@@ -7,18 +7,21 @@ export interface UserInfo extends Document {
     clubName?: string;
     clubType?: string;
     role?: string;
+    loadedAccount?:string;
     loadedScreen?:string;
-    screenDetails?: ScreenData[];
+    screenNames?:string[];
+    accountDetails?: AccountData[];
+    screenJson?: any;
 }
 
-export interface ScreenData {
-    screenLogin: string;
-    screenPW: string;
+export interface AccountData {
+    accountLogin: string;
+    accountPW: string;
 }
 
-const ScreenDataSchema = new Schema<ScreenData>({
-    screenLogin: { type: String, required: true },
-    screenPW: { type: String, required: true },
+const AccountDataSchema = new Schema<AccountData>({
+    accountLogin: { type: String, required: true },
+    accountPW: { type: String, required: true },
 });
 
 const UserSchema = new Schema<UserInfo>(
@@ -29,8 +32,11 @@ const UserSchema = new Schema<UserInfo>(
         clubName: { type: String},
         clubType: { type: String},
         role: { type: String},
+        loadedAccount: { type: String},
         loadedScreen: { type: String},
-        screenDetails: { type: [ScreenDataSchema], default:[]},
+        screenNames: { type: [String], default: [] },
+        accountDetails: { type: [AccountDataSchema], default:[]},
+        screenJson: { type: Schema.Types.Mixed, default: null },
     },
     { timestamps: false }
 );

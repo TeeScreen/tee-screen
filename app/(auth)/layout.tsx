@@ -23,17 +23,12 @@ const Layout = async ({children}: {children:React.ReactNode}) => {
             <section className="auth-right-section">
                 <div className="z-10 relative lg:mt-4 lg:mb-16">
                     <blockquote className="auth-blockquote">
-                        This app is amazing. It allows me to track all my stock market info and notifies me of important changes in the market.
+                        The new Tee Screen Portal. Manage your screen content anywhere. Now supporting mobile
                     </blockquote>
                     <div className="flex items-center justify-between">
                         <div>
                             <cite className="auth-testimonial-author">- Arthur.J</cite>
-                            <p className="max-md:test-xs text-gray-500">Creator</p>
-                        </div>
-                        <div className="flex items-center gap-0.5">
-                            {[1,2,3,4,5].map((star) => (
-                                <Image src="/assets/icons/star.svg" alt="star" key={star} width={20} height={20} />
-                            ))}
+                            <p className="max-md:test-xs text-gray-500">CTO</p>
                         </div>
                     </div>
                 </div>

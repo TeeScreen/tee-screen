@@ -9,28 +9,38 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
+import {useState} from "react";
 
-export function AddScreenDialog({
+export function AddAccountDialog({
                                     action,
                                 }: {
     action: (formData: FormData) => void;
 }) {
+
+    const [open, setOpen] = useState(false);
+
+    function handleSubmit(formData: FormData) {
+        action(formData);
+        setOpen(false);
+    }
+
+
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>Add Screen</Button>
+                <Button>Add Account</Button>
             </DialogTrigger>
 
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Add New Screen</DialogTitle>
+                    <DialogTitle>Add New Account</DialogTitle>
                 </DialogHeader>
 
-                <form action={action} className="space-y-4">
+                <form action={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium">Login</label>
                         <input
-                            name="screenLogin"
+                            name="accountLogin"
                             required
                             className="w-full border px-3 py-2 rounded"
                             placeholder="e.g. dashboard01"
@@ -40,7 +50,7 @@ export function AddScreenDialog({
                     <div>
                         <label className="block text-sm font-medium">Password</label>
                         <input
-                            name="screenPW"
+                            name="accountPW"
                             type="password"
                             className="w-full border px-3 py-2 rounded"
                             placeholder="Optional password"

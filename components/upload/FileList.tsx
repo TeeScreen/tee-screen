@@ -4,20 +4,20 @@ import fs from "fs/promises";
 import Image from "next/image";
 import {UPLOAD_DIR} from "@/lib/constants";
 
-const FileList = async ({clubName}: {clubName: string}) => {
+const FileList = async ({folderName}: {folderName: string}) => {
     let files: string[] = [];
 
     try {
-        files = await fs.readdir(`${UPLOAD_DIR}/${clubName}`);
+        files = await fs.readdir(`${UPLOAD_DIR}/${folderName}`);
     } catch {
-        await fs.mkdir(`${UPLOAD_DIR}/${clubName}`, { recursive: true });
+        await fs.mkdir(`${UPLOAD_DIR}/${folderName}`, { recursive: true });
     }
 
     const groupedFiles = groupFilesByType(files);
     console.log(groupedFiles);
     const handleDelete = async (fileName: string) => {
         "use server";
-        await deleteFile(clubName, fileName);
+        await deleteFile(folderName, fileName);
     };
 
     return (
@@ -57,8 +57,8 @@ const FileList = async ({clubName}: {clubName: string}) => {
                                 {type === "image" && (
                                     <div className="relative aspect-video bg-[#1e1f29] rounded-md">
                                         <Image
-                                            src={`/api/downloads/${clubName}/${file}`}
-                                            alt={clubName}
+                                            src={`/api/downloads/${folderName}/${file}`}
+                                            alt={folderName}
                                             fill
                                             className="rounded-md object-contain"
                                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -70,21 +70,21 @@ const FileList = async ({clubName}: {clubName: string}) => {
                                     <video
                                         className="w-full rounded-md bg-[#1e1f29]"
                                         controls
-                                        src={`/api/downloads/${clubName}/${file}`}
+                                        src={`/api/downloads/${folderName}/${file}`}
                                     />
                                 )}
                                 {type === "audio" && (
                                     <audio
                                         className="w-full mt-3"
                                         controls
-                                        src={`/api/downloads/${clubName}/${file}`}
+                                        src={`/api/downloads/${folderName}/${file}`}
                                         preload="none"
                                     />
                                 )}
                                 {(type === "document" || type === "other") && (
                                     <div className="mt-2">
                                         <a
-                                            href={`/api/downloads/${clubName}/${file}`}
+                                            href={`/api/downloads/${folderName}/${file}`}
                                             className="text-[#bd93f9] hover:text-[#ff79c6] text-sm"
                                             target="_blank"
                                             rel="noopener noreferrer"

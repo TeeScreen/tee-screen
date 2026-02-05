@@ -13,11 +13,10 @@ import { Button } from "@/components/ui/button"
 import { Trash2Icon } from "lucide-react"
 import {deleteFolder} from "@/lib/actions/file.actions";
 
-export function AlertDialogDestructive({clubName}:{clubName:string}) {
+export function AlertDialogDestructive({folderName}:{folderName:string}) {
 
     const handleSubmit = async () => {
             "use server";
-            const folderName = `/${clubName}/`;
             await deleteFolder(folderName);
     }
 

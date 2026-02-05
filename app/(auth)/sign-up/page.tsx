@@ -37,7 +37,7 @@ const SignUp = () => {
             }
         } catch (e) {
            console.log(e);
-            toast.error("Sign up was failed", {
+            toast.error("Sign up failed", {
                 description: e instanceof Error ? e.message : "Failed to create account",
             });
 
@@ -112,7 +112,7 @@ const SignUp = () => {
                 />
 
                 <Button type="submit" disabled={isSubmitting} className="w-full mt-5">
-                    {isSubmitting ? 'Creating Account' : 'Start Your Investment Journey'}
+                    {isSubmitting ? 'Creating Account' : 'Create your Account'}
                 </Button>
 
                 <FooterLink text={"Already have an account"} linkText={"Sign In"} href={"/sign-in"}/>
