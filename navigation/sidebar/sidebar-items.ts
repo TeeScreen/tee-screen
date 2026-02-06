@@ -1,11 +1,11 @@
 import {
-  ALargeSmall, BadgeCheck,
+  LandPlot, BadgeCheck,
   Bug, Contact,
   Eye,
   Flag,
   Home, ImageUp,
   type LucideIcon, NotebookTabs,
-  PanelsTopLeft, PanelTopBottomDashed,
+  PanelsTopLeft, PanelTopBottomDashed, Trophy,
   Wallpaper,
 } from "lucide-react";
 
@@ -27,6 +27,8 @@ export interface NavMainItem {
   comingSoon?: boolean;
   newTab?: boolean;
   isNew?: boolean;
+  isFootball?: boolean;
+  isGolf?: boolean;
 }
 
 export interface NavGroup {
@@ -74,6 +76,7 @@ export const sidebarItems: NavGroup[] = [
         url: "/dashboard/notice-board",
         icon: Flag,
         needsLoad: true,
+        isFootball: false,
       },
       {
         title: "Custom Tabs",
@@ -86,6 +89,20 @@ export const sidebarItems: NavGroup[] = [
         url: "/dashboard/screensavers",
         icon: Eye,
         needsLoad: true,
+      },
+      {
+        title: "Match Centre",
+        url: "/dashboard/match-centre",
+        icon: Trophy,
+        needsLoad: true,
+        isFootball: true,
+      },
+      {
+        title: "Golf Course",
+        url: "/dashboard/golf-course",
+        icon: LandPlot,
+        needsLoad: true,
+        isGolf: true,
       },
     ],
   },

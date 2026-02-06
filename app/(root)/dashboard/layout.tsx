@@ -16,10 +16,11 @@ import { ThemeSwitcher } from "@/components/sidebar/theme-switcher";
 import {redirect} from "next/navigation";
 import {auth} from "@/lib/better-auth/auth";
 import {headers} from "next/dist/server/request/headers";
-import {applyScreenChange, getUserInfo} from "@/lib/actions/user.actions";
+import {getUserInfo} from "@/lib/actions/user.actions";
 import { ApplyDialog } from "@/components/ApplyDialogue";
-import {toast} from "sonner";
 import { DiscardDialog } from "@/components/DiscardDialogue";
+import {SubScreenTypes} from "@/components/sidebar/nav-main";
+
 
 export default async function Layout({ children }: Readonly<{ children: ReactNode }>) {
 
@@ -27,6 +28,9 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
   if(!session?.user) redirect("/sign-in");
 
   const userInfo = await getUserInfo();
+
+  const isFootball = userInfo?.screenJson?.isFootballClub ?? false;
+  const isGolf = (userInfo?.screenJson?.isGolfClub && userInfo?.screenJson?.CanEditHoles) ?? false;
 
   const loadedScreen = userInfo?.loadedScreen ?? "";
   const cookieStore = await cookies();
@@ -38,7 +42,11 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <AppSidebar variant={variant} collapsible={collapsible} loadedScreen={loadedScreen} />
+      <AppSidebar variant={variant}
+                  collapsible={collapsible}
+                  loadedScreen={loadedScreen}
+                  subScreenTypes={{isFootball, isGolf,}}
+      />
       <SidebarInset
         className={cn(
           "[html[data-content-layout=centered]_&]:mx-auto! [html[data-content-layout=centered]_&]:max-w-screen-2xl!",

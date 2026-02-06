@@ -18,7 +18,7 @@ import { rootUser } from "@/data/users";
 import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
 import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
 
-import { NavMain } from "./nav-main";
+import {NavMain, SubScreenTypes} from "./nav-main";
 import { NavUser } from "./nav-user";
 import Image from "next/image";
 import {Button} from "@/components/ui/button";
@@ -63,9 +63,9 @@ const _data = {
 };
 
 export function AppSidebar({
-                             loadedScreen,
+                             loadedScreen, subScreenTypes,
                              ...props
-                           }: React.ComponentProps<typeof Sidebar> & { loadedScreen: string }) {
+                           }: React.ComponentProps<typeof Sidebar> & { loadedScreen: string, subScreenTypes: SubScreenTypes }) {
 
   const { sidebarVariant, sidebarCollapsible, isSynced } = usePreferencesStore(
     useShallow((s) => ({
@@ -93,7 +93,7 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={sidebarItems} loadedScreen={loadedScreen} />
+        <NavMain items={sidebarItems} loadedScreen={loadedScreen} subScreenTypes={subScreenTypes} />
         {/* <NavDocuments items={data.documents} /> */}
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>

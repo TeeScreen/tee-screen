@@ -31,6 +31,12 @@ import {useScreen} from "@/stores/screen-store";
 interface NavMainProps {
   readonly items: readonly NavGroup[];
   loadedScreen?: string;
+  subScreenTypes?: SubScreenTypes;
+}
+
+export interface SubScreenTypes {
+  isFootball?: boolean;
+  isGolf?: boolean;
 }
 
 const IsComingSoon = () => (
@@ -149,7 +155,7 @@ const NavItemCollapsed = ({
   );
 };
 
-export function NavMain({ items, loadedScreen }: NavMainProps) {
+export function NavMain({ items, loadedScreen, subScreenTypes }: NavMainProps) {
   const path = usePathname();
   const { state, isMobile } = useSidebar();
 
@@ -174,39 +180,45 @@ export function NavMain({ items, loadedScreen }: NavMainProps) {
           <SidebarGroupContent className="flex flex-col gap-2">
             <SidebarMenu>
               {group.items.map((item) => {
-                if (state === "collapsed" && !isMobile) {
-                  // If no subItems, just render the button as a link
-                  if (!item.subItems) {
-                    return (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                          asChild
-                          aria-disabled={item.comingSoon}
-                          tooltip={item.title}
-                          isActive={isItemActive(item.url)}
-                        >
-                          <Link prefetch={false} href={item.url} target={item.newTab ? "_blank" : undefined}>
-                            {item.icon && <item.icon />}
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
+                  const matchesSubScreen =
+                      (item.isFootball === undefined || item.isFootball === subScreenTypes?.isFootball) &&
+                      (item.isGolf === undefined || item.isGolf === subScreenTypes?.isGolf);
+
+                  if (!matchesSubScreen) return null;
+
+                  if (state === "collapsed" && !isMobile) {
+                    // If no subItems, just render the button as a link
+                    if (!item.subItems) {
+                      return (
+                          <SidebarMenuItem key={item.title}>
+                            <SidebarMenuButton
+                                asChild
+                                aria-disabled={item.comingSoon}
+                                tooltip={item.title}
+                                isActive={isItemActive(item.url)}
+                            >
+                              <Link prefetch={false} href={item.url} target={item.newTab ? "_blank" : undefined}>
+                                {item.icon && <item.icon/>}
+                                <span>{item.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                      );
+                    }
+                    // Otherwise, render the dropdown as before
+                    return <NavItemCollapsed key={item.title}
+                                             item={item}
+                                             isActive={isItemActive}
+                                             loadedScreen={screenName}/>;
                   }
-                  // Otherwise, render the dropdown as before
-                  return <NavItemCollapsed key={item.title}
-                                           item={item}
-                                           isActive={isItemActive}
-                                           loadedScreen={screenName}/>;
-                }
-                // Expanded view
-                return (
-                    <NavItemExpanded key={item.title}
-                                     item={item}
-                                     isActive={isItemActive}
-                                     isSubmenuOpen={isSubmenuOpen}
-                                     loadedScreen={screenName}/>
-                );
+                  // Expanded view
+                  return (
+                      <NavItemExpanded key={item.title}
+                                       item={item}
+                                       isActive={isItemActive}
+                                       isSubmenuOpen={isSubmenuOpen}
+                                       loadedScreen={screenName}/>
+                  );
               })}
             </SidebarMenu>
           </SidebarGroupContent>

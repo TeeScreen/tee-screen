@@ -31,12 +31,12 @@ declare global {
         label: string;
         placeholder?: string;
         type?: string;
-        register: UseFormRegister;
+        register: UseFormRegister<any>;
         error?: FieldError;
         validation?: RegisterOptions;
         disabled?: boolean;
-        value?: string;
-        defaultValue?: string;
+        value?: string | number | boolean | null;
+        defaultValue?: string | number | boolean | null;
     };
 
     type Option = {
