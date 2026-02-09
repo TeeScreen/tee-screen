@@ -65,7 +65,7 @@ const _data = {
 export function AppSidebar({
                              loadedScreen, subScreenTypes,
                              ...props
-                           }: React.ComponentProps<typeof Sidebar> & { loadedScreen: string, subScreenTypes: SubScreenTypes }) {
+                           }: React.ComponentProps<typeof Sidebar> & { loadedScreen: string, subScreenTypes?: SubScreenTypes }) {
 
   const { sidebarVariant, sidebarCollapsible, isSynced } = usePreferencesStore(
     useShallow((s) => ({
