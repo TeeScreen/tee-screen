@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
             bodySizeLimit: '10mb',
         },
     },
+
+    typescript: {
+        ignoreBuildErrors: false,
+        tsconfigPath: 'tsconfig.json',
+    },
 };
 
 
