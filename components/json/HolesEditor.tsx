@@ -38,7 +38,7 @@ export default function HolesEditor({
                                         if (key === "holeImageURL") return null;
 
                                         // Lat/Long objects
-                                        if (typeof value === "object") {
+                                        if (value && typeof value === "object") {
                                             return (
                                                 <div key={key} className="grid grid-cols-2 gap-2">
                                                     <label className="font-medium">{key}</label>
@@ -47,7 +47,7 @@ export default function HolesEditor({
                                                         <InputField
                                                             name={`${courseName}.holesData.${i}.${key}.x`}
                                                             label="x"
-                                                            defaultValue={value.x}
+                                                            defaultValue={value?.x}
                                                             register={form.register}
                                                             validation={{
                                                                 onChange: (e: any) =>

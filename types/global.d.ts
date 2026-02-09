@@ -53,7 +53,7 @@ declare global {
         error?: FieldError;
         required?: boolean;
         onChange?: (value: string) => void;
-        defaultValue?: string; // <-- add this
+        defaultValue?: string | number | boolean | null; // <-- add this
     };
 
     type InputFileProps = {

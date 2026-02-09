@@ -116,7 +116,7 @@ export default function HandicapEditor({
                                                     key={key}
                                                     name={`${courseName}.handicapData.${index}.${key}`}
                                                     label={LABELS[key] ?? key}
-                                                    defaultValue={value}
+                                                    defaultValue={String(value)}
                                                     register={form.register}
                                                     validation={{
                                                         onChange: (e: any) => {
@@ -158,7 +158,7 @@ export default function HandicapEditor({
                                                                 key={key}
                                                                 name={`${courseName}.handicapData.${index}.${key}`}
                                                                 label={LABELS[key] ?? key}
-                                                                defaultValue={value}
+                                                                defaultValue={String(value)}
                                                                 register={form.register}
                                                                 validation={{
                                                                     onChange: (e: any) =>
@@ -187,7 +187,7 @@ export default function HandicapEditor({
                                                                 key={key}
                                                                 name={`${courseName}.handicapData.${index}.${key}`}
                                                                 label={LABELS[key] ?? key}
-                                                                defaultValue={value}
+                                                                defaultValue={String(value)}
                                                                 register={form.register}
                                                                 validation={{
                                                                     onChange: (e: any) =>
