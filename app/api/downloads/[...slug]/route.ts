@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
 import { canShowInBrowser, getMimeTypeFromExtension } from "@/lib/utils";
-import {MAX_FILE_SIZE, UPLOAD_DIR} from "@/lib/constants";
-import {findFileSafeName} from "@/lib/actions/file.actions";
+import { MAX_FILE_SIZE, UPLOAD_DIR } from "@/lib/constants";
+import { findFileSafeName } from "@/lib/actions/file.actions";
 
 type Params = Promise<{ slug: string[] }>;
 
-const GET = async (_: NextRequest, { params }: { params: Params }) => {
+export const GET = async (_: NextRequest, { params }: { params: Params }) => {
     try {
         const { slug } = await params;
         const folderName = slug[0];
@@ -22,33 +22,46 @@ const GET = async (_: NextRequest, { params }: { params: Params }) => {
 
         if (!folderName) {
             return NextResponse.json(
-                { error: "Club name is required" },
+                { error: "Folder name is required" },
                 { status: 400 }
             );
         }
 
+        // Resolve safe filename
         const safeFileName = await findFileSafeName(folderName, fileName);
         const fileExt = path.extname(safeFileName).toLowerCase();
         const contentType = getMimeTypeFromExtension(fileExt);
+
         if (!contentType) {
-            return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
+            return NextResponse.json(
+                { error: "Invalid file type" },
+                { status: 400 }
+            );
         }
 
-        const filePath = path.join(process.cwd(), UPLOAD_DIR, folderName, safeFileName);
+        // IMPORTANT: Vercel-safe path (no process.cwd())
+        const filePath = path.join(UPLOAD_DIR, folderName, safeFileName);
         console.log("filePath", filePath);
 
+        // Ensure file exists
         try {
             await fs.access(filePath);
-        } catch (error) {
-            console.error(error);
-            return NextResponse.json({ error: "File not found" }, { status: 404 });
+        } catch {
+            return NextResponse.json(
+                { error: "File not found" },
+                { status: 404 }
+            );
         }
 
         const stats = await fs.stat(filePath);
         if (stats.size > MAX_FILE_SIZE) {
-            return NextResponse.json({ error: "File too large" }, { status: 400 });
+            return NextResponse.json(
+                { error: "File too large" },
+                { status: 400 }
+            );
         }
 
+        // Read file into memory (Vercel-safe)
         const file = await fs.readFile(filePath);
 
         const disposition = canShowInBrowser(fileExt) ? "inline" : "attachment";
@@ -74,5 +87,3 @@ const GET = async (_: NextRequest, { params }: { params: Params }) => {
         );
     }
 };
-
-export { GET };
