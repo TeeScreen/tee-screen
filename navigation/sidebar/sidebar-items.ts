@@ -117,7 +117,7 @@ export const sidebarItems: NavGroup[] = [
       },
       {
         title: "Report Bug",
-        url: "/pages/reportBug",
+        url: "/pages/bug-report",
         icon: Bug,
       },
       {

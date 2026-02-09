@@ -33,6 +33,11 @@ export function GolfCoursesEditor({
         if (hiddenRef.current) hiddenRef.current.value = JSON.stringify(newJson);
     }
 
+    const courseLatLon = {
+        lat: json?.GolfCourseLatLon?.x ?? 0,
+        lon: json?.GolfCourseLatLon?.y ?? 0,
+    };
+
     function updateCourse(courseName: string, path: string, value: any) {
         const updated = structuredClone(localJson);
         const course = updated.golfCoursesData[courseName];
@@ -102,6 +107,7 @@ export function GolfCoursesEditor({
                                     holesData={courseData.holesData}
                                     form={form}
                                     updateCourse={updateCourse}
+                                    courseLatLon={courseLatLon}
                                 />
 
                                 {/* HANDICAP EDITOR */}

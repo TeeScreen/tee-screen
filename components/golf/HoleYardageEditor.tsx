@@ -10,6 +10,14 @@ type HoleYardageEditorProps = {
     updateCourse: (courseName: string, path: string, value: any) => void;
 };
 
+// Friendly labels for UI
+const LABELS: Record<string, string> = {
+    yardsToHole: "Hole Yardage",
+    whiteYardsToHole: "White Tee Yardage",
+    yellowYardsToHole: "Yellow Tee Yardage",
+    redYardsToHole: "Red Tee Yardage",
+};
+
 export default function HoleYardageEditor({
                                               courseName,
                                               hole,
@@ -33,7 +41,7 @@ export default function HoleYardageEditor({
                     <InputField
                         key={key}
                         name={`${courseName}.holesData.${index}.${key}`}
-                        label={key}
+                        label={LABELS[key]}   // ← Friendly label here
                         type="number"
                         defaultValue={value}
                         register={form.register}

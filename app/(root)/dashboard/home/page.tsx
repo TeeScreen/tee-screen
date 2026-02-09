@@ -2,17 +2,19 @@ import {
     getUserInfo,
     addAccountData,
     removeAccountData,
-    saveUserInfo, updateScreenJson, resetScreenChange,
+    saveUserInfo,
+    updateScreenJson,
+    resetScreenChange,
 } from "@/lib/actions/user.actions";
 
 import { revalidatePath } from "next/cache";
 import { AddAccountDialog } from "@/components/screen/AddAccountDialog";
 import { AccountList } from "@/components/screen/AccountList";
-import {Button} from "@/components/ui/button";
-import {ScreenList} from "@/components/screen/ScreenList";
+import { ScreenList } from "@/components/screen/ScreenList";
 import { ScreenJsonEditor } from "@/components/ScreenJsonEditor";
-import {downloadClubImages} from "@/lib/actions/file.actions";
+import { downloadClubImages } from "@/lib/actions/file.actions";
 import { ResetLoadedDataDialog } from "@/components/ResetData";
+import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 
 export default async function HomePage() {
     const user = await getUserInfo();
@@ -52,7 +54,7 @@ export default async function HomePage() {
         revalidatePath("/");
     }
 
-    // Load Account Details (fetch screen names)
+    // Load Account Details
     async function handleLoadAccountDetails(accountLogin: string, accountPW: string) {
         "use server";
 
@@ -63,7 +65,7 @@ export default async function HomePage() {
         const data = await response.json();
         await saveUserInfo({
             loadedAccount: accountLogin,
-            screenNames: data
+            screenNames: data,
         });
 
         revalidatePath("/");
@@ -73,7 +75,7 @@ export default async function HomePage() {
     async function handleLoadScreen(screenName: string) {
         "use server";
 
-        const account = accounts.find((a: { accountLogin: any; }) => a.accountLogin === loadedAccount);
+        const account = accounts.find((a: any) => a.accountLogin === loadedAccount);
         if (!account) return;
 
         const response = await fetch(
@@ -84,11 +86,10 @@ export default async function HomePage() {
 
         await saveUserInfo({
             loadedScreen: screenData.name,
-            screenJson: screenData, // <-- FIXED
+            screenJson: screenData,
         });
 
-        if(screenData["FolderNameOnServer"])
-        {
+        if (screenData["FolderNameOnServer"]) {
             await downloadClubImages(screenData["FolderNameOnServer"]);
         }
 
@@ -99,6 +100,19 @@ export default async function HomePage() {
         <div className="@container/main flex flex-col gap-4 md:gap-6">
             <h1 className="text-3xl font-bold mb-6">Your Accounts</h1>
 
+            {/* If no accounts exist, show lead capture */}
+            {accounts.length === 0 && (
+                <div className="p-6 border rounded-lg bg-muted/30 flex flex-col gap-4">
+                    <h2 className="text-xl font-semibold">No Accounts Found</h2>
+                    <p className="text-sm text-muted-foreground">
+                        It looks like you don’t have any accounts connected yet.
+                        If you’d like to get started with TeeScreen, our sales team can help you set up an account and provide a quote.
+                    </p>
+
+                    <LeadCaptureForm user={user} />
+                </div>
+            )}
+
             <AddAccountDialog action={handleAddAccount} />
 
             <AccountList
@@ -108,7 +122,7 @@ export default async function HomePage() {
                 onDelete={handleDeleteAccount}
             />
 
-            {(loadedScreen) && (
+            {loadedScreen && (
                 <div className="mt-2">
                     <ResetLoadedDataDialog action={handleReset} />
                 </div>
@@ -136,7 +150,6 @@ export default async function HomePage() {
                     />
                 )}
             </div>
-
         </div>
     );
 }

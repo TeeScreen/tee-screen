@@ -1,9 +1,15 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import MapPicker from "./MapPicker";
 import { Button } from "@/components/ui/button";
+
+// MUST be dynamic — React‑Leaflet cannot run on the server
+const MapPicker = dynamic(() => import("./MapPicker"), {
+    ssr: false,
+    loading: () => <div className="p-6">Loading map…</div>,
+});
 
 export default function MapPickerModal({
                                            start,
@@ -21,18 +27,21 @@ export default function MapPickerModal({
             </Button>
 
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="max-w-xl">
-                    <DialogHeader>
+                <DialogContent className="sm:max-w-[800px] w-full max-w-none">
+                    <DialogHeader className="p-4">
                         <DialogTitle>Select Location</DialogTitle>
                     </DialogHeader>
 
-                    <MapPicker
-                        start={start}
-                        onSelect={(coords) => {
-                            onSelect(coords);
-                            setOpen(false);
-                        }}
-                    />
+                    <div className="p=6">
+                        <MapPicker
+                            start={start}
+                            onConfirm={(coords) => {
+                                onSelect(coords);
+                                setOpen(false);
+                            }}
+                            onCancel={() => setOpen(false)}
+                        />
+                    </div>
                 </DialogContent>
             </Dialog>
         </>

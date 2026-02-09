@@ -1,8 +1,9 @@
 import React from "react";
 import UploadSection from "@/components/UploadSection";
-import {Flag} from "lucide-react";
+import {Flag, Upload} from "lucide-react";
 import {JsonFieldEditor} from "@/components/json/JsonFieldEditor";
 import {getUserInfo, updateScreenJson} from "@/lib/actions/user.actions";
+import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
 
 export default async function Page() {
     const user = await getUserInfo();
@@ -43,9 +44,22 @@ export default async function Page() {
                     />
                 )}
 
-                <UploadSection folderName={folderName} fileName="NoticeImage01.png" label="Notice Image Top"/>
-                <UploadSection folderName={folderName} fileName="NoticeImage02.png" label="Notice Image Middle"/>
-                <UploadSection folderName={folderName} fileName="NoticeImage03.png" label="Notice Image Bottom"/>
+                <Accordion type="single" collapsible className="w-full space-y-4 border rounded-lg p-2">
+                        <AccordionItem value={`0`}>
+                            <AccordionTrigger className="text-lg justify-start">
+                                <Upload/>Images
+                            </AccordionTrigger>
+
+                            <AccordionContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+                                    <UploadSection folderName={folderName} fileName="NoticeImage01.png" label="Notice Image Top"/>
+                                    <UploadSection folderName={folderName} fileName="NoticeImage02.png" label="Notice Image Middle"/>
+                                    <UploadSection folderName={folderName} fileName="NoticeImage03.png" label="Notice Image Bottom"/>
+
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                </Accordion>
             </div>
         </div>
     );

@@ -13,6 +13,7 @@ type HolesEditorWrapperProps = {
     holesData: any[];
     form: any;
     updateCourse: (courseName: string, path: string, value: any) => void;
+    courseLatLon?: { lat: number; lon: number };
 };
 
 export default function HolesEditorWrapper({
@@ -20,6 +21,7 @@ export default function HolesEditorWrapper({
                                                holesData,
                                                form,
                                                updateCourse,
+                                               courseLatLon,
                                            }: HolesEditorWrapperProps) {
     return (
         <Accordion type="multiple" className="border rounded p-2">
@@ -34,6 +36,7 @@ export default function HolesEditorWrapper({
                         holesData={holesData}
                         form={form}
                         updateCourse={updateCourse}
+                        courseLatLon={courseLatLon}
                     />
                 </AccordionContent>
             </AccordionItem>

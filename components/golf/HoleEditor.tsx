@@ -19,6 +19,7 @@ type HoleEditorProps = {
     index: number;
     form: any; // UseFormReturn<any>
     updateCourse: (courseName: string, path: string, value: any) => void;
+    courseLatLon?: { lat: number; lon: number }; // optional, for map picker default
 };
 
 export default function HoleEditor({
@@ -28,6 +29,7 @@ export default function HoleEditor({
                                        index,
                                        form,
                                        updateCourse,
+                                       courseLatLon
                                    }: HoleEditorProps) {
     const sectionIds = ["coordinates", "yardages", "details"];
     const [openSections, setOpenSections] = useState<string[]>([]);
@@ -79,6 +81,7 @@ export default function HoleEditor({
                                 index={index}
                                 form={form}
                                 updateCourse={updateCourse}
+                                courseLatLon={courseLatLon}
                             />
                         </AccordionContent>
                     </AccordionItem>

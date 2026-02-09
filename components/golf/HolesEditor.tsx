@@ -15,6 +15,7 @@ type HolesEditorProps = {
     holesData: any[];
     form: any; // UseFormReturn<any>
     updateCourse: (courseName: string, path: string, value: any) => void;
+    courseLatLon?: { lat: number; lon: number };
 };
 
 export default function HolesEditor({
@@ -22,6 +23,7 @@ export default function HolesEditor({
                                         holesData,
                                         form,
                                         updateCourse,
+                                        courseLatLon,
                                     }: HolesEditorProps) {
     const holeIds = holesData.map((_, i) => `hole-${i}`);
     const [openHoles, setOpenHoles] = useState<string[]>([]);
@@ -58,6 +60,7 @@ export default function HolesEditor({
                         index={i}
                         form={form}
                         updateCourse={updateCourse}
+                        courseLatLon={courseLatLon}
                     />
                 ))}
             </Accordion>

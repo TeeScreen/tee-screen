@@ -1,15 +1,21 @@
 import MapPickerModal from "@/components/golf/MapPickerModal";
 import InputField from "../forms/InputField";
 
+const LABELS: Record<string, string> = {
+    holePointLatLong: "Hole Center",
+    whiteTeePointLatLong: "White Tee",
+    yellowTeePointLatLong: "Yellow Tee",
+    redTeePointLatLong: "Red Tee",
+};
+
 type HoleCoordinatesEditorProps = {
     courseName: string;
     hole: any;
     index: number;
-    form: any; // UseFormReturn<any>
+    form: any;
     updateCourse: (courseName: string, path: string, value: any) => void;
-    courseLatLon?: { lat: number; lon: number }; // optional, for map picker default
+    courseLatLon?: { lat: number; lon: number };
 };
-
 
 export default function HoleCoordinatesEditor({
                                                   courseName,
@@ -17,66 +23,38 @@ export default function HoleCoordinatesEditor({
                                                   index,
                                                   form,
                                                   updateCourse,
+                                                  courseLatLon,
                                               }: HoleCoordinatesEditorProps) {
     const coordKeys = [
         "holePointLatLong",
         "whiteTeePointLatLong",
-        "redTeePointLatLong",
         "yellowTeePointLatLong",
+        "redTeePointLatLong",
     ];
 
-    const courseStart = {
-        lat: hole.golfCourseLatLon?.lat ?? 0,
-        lon: hole.golfCourseLatLon?.lon ?? 0,
-    };
-
     return (
-        <div className="space-y-3">
+        <div className="space-y-6">
             {coordKeys.map((key) => {
                 const value = hole[key];
                 if (!value) return null;
 
+                const start = {
+                    lat: value.x ?? courseLatLon?.lat ?? 0,
+                    lon: value.y ?? courseLatLon?.lon ?? 0,
+                };
+
                 return (
-                    <div key={key} className="space-y-1">
-                        <p className="font-medium text-sm">{key}</p>
+                    <div key={key} className="space-y-2">
+                        {/* Friendly label + quick-fill */}
+                        <div className="flex items-center justify-between">
+                            <p className="font-medium text-sm">{LABELS[key]}</p>
+                        </div>
 
-                        <div className="grid grid-cols-3 gap-2">
-                            <InputField
-                                name={`${courseName}.holesData.${index}.${key}.x`}
-                                label="x"
-                                type="number"
-                                defaultValue={value.x}
-                                register={form.register}
-                                validation={{
-                                    valueAsNumber: true,
-                                    onChange: (e: any) =>
-                                        updateCourse(
-                                            courseName,
-                                            `holesData.${index}.${key}.x`,
-                                            Number(e.target.value)
-                                        ),
-                                }}
-                            />
-
-                            <InputField
-                                name={`${courseName}.holesData.${index}.${key}.y`}
-                                label="y"
-                                type="number"
-                                defaultValue={value.y}
-                                register={form.register}
-                                validation={{
-                                    valueAsNumber: true,
-                                    onChange: (e: any) =>
-                                        updateCourse(
-                                            courseName,
-                                            `holesData.${index}.${key}.y`,
-                                            Number(e.target.value)
-                                        ),
-                                }}
-                            />
+                        {/* Inputs + map picker */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
                             <MapPickerModal
-                                start={courseStart}
+                                start={start}
                                 onSelect={(coords) => {
                                     updateCourse(
                                         courseName,
