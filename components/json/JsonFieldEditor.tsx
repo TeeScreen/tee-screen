@@ -111,7 +111,7 @@ export function JsonFieldEditor({
 
                         <AccordionContent>
                             <div className="grid gap-6 mt-4 border rounded-lg p-2">
-                                {fields.map((field: any) => {
+                                {(fields as any[]).map((field: any) => {
                                     const currentValue = getValue(localJson, field.path);
                                     if (currentValue === undefined) return null;
 
