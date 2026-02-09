@@ -52,6 +52,8 @@ declare global {
         control: Control;
         error?: FieldError;
         required?: boolean;
+        onChange?: (value: string) => void;
+        defaultValue?: string; // <-- add this
     };
 
     type InputFileProps = {
