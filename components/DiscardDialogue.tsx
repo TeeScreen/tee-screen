@@ -38,7 +38,7 @@ export function DiscardDialog() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="destructive-button" disabled={!dirty}>Discard Changes</Button>
+                <Button variant="outline" className="destructive-button">Discard Changes</Button>
             </DialogTrigger>
 
             <DialogContent>
