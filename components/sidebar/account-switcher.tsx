@@ -57,21 +57,24 @@ export function AccountSwitcher({
               </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <Link href="/pages/settings">
-              <BadgeCheck />
-              Account
+            <DropdownMenuItem asChild>
+              <Link href="/pages/settings" className="flex items-center gap-2">
+                <BadgeCheck className="h-4 w-4" />
+                <span>Account</span>
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link href="/pages/bug-report">
-                <Bug />Report Bug
+
+            <DropdownMenuItem asChild>
+              <Link href="/pages/bug-report" className="flex items-center gap-2">
+                <Bug className="h-4 w-4" />
+                <span>Report Bug</span>
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link href="/pages/contact">
-              <Contact />
-              Contact Us
+
+            <DropdownMenuItem asChild>
+              <Link href="/pages/contact" className="flex items-center gap-2">
+                <Contact className="h-4 w-4" />
+                <span>Contact Us</span>
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
