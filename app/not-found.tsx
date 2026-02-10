@@ -5,6 +5,7 @@ import Link from "next/link";
 import React from "react";
 import {APP_CONFIG} from "@/config/app-config";
 
+export const dynamic = "force-dynamic";
 export default function Error404() {
     return (
         <div className="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden z-1">
