@@ -4,6 +4,8 @@ import {FileList} from "@/components/upload/FileList";
 import {ImageUp} from "lucide-react";
 import {getUserInfo} from "@/lib/actions/user.actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
     const user = await getUserInfo();
     const screenJson = user?.screenJson;

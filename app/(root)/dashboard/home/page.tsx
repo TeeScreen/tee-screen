@@ -7,6 +7,8 @@ import {
     resetScreenChange,
 } from "@/lib/actions/user.actions";
 
+export const dynamic = "force-dynamic";
+
 import { revalidatePath } from "next/cache";
 import { AddAccountDialog } from "@/components/screen/AddAccountDialog";
 import { AccountList } from "@/components/screen/AccountList";

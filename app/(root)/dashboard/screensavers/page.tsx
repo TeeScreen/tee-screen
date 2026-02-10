@@ -3,6 +3,8 @@ import UploadSection from "@/components/UploadSection";
 import {Eye} from "lucide-react";
 import {getUserInfo} from "@/lib/actions/user.actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
     const user = await getUserInfo();
     const screenJson = user?.screenJson;

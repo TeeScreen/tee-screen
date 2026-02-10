@@ -10,6 +10,8 @@ import {
     AccordionContent,
 } from "@/components/ui/accordion";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
     const user = await getUserInfo();
     const screenJson = user?.screenJson;

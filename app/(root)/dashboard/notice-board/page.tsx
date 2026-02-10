@@ -5,6 +5,8 @@ import {JsonFieldEditor} from "@/components/json/JsonFieldEditor";
 import {getUserInfo, updateScreenJson} from "@/lib/actions/user.actions";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
     const user = await getUserInfo();
     const screenJson = user?.screenJson;

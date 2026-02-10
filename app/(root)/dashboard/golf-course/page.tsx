@@ -3,6 +3,8 @@ import { GolfCoursesEditor } from "@/components/json/GolfCoursesEditor";
 import { getUserInfo, updateScreenJson } from "@/lib/actions/user.actions";
 import { MapIcon } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
     const user = await getUserInfo();
     const screenJson = user?.screenJson;
