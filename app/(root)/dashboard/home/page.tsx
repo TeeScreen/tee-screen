@@ -99,13 +99,15 @@ export default async function HomePage() {
     }
 
     return (
-        <div className="@container/main flex flex-col gap-4 md:gap-6">
-            <h1 className="text-3xl font-bold mb-6">Your Accounts</h1>
+        <div className="@container/main flex flex-col gap-4 md:gap-6 px-4 sm:px-6">
 
-            {/* If no accounts exist, show lead capture */}
+            <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
+                Your Accounts
+            </h1>
+
             {accounts.length === 0 && (
-                <div className="p-6 border rounded-lg bg-muted/30 flex flex-col gap-4">
-                    <h2 className="text-xl font-semibold">No Accounts Found</h2>
+                <div className="p-4 sm:p-6 border rounded-lg bg-muted/30 flex flex-col gap-4">
+                    <h2 className="text-lg sm:text-xl font-semibold">No Accounts Found</h2>
                     <p className="text-sm text-muted-foreground">
                         It looks like you don’t have any accounts connected yet.
                         If you’d like to get started with TeeScreen, our sales team can help you set up an account and provide a quote.
@@ -117,41 +119,36 @@ export default async function HomePage() {
 
             <AddAccountDialog action={handleAddAccount} />
 
-            <AccountList
-                accounts={accounts}
-                loadedAccount={loadedAccount}
-                onLoad={handleLoadAccountDetails}
-                onDelete={handleDeleteAccount}
-            />
+            <div className="overflow-x-auto">
+                <AccountList
+                    accounts={accounts}
+                    loadedAccount={loadedAccount}
+                    onLoad={handleLoadAccountDetails}
+                    onDelete={handleDeleteAccount}
+                />
+            </div>
 
             {loadedScreen && (
-                <div className="mt-2">
+                <div className="mt-4 sm:mt-2">
                     <ResetLoadedDataDialog action={handleReset} />
                 </div>
             )}
 
             {screenNames.length > 0 && (
-                <div className="mt-6">
-                    <h2 className="text-2xl font-semibold mb-3">
+                <div className="mt-4 sm:mt-6">
+                    <h2 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-3">
                         Screens for {loadedAccount}
                     </h2>
 
-                    <ScreenList
-                        screens={screenNames}
-                        loadedScreen={loadedScreen}
-                        onLoadScreen={handleLoadScreen}
-                    />
+                    <div className="overflow-x-auto">
+                        <ScreenList
+                            screens={screenNames}
+                            loadedScreen={loadedScreen}
+                            onLoadScreen={handleLoadScreen}
+                        />
+                    </div>
                 </div>
             )}
-
-            <div className="mt-6">
-                {screenJson && (
-                    <ScreenJsonEditor
-                        initialJson={screenJson}
-                        action={updateScreenJson}
-                    />
-                )}
-            </div>
         </div>
     );
 }

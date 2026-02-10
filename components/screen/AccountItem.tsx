@@ -52,12 +52,13 @@ export function AccountItem({
 
     return (
         <div
-            className={`p-4 border rounded-lg flex justify-between items-center ${
+            className={`p-4 border rounded-lg w-full flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between ${
                 isLoaded ? "bg-muted border-primary/10" : ""
             }`}
         >
-            <div>
-                <p className="font-medium">
+            {/* LEFT SIDE — ACCOUNT INFO */}
+            <div className="flex flex-col">
+                <p className="font-medium break-all">
                     {account.accountLogin}
                     {isLoaded && (
                         <span className="ml-2 text-xs text-primary font-semibold">
@@ -67,13 +68,17 @@ export function AccountItem({
                 </p>
 
                 {account.accountLogin && (
-                    <p className="text-sm">Login: {account.accountLogin}</p>
+                    <p className="text-sm text-muted-foreground break-all">
+                        Login: {account.accountLogin}
+                    </p>
                 )}
             </div>
 
-            <div className="flex gap-2">
+            {/* RIGHT SIDE — BUTTONS */}
+            <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                 {/* LOAD BUTTON */}
                 <Button
+                    className="flex-1 sm:flex-none"
                     variant={isLoaded ? "secondary" : "default"}
                     disabled={isLoaded || isLoading}
                     onClick={handleClick}
@@ -118,10 +123,12 @@ export function AccountItem({
                     </DialogContent>
                 </Dialog>
 
-                {/* DELETE DIALOG (unchanged) */}
+                {/* DELETE DIALOG */}
                 <Dialog>
                     <DialogTrigger asChild>
-                        <Button variant="destructive">Delete</Button>
+                        <Button className="flex-1 sm:flex-none" variant="destructive">
+                            Delete
+                        </Button>
                     </DialogTrigger>
 
                     <DialogContent>

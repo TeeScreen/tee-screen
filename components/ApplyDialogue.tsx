@@ -14,8 +14,8 @@ import {
 import { applyScreenChange } from "@/lib/actions/user.actions";
 import { toast } from "sonner";
 import { useDirtyState } from "@/stores/user-store";
-import { Loader2 } from "lucide-react";
-import {redirect} from "next/navigation";
+import { Loader2, CheckCircle } from "lucide-react";
+import { redirect } from "next/navigation";
 
 export function ApplyDialog() {
     const [open, setOpen] = useState(false);
@@ -31,7 +31,6 @@ export function ApplyDialog() {
             toast("Applied changes successfully.");
             setDirty(false);
             redirect("/dashboard/home");
-
         } else {
             toast("Failed to apply changes.");
         }
@@ -43,24 +42,55 @@ export function ApplyDialog() {
     return (
         <Dialog open={open} onOpenChange={(v) => !isLoading && setOpen(v)}>
             <DialogTrigger asChild>
-                <Button variant="default" disabled={!dirty || isLoading}>
-                    Apply Changes
-                </Button>
+                <div>
+                    {/* MOBILE: icon-only button */}
+                    <Button
+                        variant="default"
+                        disabled={!dirty || isLoading}
+                        className="inline-flex sm:hidden p-2"
+                        aria-label="Apply changes"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <CheckCircle className="h-4 w-4" />
+                        )}
+                    </Button>
+
+                    {/* DESKTOP: full button */}
+                    <Button
+                        variant="default"
+                        disabled={!dirty || isLoading}
+                        className="hidden sm:inline-flex"
+                    >
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Applying...
+                            </>
+                        ) : (
+                            "Apply Changes"
+                        )}
+                    </Button>
+                </div>
             </DialogTrigger>
 
-            <DialogContent>
+            <DialogContent className="max-w-[90%] sm:max-w-md p-4 sm:p-6 rounded-lg">
                 <DialogHeader>
-                    <DialogTitle>Apply Changes?</DialogTitle>
-                    <DialogDescription>
+                    <DialogTitle className="text-base sm:text-lg font-semibold">
+                        Apply Changes?
+                    </DialogTitle>
+                    <DialogDescription className="text-sm sm:text-base text-muted-foreground">
                         This will update the active screen with your latest changes.
                     </DialogDescription>
                 </DialogHeader>
 
-                <DialogFooter>
+                <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
                     <Button
                         variant="outline"
                         onClick={() => setOpen(false)}
                         disabled={isLoading}
+                        className="w-full sm:w-auto"
                     >
                         Cancel
                     </Button>
@@ -69,6 +99,7 @@ export function ApplyDialog() {
                         variant="default"
                         onClick={handleConfirm}
                         disabled={isLoading}
+                        className="w-full sm:w-auto"
                     >
                         {isLoading && (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

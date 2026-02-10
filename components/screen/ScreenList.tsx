@@ -12,7 +12,7 @@ export function ScreenList({
     onLoadScreen: (screenName: string) => void;
 }) {
     return (
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3 w-full overflow-x-hidden">
             {screens.map((screen) => (
                 <ScreenItem
                     key={screen}
