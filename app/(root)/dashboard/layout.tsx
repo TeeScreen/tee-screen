@@ -21,7 +21,7 @@ import { ApplyDialog } from "@/components/ApplyDialogue";
 import { DiscardDialog } from "@/components/DiscardDialogue";
 import {SubScreenTypes} from "@/components/sidebar/nav-main";
 
-
+export const dynamic = "force-dynamic";
 export default async function Layout({ children }: Readonly<{ children: ReactNode }>) {
 
   const session = await auth.api.getSession({headers: await headers()})

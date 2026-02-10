@@ -3,7 +3,7 @@ import Image from "next/image";
 import {headers} from "next/dist/server/request/headers";
 import {auth} from "@/lib/better-auth/auth";
 import {redirect} from "next/navigation";
-
+export const dynamic = "force-dynamic";
 const Layout = async ({children}: {children:React.ReactNode}) => {
 
     const session = await auth.api.getSession({headers: await headers()});

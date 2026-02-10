@@ -11,6 +11,7 @@ import { PreferencesStoreProvider } from "@/stores/preferences/preferences-provi
 
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
     title: APP_CONFIG.meta.title,
     description: APP_CONFIG.meta.description,

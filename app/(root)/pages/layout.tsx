@@ -20,7 +20,7 @@ import {applyScreenChange, getUserInfo} from "@/lib/actions/user.actions";
 import { ApplyDialog } from "@/components/ApplyDialogue";
 import {toast} from "sonner";
 import { DiscardDialog } from "@/components/DiscardDialogue";
-
+export const dynamic = "force-dynamic";
 export default async function Layout({ children }: Readonly<{ children: ReactNode }>) {
 
   const session = await auth.api.getSession({headers: await headers()})
