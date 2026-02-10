@@ -5,7 +5,6 @@ import Image from "next/image";
 import { UPLOAD_DIR } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import path from "path";
-import {useDirtyState} from "@/stores/user-store";
 
 const FilePreview = async ({
                                folderName,
