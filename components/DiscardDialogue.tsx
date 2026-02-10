@@ -15,13 +15,16 @@ import { resetScreenChange } from "@/lib/actions/user.actions";
 import { toast } from "sonner";
 import { useDirtyState } from "@/stores/user-store";
 import { redirect } from "next/navigation";
-import { Trash } from "lucide-react";
+import {Loader2, Trash} from "lucide-react";
 
 export function DiscardDialog() {
     const [open, setOpen] = useState(false);
     const { dirty, setDirty } = useDirtyState();
+    const [isLoading, setIsLoading] = useState(false);
+
 
     async function handleConfirm() {
+        setIsLoading(true);
         const result = await resetScreenChange();
 
         if (result.success) {
@@ -31,7 +34,7 @@ export function DiscardDialog() {
         } else {
             toast("Failed to discard changes.");
         }
-
+        setIsLoading(false);
         setOpen(false);
     }
 
@@ -72,6 +75,7 @@ export function DiscardDialog() {
                     <Button
                         variant="outline"
                         onClick={() => setOpen(false)}
+                        disabled={isLoading}
                         className="w-full sm:w-auto"
                     >
                         Cancel
@@ -80,9 +84,13 @@ export function DiscardDialog() {
                     <Button
                         variant="destructive"
                         onClick={handleConfirm}
+                        disabled={isLoading}
                         className="w-full sm:w-auto"
                     >
-                        Discard
+                        {isLoading && (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        {isLoading ? "Discarding..." : "Discard"}
                     </Button>
                 </DialogFooter>
             </DialogContent>
