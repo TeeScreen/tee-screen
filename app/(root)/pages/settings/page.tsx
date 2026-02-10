@@ -4,6 +4,8 @@ import {BadgeCheck} from "lucide-react";
 import { DeleteUserDialog } from "@/components/DeleteUserDialog";
 import SecurityCard from "@/components/SecurityCard";
 
+export const dynamic = "force-dynamic";
+
 export default function Page() {
   return (
       <div>

@@ -2,6 +2,8 @@ import React from "react";
 import { Contact} from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 
+export const dynamic = "force-dynamic";
+
 export default function Page() {
     return (
         <div>

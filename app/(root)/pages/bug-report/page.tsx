@@ -2,6 +2,8 @@ import React from "react";
 import {Bug} from "lucide-react";
 import BugReportForm from "@/components/BugReportForm";
 
+export const dynamic = "force-dynamic";
+
 export default function Page() {
     return (
         <div>
