@@ -50,6 +50,6 @@ const ALLOWED_TYPES = {
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
-const UPLOAD_DIR = "/tmp/uploads";
+const UPLOAD_DIR = "changes";
 
 export { ALLOWED_TYPES, MAX_FILE_SIZE, UPLOAD_DIR };
