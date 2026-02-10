@@ -38,7 +38,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <AppSidebar variant={variant} collapsible={collapsible} loadedScreen={loadedScreen} />
+      <AppSidebar variant={variant} collapsible={collapsible} loadedScreen={loadedScreen} user={session?.user} />
       <SidebarInset
         className={cn(
           "[html[data-content-layout=centered]_&]:mx-auto! [html[data-content-layout=centered]_&]:max-w-screen-2xl!",

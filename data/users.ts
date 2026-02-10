@@ -1,11 +1,11 @@
-export const users = [
+export let users = [
   {
     id: "1",
-    name: "Arthur Johnson",
+    name: "No One",
     username: "aj_17",
-    email: "arthur@teescreen.co.uk",
+    email: "none",
     avatar: "",
-    role: "administrator",
+    role: "none",
   },
 ];
 

@@ -46,6 +46,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
                   collapsible={collapsible}
                   loadedScreen={loadedScreen}
                   subScreenTypes={{isFootball, isGolf,}}
+                  user={session?.user}
       />
       <SidebarInset
         className={cn(

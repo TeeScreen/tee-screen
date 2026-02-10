@@ -25,15 +25,14 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/c
 import { getInitials } from "@/lib/utils";
 import {useRouter} from "next/navigation";
 import {signOut} from "@/lib/actions/auth.actions";
+import Link from "next/link";
 
 export function NavUser({
-  user,
-}: {
-  readonly user: {
-    readonly name: string;
-    readonly email: string;
-    readonly avatar: string;
-  };
+                          userName,
+                          userEmail,
+                        }: {
+  userName: string;
+  userEmail: string;
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
@@ -52,12 +51,12 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={user.avatar || undefined} alt={user.name} />
-                <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
+                <AvatarImage src={undefined} alt={userName} />
+                <AvatarFallback className="rounded-lg">{getInitials(userName)}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-muted-foreground text-xs">{user.email}</span>
+                <span className="truncate font-medium">{userName}</span>
+                <span className="truncate text-muted-foreground text-xs">{userEmail}</span>
               </div>
               <EllipsisVertical className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -71,28 +70,36 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar || undefined} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
+                  <AvatarImage src={undefined} alt={userName} />
+                  <AvatarFallback className="rounded-lg">{getInitials(userName)}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-muted-foreground text-xs">{user.email}</span>
+                  <span className="truncate font-medium">{userName}</span>
+                  <span className="truncate text-muted-foreground text-xs">{userEmail}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
+              <DropdownMenuItem asChild>
+                <Link href="/pages/settings" className="flex items-center gap-2">
+                  <BadgeCheck className="h-4 w-4" />
+                  <span>Account</span>
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bug />
-                Report Bug
+
+              <DropdownMenuItem asChild>
+                <Link href="/pages/bug-report" className="flex items-center gap-2">
+                  <Bug className="h-4 w-4" />
+                  <span>Report Bug</span>
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Contact />
-                Contact Us
+
+              <DropdownMenuItem asChild>
+                <Link href="/pages/contact" className="flex items-center gap-2">
+                  <Contact className="h-4 w-4" />
+                  <span>Contact Us</span>
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

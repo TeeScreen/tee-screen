@@ -17,6 +17,7 @@ import { cn, getInitials } from "@/lib/utils";
 import {useRouter} from "next/navigation";
 import {signOut} from "@/lib/actions/auth.actions";
 import Link from "next/link";
+import {users} from "@/data/users";
 
 
 export function AccountSwitcher({
@@ -31,7 +32,6 @@ export function AccountSwitcher({
     await signOut();
     router.push("/sign-in");
   }
-
   return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

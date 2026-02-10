@@ -63,9 +63,9 @@ const _data = {
 };
 
 export function AppSidebar({
-                             loadedScreen, subScreenTypes,
+                             loadedScreen, subScreenTypes, user,
                              ...props
-                           }: React.ComponentProps<typeof Sidebar> & { loadedScreen: string, subScreenTypes?: SubScreenTypes }) {
+                           }: React.ComponentProps<typeof Sidebar> & { loadedScreen: string, subScreenTypes?: SubScreenTypes, user: any }) {
 
   const { sidebarVariant, sidebarCollapsible, isSynced } = usePreferencesStore(
     useShallow((s) => ({
@@ -98,7 +98,7 @@ export function AppSidebar({
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={rootUser} />
+        <NavUser userName={user.name} userEmail={user.email} />
       </SidebarFooter>
     </Sidebar>
   );
