@@ -5,6 +5,7 @@ import Image from "next/image";
 import { UPLOAD_DIR } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import path from "path";
+import {ConfirmDeleteButton} from "@/components/ConfirmDelete";
 
 const FilePreview = async ({
                                folderName,
@@ -59,15 +60,7 @@ const FilePreview = async ({
                     </p>
                 </div>
 
-                <form action={handleDelete}>
-                    <Button
-                        type="submit"
-                        variant="outline"
-                        className="ml-2 px-3 py-1 rounded-lg destructive-button"
-                    >
-                        Delete
-                    </Button>
-                </form>
+                <ConfirmDeleteButton action={handleDelete} />
             </div>
 
             {type === "image" && (

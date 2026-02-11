@@ -1,6 +1,6 @@
 import React from "react";
 import {Bug} from "lucide-react";
-import BugReportForm from "@/components/BugReportForm";
+import BugReportForm from "@/components/forms/BugReportForm";
 
 export const dynamic = "force-dynamic";
 

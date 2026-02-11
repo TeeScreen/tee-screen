@@ -1,8 +1,8 @@
 import React from "react";
-import ProfileCard from "@/components/ProfileCard";
+import ProfileCard from "@/components/profile/ProfileCard";
 import {BadgeCheck} from "lucide-react";
-import { DeleteUserDialog } from "@/components/DeleteUserDialog";
-import SecurityCard from "@/components/SecurityCard";
+import { DeleteUserDialog } from "@/components/profile/DeleteUserDialog";
+import SecurityCard from "@/components/profile/SecurityCard";
 
 export const dynamic = "force-dynamic";
 

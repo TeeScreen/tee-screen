@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
     Accordion,
@@ -9,10 +9,11 @@ import {
     AccordionContent,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
-import HolesEditor from "@/components/golf/HolesEditor";
-import HandicapEditor from "@/components/json/HandicapEditor";
 import HolesEditorWrapper from "../golf/HolesEditorWrapper";
+import HandicapEditor from "@/components/json/HandicapEditor";
+import { useDirtyState } from "@/stores/user-store";
 
 export function GolfCoursesEditor({
                                       json,
@@ -23,14 +24,46 @@ export function GolfCoursesEditor({
 }) {
     const [localJson, setLocalJson] = useState(json);
     const hiddenRef = useRef<HTMLInputElement>(null);
+    const saveTimer = useRef<NodeJS.Timeout | null>(null);
+
+    const { setDirty } = useDirtyState();
+    const [isSaving, setIsSaving] = useState(false);
 
     const form = useForm({
         defaultValues: localJson,
     });
 
+    // Sync when server sends new JSON
+    useEffect(() => {
+        setLocalJson(json);
+        if (hiddenRef.current) hiddenRef.current.value = JSON.stringify(json);
+    }, [json]);
+
+    // Auto-save with debounce
+    const autoSave = (updatedJson: any) => {
+        if (saveTimer.current) clearTimeout(saveTimer.current);
+
+        saveTimer.current = setTimeout(async () => {
+            setIsSaving(true);
+
+            const formData = new FormData();
+            formData.append("json", JSON.stringify(updatedJson));
+
+            await action(formData);
+
+            setIsSaving(false);
+            setDirty(true);
+        }, 500);
+    };
+
     function updateJson(newJson: any) {
         setLocalJson(newJson);
-        if (hiddenRef.current) hiddenRef.current.value = JSON.stringify(newJson);
+
+        if (hiddenRef.current) {
+            hiddenRef.current.value = JSON.stringify(newJson);
+        }
+
+        autoSave(newJson);
     }
 
     const courseLatLon = {
@@ -85,23 +118,24 @@ export function GolfCoursesEditor({
     }
 
     return (
-        <form action={action} className="space-y-6">
+        <div className="space-y-6">
             <Button type="button" onClick={addCourse}>
                 Add New Course
             </Button>
 
-            {/* TOP LEVEL: COURSES */}
             <Accordion type="multiple" className="space-y-4">
                 {Object.entries(localJson.golfCoursesData).map(
                     ([courseName, courseData]: any) => (
                         <AccordionItem key={courseName} value={courseName}>
-                            <AccordionTrigger className="text-xl font-semibold">
-                                {courseName}
+                            <AccordionTrigger className="text-xl font-semibold flex items-center gap-2">
+                                <span>{courseName}</span>
+
+                                {isSaving && (
+                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                )}
                             </AccordionTrigger>
 
                             <AccordionContent className="space-y-6">
-
-                                {/* HOLES WRAPPER */}
                                 <HolesEditorWrapper
                                     courseName={courseName}
                                     holesData={courseData.holesData}
@@ -110,7 +144,6 @@ export function GolfCoursesEditor({
                                     courseLatLon={courseLatLon}
                                 />
 
-                                {/* HANDICAP EDITOR */}
                                 <HandicapEditor
                                     courseName={courseName}
                                     handicapData={courseData.handicapData}
@@ -119,22 +152,19 @@ export function GolfCoursesEditor({
                                     updateJson={updateJson}
                                     localJson={localJson}
                                 />
-
                             </AccordionContent>
                         </AccordionItem>
                     )
                 )}
             </Accordion>
 
-            {/* HIDDEN JSON FIELD */}
+            {/* Hidden JSON field for server action */}
             <input
                 ref={hiddenRef}
                 type="hidden"
                 name="json"
                 defaultValue={JSON.stringify(localJson)}
             />
-
-            <Button type="submit">Save Changes</Button>
-        </form>
+        </div>
     );
 }

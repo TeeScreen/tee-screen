@@ -1,8 +1,8 @@
 import { getUserInfo } from "@/lib/actions/user.actions";
 import { auth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
-import { ChangeEmailDialog } from "@/components/ChangeEmailDialog";
-import { ChangePasswordDialog } from "@/components/ChangePasswordDialog";
+import { ChangeEmailDialog } from "@/components/profile/ChangeEmailDialog";
+import { ChangePasswordDialog } from "@/components/profile/ChangePasswordDialog";
 
 const SecurityCard = async () => {
     const session = await auth.api.getSession({

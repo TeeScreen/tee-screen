@@ -1,5 +1,5 @@
 import React from 'react'
-import {EditProfile} from "@/components/EditProfileDialog";
+import {EditProfile} from "@/components/profile/EditProfileDialog";
 import {auth} from "@/lib/better-auth/auth";
 import {headers} from "next/dist/server/request/headers";
 import {useUserState} from "@/stores/user-store";

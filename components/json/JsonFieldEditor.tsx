@@ -3,15 +3,10 @@
 import { useRef, useState, useEffect } from "react";
 import InputField from "@/components/forms/InputField";
 import SelectField from "@/components/forms/SelectField";
-import { Button } from "@/components/ui/button";
-import {
-    Accordion,
-    AccordionItem,
-    AccordionTrigger,
-    AccordionContent,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { useDirtyState } from "@/stores/user-store";
 import { useForm } from "react-hook-form";
+import { Loader2 } from "lucide-react";
 
 function getValue(obj: any, path: string) {
     return path.split(".").reduce((acc, key) => {
@@ -70,17 +65,39 @@ export function JsonFieldEditor({
     const [localJson, setLocalJson] = useState(json);
     const hiddenInputRef = useRef<HTMLInputElement>(null);
     const { dirty, setDirty } = useDirtyState();
+    const [isSaving, setIsSaving] = useState(false);
 
     const form = useForm({
         defaultValues: localJson,
     });
 
+    // Sync when server sends new JSON
     useEffect(() => {
         setLocalJson(json);
         if (hiddenInputRef.current) {
             hiddenInputRef.current.value = JSON.stringify(json);
         }
     }, [json]);
+
+    // Debounce timer
+    const saveTimer = useRef<NodeJS.Timeout | null>(null);
+
+    // Auto-save function
+    const autoSave = (updatedJson: any) => {
+        if (saveTimer.current) clearTimeout(saveTimer.current);
+
+        saveTimer.current = setTimeout(async () => {
+            setIsSaving(true);
+
+            const formData = new FormData();
+            formData.append("json", JSON.stringify(updatedJson));
+
+            await action(formData);
+
+            setIsSaving(false);
+            setDirty(true);
+        }, 500); // 500ms debounce
+    };
 
     function handleChange(path: string, value: any) {
         const updated = setValue(localJson, path, value);
@@ -89,8 +106,7 @@ export function JsonFieldEditor({
         if (hiddenInputRef.current) {
             hiddenInputRef.current.value = JSON.stringify(updated);
         }
-
-        setDirty(true);
+        autoSave(updated);
     }
 
     // Group fields by tag
@@ -101,7 +117,15 @@ export function JsonFieldEditor({
     }, {});
 
     return (
-        <form action={action} className="space-y-6">
+        <div className="space-y-6">
+            {/* Optional: Saving indicator */}
+            {isSaving && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving…
+                </div>
+            )}
+
             <Accordion type="multiple" className="w-full space-y-4 border rounded-lg p-2">
                 {Object.entries(groups).map(([tag, fields]) => (
                     <AccordionItem key={tag} value={tag}>
@@ -123,9 +147,7 @@ export function JsonFieldEditor({
                                                 <input
                                                     type="checkbox"
                                                     checked={Boolean(currentValue)}
-                                                    onChange={(e) =>
-                                                        handleChange(field.path, e.target.checked)
-                                                    }
+                                                    onChange={(e) => handleChange(field.path, e.target.checked)}
                                                     className="h-5 w-5 accent-primary"
                                                 />
                                             </div>
@@ -158,10 +180,7 @@ export function JsonFieldEditor({
                                                     type="color"
                                                     value={toHex(rgba)}
                                                     onChange={(e) => {
-                                                        const updated = hexToRgba(
-                                                            e.target.value,
-                                                            rgba.a
-                                                        );
+                                                        const updated = hexToRgba(e.target.value, rgba.a);
                                                         handleChange(field.path, updated);
                                                     }}
                                                     className="h-10 w-20 rounded border"
@@ -195,8 +214,7 @@ export function JsonFieldEditor({
                                             placeholder={field.placeholder}
                                             value={currentValue}
                                             register={() => ({
-                                                onChange: (e: any) =>
-                                                    handleChange(field.path, e.target.value),
+                                                onChange: (e: any) => handleChange(field.path, e.target.value),
                                             })}
                                             error={null}
                                         />
@@ -214,8 +232,6 @@ export function JsonFieldEditor({
                 name="json"
                 defaultValue={JSON.stringify(localJson)}
             />
-
-            <Button type="submit">Save Changes</Button>
-        </form>
+        </div>
     );
 }

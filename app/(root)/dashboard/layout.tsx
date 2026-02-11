@@ -20,6 +20,7 @@ import {getUserInfo} from "@/lib/actions/user.actions";
 import { ApplyDialog } from "@/components/ApplyDialogue";
 import { DiscardDialog } from "@/components/DiscardDialogue";
 import {SubScreenTypes} from "@/components/sidebar/nav-main";
+import {UnsavedChangesGuard} from "@/components/UnsavedChangesGuard";
 
 export const dynamic = "force-dynamic";
 export default async function Layout({ children }: Readonly<{ children: ReactNode }>) {
