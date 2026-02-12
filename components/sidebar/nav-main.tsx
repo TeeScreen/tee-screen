@@ -92,6 +92,7 @@ const NavItemExpanded = ({
                     aria-disabled={(item.needsLoad && !isLoaded) || item.comingSoon}
                     isActive={isActive(item.url)}
                     tooltip={item.title}
+                    onClick={onItemSelect}
                 >
                   <Link
                       prefetch={false}
@@ -179,7 +180,6 @@ const NavItemCollapsed = ({
                         prefetch={false}
                         href={subItem.url}
                         target={subItem.newTab ? "_blank" : undefined}
-                        onClick={onItemSelect}
                     >
                       {subItem.icon && <subItem.icon className="[&>svg]:text-sidebar-foreground" />}
                       <span>{subItem.title}</span>
@@ -245,7 +245,7 @@ export function NavMain({
                                     prefetch={false}
                                     href={item.url}
                                     target={item.newTab ? "_blank" : undefined}
-                                    onClick={onItemSelect}
+                                    onLoad={onItemSelect}
                                 >
                                   {item.icon && <item.icon />}
                                   <span>{item.title}</span>

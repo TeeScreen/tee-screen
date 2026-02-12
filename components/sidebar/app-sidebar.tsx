@@ -40,15 +40,14 @@ export function AppSidebar({
         }))
     );
 
-    const { isMobile, setOpen } = useSidebar();
+    const { isMobile, setOpenMobile} = useSidebar();
 
     const variant = isSynced ? sidebarVariant : props.variant;
     const collapsible = isSynced ? sidebarCollapsible : props.collapsible;
 
     const handleItemSelect = () => {
-        // shadcn/ui sidebar reports mobile mode as: state === "mobile"
-        if (isMobile && collapsible) {
-            setOpen(false); // closes the sidebar
+        if (isMobile) {
+            setOpenMobile(false); // closes the sidebar
         }
     };
 
