@@ -24,7 +24,7 @@ const findFileSafeName = async (folderName: string, fileName: string): Promise<s
         const files = await fs.readdir(folderPath);
 
         for (const file of files) {
-            if (file.substring(file.indexOf("-") + 1) === fileName) {
+            if (file.substring(file.indexOf("-") + 1,file.indexOf(".") ) === fileName) {
                 return file;
             }
         }

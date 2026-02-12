@@ -14,16 +14,16 @@ export default async function Page() {
                 <Eye/> Screensavers
             </h1>
             <div className="@container/main flex flex-col gap-4 md:gap-6">
-                <UploadSection folderName={folderName} fileName="Screensaver01.png" label="Screensaver 01" />
-                <UploadSection folderName={folderName} fileName="Screensaver02.png" label="Screensaver 02" />
-                <UploadSection folderName={folderName} fileName="Screensaver03.png" label="Screensaver 03" />
-                <UploadSection folderName={folderName} fileName="Screensaver04.png" label="Screensaver 04" />
-                <UploadSection folderName={folderName} fileName="Screensaver05.png" label="Screensaver 05" />
-                <UploadSection folderName={folderName} fileName="Screensaver06.png" label="Screensaver 06" />
-                <UploadSection folderName={folderName} fileName="Screensaver07.png" label="Screensaver 07" />
-                <UploadSection folderName={folderName} fileName="Screensaver08.png" label="Screensaver 08" />
-                <UploadSection folderName={folderName} fileName="Screensaver09.png" label="Screensaver 09" />
-                <UploadSection folderName={folderName} fileName="Screensaver010.png" label="Screensaver 010" />
+                <UploadSection folderName={folderName} fileName="ScreensaverImage01" label="Screensaver 01" />
+                <UploadSection folderName={folderName} fileName="ScreensaverImage02" label="Screensaver 02" />
+                <UploadSection folderName={folderName} fileName="ScreensaverImage03" label="Screensaver 03" />
+                <UploadSection folderName={folderName} fileName="ScreensaverImage04" label="Screensaver 04" />
+                <UploadSection folderName={folderName} fileName="ScreensaverImage05" label="Screensaver 05" />
+                <UploadSection folderName={folderName} fileName="ScreensaverImage06" label="Screensaver 06" />
+                <UploadSection folderName={folderName} fileName="ScreensaverImage07" label="Screensaver 07" />
+                <UploadSection folderName={folderName} fileName="ScreensaverImage08" label="Screensaver 08" />
+                <UploadSection folderName={folderName} fileName="ScreensaverImage09" label="Screensaver 09" />
+                <UploadSection folderName={folderName} fileName="ScreensaverImage010" label="Screensaver 010" />
             </div>
         </div>
     );

@@ -15,7 +15,6 @@ const FilePreview = async ({
     fileName: string;
 }) => {
     const safeFileName = await findFileSafeName(folderName, fileName);
-
     // Ensure folder exists
     try {
         await fs.access(`${UPLOAD_DIR}/${folderName}`);
@@ -77,9 +76,9 @@ const FilePreview = async ({
 
             {type === "video" && (
                 <video
-                    className="w-full rounded-md"
                     controls
                     src={`/api/downloads/${folderName}/${safeFileName}`}
+                    className="rounded-md object-contain"
                 />
             )}
 
