@@ -54,9 +54,9 @@ export default async function Page() {
 
                             <AccordionContent>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-                                    <UploadSection folderName={folderName} fileName="NoticeImage01.png" label="Notice Image Top"/>
-                                    <UploadSection folderName={folderName} fileName="NoticeImage02.png" label="Notice Image Middle"/>
-                                    <UploadSection folderName={folderName} fileName="NoticeImage03.png" label="Notice Image Bottom"/>
+                                    <UploadSection folderName={folderName} fileName="NoticeImage01" label="Notice Image Top"/>
+                                    <UploadSection folderName={folderName} fileName="NoticeImage02" label="Notice Image Middle"/>
+                                    <UploadSection folderName={folderName} fileName="NoticeImage03" label="Notice Image Bottom"/>
 
                                 </div>
                             </AccordionContent>

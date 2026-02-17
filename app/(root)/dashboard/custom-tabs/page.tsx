@@ -17,10 +17,10 @@ export default async function Page() {
     const screenJson = user?.screenJson;
     const folderName = user?.screenJson?.["FolderNameOnServer"] || null;
     const uploads = [
-        { image: "CustomTabImage01.png", icon: "CustomTabIcon01.png", label: "01" },
-        { image: "CustomTabImage02.png", icon: "CustomTabIcon02.png", label: "02" },
-        { image: "CustomTabImage03.png", icon: "CustomTabIcon03.png", label: "03" },
-        { image: "CustomTabImage04.png", icon: "CustomTabIcon04.png", label: "04" },
+        { image: "CustomTabImage01", icon: "CustomTabIcon01.png", label: "01" },
+        { image: "CustomTabImage02", icon: "CustomTabIcon02.png", label: "02" },
+        { image: "CustomTabImage03", icon: "CustomTabIcon03.png", label: "03" },
+        { image: "CustomTabImage04", icon: "CustomTabIcon04.png", label: "04" },
     ];
     return (
         <div>
