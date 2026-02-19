@@ -21,7 +21,6 @@ const FilePreview = async ({
     } catch {
         await fs.mkdir(`${UPLOAD_DIR}/${folderName}`, { recursive: true });
     }
-
     // Check if file exists
     let fileExists = true;
     try {

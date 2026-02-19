@@ -1,7 +1,7 @@
 "use server";
 
 import { ALLOWED_TYPES, MAX_FILE_SIZE, UPLOAD_DIR } from "@/lib/constants";
-import { isAllowedMimeType, sanitizeFileName } from "@/lib/utils";
+import {getFileType, isAllowedMimeType, sanitizeFileName} from "@/lib/utils";
 import fs from "fs/promises";
 import path from "path";
 import JSZip from "jszip";
@@ -23,8 +23,13 @@ const findFileSafeName = async (folderName: string, fileName: string): Promise<s
         const folderPath = path.join(UPLOAD_DIR, folderName);
         const files = await fs.readdir(folderPath);
 
+        let compareName = fileName.substring(0, fileName.indexOf("."));
+
+        if(compareName.length <=0) compareName = fileName;
+
         for (const file of files) {
-            if (file.substring(file.indexOf("-") + 1,file.indexOf(".") ) === fileName) {
+            if (file.substring(file.indexOf("-") + 1,file.indexOf(".") ) ===
+                compareName){
                 return file;
             }
         }
@@ -46,6 +51,22 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
         if (!folderName) return { success: false, message: "No folder name provided" };
 
         if (!newFileName) newFileName = file.name;
+
+        if(newFileName.indexOf(".") < 0)
+        {
+
+            const ext = path.extname(file.name).toLowerCase();
+            const type = getFileType(ext);
+            if(type === "image")
+            {
+                newFileName += ".png";
+            }
+
+            if(type === "video")
+            {
+                newFileName += ".mp4";
+            }
+        }
 
         if (!isAllowedMimeType(file.type)) {
             return {
