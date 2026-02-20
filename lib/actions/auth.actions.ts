@@ -73,7 +73,7 @@ export const signInWithEmail = async ({email, password, rememberMe}:SignInFormDa
         console.log('Sign in failed', e);
         return {
             success: false,
-            error: 'Sign in failed'
+            error: 'Sign in failed: ' + e.message,
         }
     }
 }

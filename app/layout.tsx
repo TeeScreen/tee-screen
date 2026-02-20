@@ -10,6 +10,7 @@ import { ThemeBootScript } from "@/scripts/theme-boot";
 import { PreferencesStoreProvider } from "@/stores/preferences/preferences-provider";
 
 import "./globals.css";
+import {ClientToaster} from "@/components/ClientToaster";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -45,7 +46,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             font={font}
         >
             {children}
-            <Toaster />
+            <ClientToaster />
         </PreferencesStoreProvider>
         </body>
         </html>

@@ -52,6 +52,7 @@ export default async function HomePage() {
     // Delete Account
     async function handleDeleteAccount(accountLogin: string) {
         "use server";
+        await handleReset();
         await removeAccountData(accountLogin);
         revalidatePath("/");
     }
@@ -105,18 +106,6 @@ export default async function HomePage() {
                 Your Accounts
             </h1>
 
-            {accounts.length === 0 && (
-                <div className="p-4 sm:p-6 border rounded-lg bg-muted/30 flex flex-col gap-4">
-                    <h2 className="text-lg sm:text-xl font-semibold">No Accounts Found</h2>
-                    <p className="text-sm text-muted-foreground">
-                        It looks like you don’t have any accounts connected yet.
-                        If you’d like to get started with TeeScreen, our sales team can help you set up an account and provide a quote.
-                    </p>
-
-                    <LeadCaptureForm user={user} />
-                </div>
-            )}
-
             <AddAccountDialog action={handleAddAccount} />
 
             <div className="overflow-x-auto">
@@ -147,6 +136,18 @@ export default async function HomePage() {
                             onLoadScreen={handleLoadScreen}
                         />
                     </div>
+                </div>
+            )}
+
+            {accounts.length === 0 && (
+                <div className="p-4 sm:p-6 border rounded-lg bg-muted/30 flex flex-col gap-4">
+                    <h2 className="text-lg sm:text-xl font-semibold">No Accounts Found</h2>
+                    <p className="text-sm text-muted-foreground">
+                        It looks like you don’t have any accounts connected yet.
+                        If you’d like to get started with TeeScreen, our sales team can help you set up an account and provide a quote.
+                    </p>
+
+                    <LeadCaptureForm user={user} />
                 </div>
             )}
         </div>

@@ -3,6 +3,8 @@ import Image from "next/image";
 import {headers} from "next/dist/server/request/headers";
 import {auth} from "@/lib/better-auth/auth";
 import {redirect} from "next/navigation";
+import {Toaster} from "@/components/ui/sonner";
+import {ClientToaster} from "@/components/ClientToaster";
 export const dynamic = "force-dynamic";
 const Layout = async ({children}: {children:React.ReactNode}) => {
 
@@ -38,6 +40,7 @@ const Layout = async ({children}: {children:React.ReactNode}) => {
                 </div>
             </section>
         </main>
+
     )
 }
 export default Layout

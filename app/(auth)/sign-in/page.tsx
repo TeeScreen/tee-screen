@@ -33,12 +33,11 @@ const SignIn = () => {
                 router.push("/");
                 toast("Sign in was successful");
             }
+            else {
+                toast.error(result.error);
+            }
         } catch (e) {
-            console.log(e);
-            toast.error("Sign in failed", {
-                description: e instanceof Error ? e.message : "Failed to sign in",
-            });
-
+            toast("Sign in failed" , e.message);
         }
     }
 
