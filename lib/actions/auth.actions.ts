@@ -69,13 +69,18 @@ export const signInWithEmail = async ({email, password, rememberMe}:SignInFormDa
             success: true,
             data: response
         }
-    }   catch (e) {
-        console.log('Sign in failed', e);
+    }   catch (e: unknown) {
+        console.log("Sign in failed", e);
+
+        const message =
+            e instanceof Error ? e.message : "Unknown error occurred";
+
         return {
             success: false,
-            error: 'Sign in failed: ' + e.message,
-        }
+            error: "Sign in failed: " + message
+        };
     }
+
 }
 
 export async function deleteUserAction(password: string) {
