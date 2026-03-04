@@ -119,11 +119,13 @@ export const sidebarItems: NavGroup[] = [
         title: "Report Bug",
         url: "/pages/bug-report",
         icon: Bug,
+        comingSoon: true,
       },
       {
         title: "Contact Us",
         url: "/pages/contact",
         icon: Contact,
+        comingSoon: true,
       },
 
     ],
