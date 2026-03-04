@@ -5,7 +5,7 @@ import {headers} from "next/headers";
 import {redirect} from "next/navigation";
 import {revalidatePath} from "next/cache";
 import {AccountData, UserInfoModel} from "@/database/models/user.model";
-import {deleteFolder, zipFolder} from "@/lib/actions/file.actions";
+import {deleteFolder, uploadFolder} from "@/lib/actions/file.actions";
 import {UPLOAD_DIR} from "@/lib/constants";
 import fs from "fs/promises";
 
@@ -153,7 +153,6 @@ export async function addAccountData(account: AccountData) {
     if (existing) {
         throw new Error(`Account login "${account.accountLogin}" already exists for this user.`);
     }
-    console.log(account.accountLogin);
     // 2. Add new account
     const updated = await UserInfoModel.findOneAndUpdate(
         { userId },
@@ -161,7 +160,6 @@ export async function addAccountData(account: AccountData) {
         { new: true }
     );
 
-    console.log(account);
 
     return JSON.parse(JSON.stringify(updated));
 }
@@ -172,7 +170,6 @@ export async function removeAccountData(accountLogin: string) {
     });
     if (!session?.user) redirect('/sign-in');
 
-    console.log(accountLogin);
     const userId: string = session.user.id;
     const updated = await UserInfoModel.findOneAndUpdate(
         { userId },
@@ -206,11 +203,10 @@ export async function applyScreenChange() {
         const json = JSON.stringify(data);
         const jsonBlob = new Blob([json], { type: "application/json" });
 
-        // 3. Build multipart form data for JSON
+        // 3. Upload JSON to PHP
         const jsonForm = new FormData();
         jsonForm.append("file", jsonBlob, `${data.name}.json`);
 
-        // 4. Upload JSON to PHP
         const jsonRes = await fetch(`${process.env.SERVER_URL}/upload_golf_course.php`, {
             method: "POST",
             body: jsonForm,
@@ -221,47 +217,23 @@ export async function applyScreenChange() {
         }
 
         // ---------------------------------------------------------
-        // STEP 2: ZIP LOCAL IMAGES
+        // STEP 2: RESTORE IMAGES FROM TMP → ORIGINAL
         // ---------------------------------------------------------
-        const folderName = data.FolderNameOnServer; // same folder used for images
-        const zipResult = await zipFolder(folderName);
+        const folderName = data.FolderNameOnServer;
 
-        console.log(folderName);
+        const restoreRes = await uploadFolder(folderName);
 
-        if (!zipResult.success || !zipResult.zipName) {
-            throw new Error("Failed to create ZIP");
-        }
-
-        // Read ZIP file into a Blob
-        const zipPath = `${UPLOAD_DIR}/${folderName}/${zipResult.zipName}`;
-        const zipBuffer = await fs.readFile(zipPath);
-        const zipBlob = new Blob([zipBuffer], { type: "application/zip" });
-
-        // ---------------------------------------------------------
-        // STEP 3: UPLOAD ZIP TO PHP
-        // ---------------------------------------------------------
-        const zipForm = new FormData();
-        zipForm.append("file", zipBlob, zipResult.zipName);
-
-        const zipUploadRes = await fetch(`${process.env.SERVER_URL}/upload_zip_images.php?folder=${folderName}`, {
-            method: "POST",
-            body: zipForm,
-        });
-
-        console.log(zipUploadRes);
-
-        if (!zipUploadRes.ok) {
-            throw new Error("Failed to upload ZIP");
+        if (!restoreRes.success) {
+            throw new Error("Failed to restore images from tmp");
         }
 
         // ---------------------------------------------------------
-        // STEP 4: CleanUp
+        // STEP 3: CleanUp
         // ---------------------------------------------------------
-
         await resetScreenChange();
 
         // ---------------------------------------------------------
-        // STEP 5: Revalidate UI
+        // STEP 4: Revalidate UI
         // ---------------------------------------------------------
         revalidatePath("/");
 
@@ -272,6 +244,7 @@ export async function applyScreenChange() {
         return { success: false };
     }
 }
+
 
 export async function resetScreenChange() {
     try {

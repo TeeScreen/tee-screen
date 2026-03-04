@@ -50,6 +50,9 @@ const ALLOWED_TYPES = {
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
-const UPLOAD_DIR = "changes";
+const UPLOAD_DIR = "tmp";
 
-export { ALLOWED_TYPES, MAX_FILE_SIZE, UPLOAD_DIR };
+const SERVER_URL = "https://teescreenapp.com/Server";
+
+
+export { ALLOWED_TYPES, MAX_FILE_SIZE, UPLOAD_DIR, SERVER_URL };
