@@ -8,7 +8,7 @@ import { fontVars } from "@/lib/fonts/registry";
 import { PREFERENCE_DEFAULTS } from "@/lib/preferences/preferences-config";
 import { ThemeBootScript } from "@/scripts/theme-boot";
 import { PreferencesStoreProvider } from "@/stores/preferences/preferences-provider";
-
+import { Analytics } from "@vercel/analytics/next"
 import "./globals.css";
 import {ClientToaster} from "@/components/ClientToaster";
 
@@ -46,6 +46,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             font={font}
         >
             {children}
+            <Analytics />
             <ClientToaster />
         </PreferencesStoreProvider>
         </body>
