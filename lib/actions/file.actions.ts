@@ -66,9 +66,8 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
         const phpForm = new FormData();
         phpForm.append("folderName", folderName);
         phpForm.append("file", file, newFileName);
-        console.log(phpForm);
 
-        const res = await fetch(`${process.env.SERVER_URL}/upload_tmp.php`, {
+        const res = await fetch(`${process.env.SERVER_URL}/upload_tmp_file.php`, {
             method: "POST",
             body: phpForm,
         });
@@ -78,6 +77,7 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
         }
 
         const safeFileName = (await res.text()).trim();
+        revalidatePath("/");
 
         return {
             success: true,

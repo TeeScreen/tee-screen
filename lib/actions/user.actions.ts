@@ -153,7 +153,6 @@ export async function addAccountData(account: AccountData) {
     if (existing) {
         throw new Error(`Account login "${account.accountLogin}" already exists for this user.`);
     }
-    console.log(account.accountLogin);
     // 2. Add new account
     const updated = await UserInfoModel.findOneAndUpdate(
         { userId },
@@ -161,7 +160,6 @@ export async function addAccountData(account: AccountData) {
         { new: true }
     );
 
-    console.log(account);
 
     return JSON.parse(JSON.stringify(updated));
 }
@@ -172,7 +170,6 @@ export async function removeAccountData(accountLogin: string) {
     });
     if (!session?.user) redirect('/sign-in');
 
-    console.log(accountLogin);
     const userId: string = session.user.id;
     const updated = await UserInfoModel.findOneAndUpdate(
         { userId },

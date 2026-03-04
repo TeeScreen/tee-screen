@@ -23,7 +23,6 @@ export const GET = async (_: NextRequest, { params }: { params: Params }) => {
         const safeFileName = await findFileSafeName(folderName, fileName);
         const fileExt = path.extname(safeFileName).toLowerCase();
         const contentType = getMimeTypeFromExtension(fileExt);
-        console.log(safeFileName , fileExt, contentType);
         if (!contentType) {
             return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
         }
