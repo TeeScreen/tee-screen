@@ -1,11 +1,9 @@
 import { deleteFile, findFileSafeName } from "@/lib/actions/file.actions";
 import { getFileType } from "@/lib/utils";
-import fs from "fs/promises";
 import Image from "next/image";
-import { UPLOAD_DIR } from "@/lib/constants";
-import { Button } from "@/components/ui/button";
 import path from "path";
-import {ConfirmDeleteButton} from "@/components/ConfirmDelete";
+import { ConfirmDeleteButton } from "@/components/ConfirmDelete";
+import { SERVER_URL, UPLOAD_DIR } from "@/lib/constants";
 
 const FilePreview = async ({
                                folderName,
@@ -14,20 +12,40 @@ const FilePreview = async ({
     folderName: string;
     fileName: string;
 }) => {
-    const safeFileName = await findFileSafeName(folderName, fileName);
-    // Ensure folder exists
-    try {
-        await fs.access(`${UPLOAD_DIR}/${folderName}`);
-    } catch {
-        await fs.mkdir(`${UPLOAD_DIR}/${folderName}`, { recursive: true });
+    let safeFileName = await findFileSafeName(folderName, fileName);
+
+    // Detect if filename has an extension
+    const hasExt = path.extname(safeFileName).length > 0;
+
+    // Possible extensions to try if missing
+    const fallbackExts = [".png", ".mp4"];
+
+    let resolvedFileName = safeFileName;
+
+    if (!hasExt) {
+        // Try each extension until one exists
+        for (const ext of fallbackExts) {
+            const testName = safeFileName + ext;
+
+            const headRes = await fetch(
+                `${SERVER_URL}/${UPLOAD_DIR}/${folderName}/${testName}`,
+                { method: "HEAD" }
+            );
+
+            if (headRes.ok) {
+                resolvedFileName = testName;
+                break;
+            }
+        }
     }
-    // Check if file exists
-    let fileExists = true;
-    try {
-        await fs.access(`${UPLOAD_DIR}/${folderName}/${safeFileName}`);
-    } catch {
-        fileExists = false;
-    }
+
+    // Final HEAD check for resolved filename
+    const headRes = await fetch(
+        `${SERVER_URL}/${UPLOAD_DIR}/${folderName}/${resolvedFileName}`,
+        { method: "HEAD" }
+    );
+
+    const fileExists = headRes.ok;
 
     if (!fileExists) {
         return (
@@ -37,13 +55,12 @@ const FilePreview = async ({
         );
     }
 
-    const ext = path.extname(safeFileName).toLowerCase();
+    const ext = path.extname(resolvedFileName).toLowerCase();
     const type = getFileType(ext);
-
 
     const handleDelete = async () => {
         "use server";
-        await deleteFile(folderName, safeFileName);
+        await deleteFile(folderName, resolvedFileName);
     };
 
     return (
@@ -51,10 +68,10 @@ const FilePreview = async ({
             <div className="flex items-center justify-between mb-2">
                 <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">
-                        {safeFileName.substring(safeFileName.indexOf("-") + 1)}
+                        {resolvedFileName.substring(resolvedFileName.indexOf("-") + 1)}
                     </p>
                     <p className="text-xs">
-                        {new Date(parseInt(safeFileName.split("-")[0])).toLocaleDateString()}
+                        {new Date(parseInt(resolvedFileName.split("-")[0])).toLocaleDateString()}
                     </p>
                 </div>
 
@@ -64,7 +81,7 @@ const FilePreview = async ({
             {type === "image" && (
                 <div className="relative aspect-video rounded-md">
                     <Image
-                        src={`/api/downloads/${folderName}/${safeFileName}`}
+                        src={`/api/downloads/${folderName}/${resolvedFileName}`}
                         alt={folderName}
                         fill
                         className="rounded-md object-contain"
@@ -76,7 +93,7 @@ const FilePreview = async ({
             {type === "video" && (
                 <video
                     controls
-                    src={`/api/downloads/${folderName}/${safeFileName}`}
+                    src={`/api/downloads/${folderName}/${resolvedFileName}`}
                     className="rounded-md object-contain"
                 />
             )}
@@ -85,7 +102,7 @@ const FilePreview = async ({
                 <audio
                     className="w-full mt-3"
                     controls
-                    src={`/api/downloads/${folderName}/${safeFileName}`}
+                    src={`/api/downloads/${folderName}/${resolvedFileName}`}
                     preload="none"
                 />
             )}
@@ -93,7 +110,7 @@ const FilePreview = async ({
             {(type === "document" || type === "other") && (
                 <div className="mt-2">
                     <a
-                        href={`/api/downloads/${folderName}/${safeFileName}`}
+                        href={`/api/downloads/${folderName}/${resolvedFileName}`}
                         className="text-sm"
                         target="_blank"
                         rel="noopener noreferrer"
