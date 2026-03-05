@@ -7,6 +7,7 @@ import FooterLink from '@/components/forms/FooterLink';
 import {signInWithEmail, signUpWithEmail} from "@/lib/actions/auth.actions";
 import {toast} from "sonner";
 import {useRouter} from "next/navigation";
+import {createAuthClient} from "better-auth/client";
 
 const SignIn = () => {
     const router = useRouter()
@@ -22,6 +23,8 @@ const SignIn = () => {
         },
         mode: 'onBlur',
     });
+
+    const authClient = createAuthClient();
 
     const onSubmit = async (data: SignInFormData) => {
         console.log("signing in: ", data);
