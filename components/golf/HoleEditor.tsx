@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import {
     AccordionItem,
     AccordionTrigger,
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import HoleCoordinatesEditor from "./HoleCoordinatesEditor";
 import HoleYardageEditor from "./HoleYardageEditor";
 import HoleDetailsEditor from "./HoleDetailsEditor";
+import UploadSection from "@/components/UploadSection";
 
 type HoleEditorProps = {
     value: string;
@@ -36,7 +37,7 @@ export default function HoleEditor({
 
     const expandAllSections = () => setOpenSections(sectionIds);
     const collapseAllSections = () => setOpenSections([]);
-
+    console.log(form);
     return (
         <AccordionItem value={value}>
             <AccordionTrigger>
