@@ -6,7 +6,7 @@ import {
   Home, ImageUp,
   type LucideIcon, NotebookTabs,
   PanelsTopLeft, PanelTopBottomDashed, Trophy,
-  Wallpaper,
+  Wallpaper, FileQuestionMark,
 } from "lucide-react";
 
 export interface NavSubItem {
@@ -127,7 +127,6 @@ export const sidebarItems: NavGroup[] = [
         icon: Contact,
         comingSoon: true,
       },
-
     ],
   },
 ];

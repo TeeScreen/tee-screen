@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import {
     MapContainer,
     TileLayer,
@@ -21,12 +21,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
 
-const markerIcon = L.icon({
-    iconUrl: "/assets/icons/target.svg",
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
-});
-
 export default function MapPicker({
                                       start,
                                       onConfirm,
@@ -43,37 +37,71 @@ export default function MapPicker({
 
     const [infoOpen, setInfoOpen] = useState(false);
 
+    // NEW: map type toggle
+    const [mapType, setMapType] = useState<"satellite" | "street">("satellite");
+
+    const markerIcon = useMemo(
+        () =>
+            L.icon({
+                iconUrl: "/assets/icons/target.svg",
+                iconSize: [20, 20],
+                iconAnchor: [10, 10],
+            }),
+        []
+    );
+
     function FlyTo({ coords }: { coords: [number, number] }) {
         const map = useMap();
-        map.flyTo(coords, map.getZoom(), { duration: 0.6 });
+        const firstRender = useRef(true);
+
+        useEffect(() => {
+            if (firstRender.current) {
+                firstRender.current = false;
+                return;
+            }
+            map.flyTo(coords, map.getZoom(), { duration: 0.6 });
+        }, [coords, map]);
+
         return null;
     }
 
     function ClickHandler() {
-        const map = useMapEvents({
+        useMapEvents({
             click(e) {
-                const newPos: [number, number] = [e.latlng.lat, e.latlng.lng];
-                setPosition(newPos);
-                map.flyTo(newPos, map.getZoom(), { duration: 0.6 });
+                setPosition([e.latlng.lat, e.latlng.lng]);
             },
         });
         return null;
     }
 
-    const eventHandlers = useMemo(
-        () => ({
-            dragend(e: any) {
-                const marker = e.target;
-                const latlng = marker.getLatLng();
-                const newPos: [number, number] = [latlng.lat, latlng.lng];
-                setPosition(newPos);
-            },
-        }),
-        []
-    );
+    const onDragEnd = useCallback((e: any) => {
+        const latlng = e.target.getLatLng();
+        setPosition([latlng.lat, latlng.lng]);
+    }, []);
+
+    // Tile URLs
+    const satelliteTiles =
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+
+    const streetTiles =
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
     return (
         <div className="relative w-full h-full flex flex-col gap-3">
+
+            {/* Map Type Toggle */}
+            <Button
+                size="sm"
+                variant="secondary"
+                className="absolute top-3 left-3 z-[1000] rounded-md shadow"
+                onClick={() =>
+                    setMapType((prev) =>
+                        prev === "satellite" ? "street" : "satellite"
+                    )
+                }
+            >
+                {mapType === "satellite" ? "Street Map" : "Satellite"}
+            </Button>
 
             {/* Info Button */}
             <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
@@ -110,13 +138,20 @@ export default function MapPicker({
                     zoom={16}
                     className="w-full h-full rounded-md"
                 >
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <TileLayer
+                        url={mapType === "satellite" ? satelliteTiles : streetTiles}
+                        attribution={
+                            mapType === "satellite"
+                                ? 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics'
+                                : '© OpenStreetMap contributors'
+                        }
+                    />
 
                     <Marker
                         position={position}
                         icon={markerIcon}
-                        draggable={true}
-                        eventHandlers={eventHandlers}
+                        draggable
+                        eventHandlers={{ dragend: onDragEnd }}
                     />
 
                     <ClickHandler />
