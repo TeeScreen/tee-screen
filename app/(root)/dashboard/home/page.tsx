@@ -16,7 +16,6 @@ import { ScreenList } from "@/components/screen/ScreenList";
 import { downloadClubImages } from "@/lib/actions/file.actions";
 import { ResetLoadedDataDialog } from "@/components/ResetData";
 import { LeadCaptureForm } from "@/components/LeadCaptureForm";
-import { GuideDialog } from "@/components/GuideDialog";
 
 export default async function HomePage() {
     const user = await getUserInfo();
@@ -103,13 +102,7 @@ export default async function HomePage() {
         <div className="@container/main flex flex-col gap-4 md:gap-6 px-4 sm:px-6">
 
             <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
-                Your Accounts <GuideDialog
-                triggerLabel="View Tee-Screen Guide"
-                src="/guides/AddAndLoadAccountForEditing.pdf"
-                title="Add a New Account & Load a Screen"
-                description="A guided walkthrough for setting up Tee-Screen"
-            />
-
+                Your Accounts
             </h1>
 
             <AddAccountDialog action={handleAddAccount} />

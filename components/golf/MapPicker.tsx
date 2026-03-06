@@ -5,6 +5,7 @@ import {
     MapContainer,
     TileLayer,
     Marker,
+    ZoomControl,
     useMap,
     useMapEvents,
 } from "react-leaflet";
@@ -16,10 +17,10 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
+    DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Info } from "lucide-react";
+import { Info, Globe, Map as MapIcon } from "lucide-react";
 
 export default function MapPicker({
                                       start,
@@ -36,8 +37,6 @@ export default function MapPicker({
     ]);
 
     const [infoOpen, setInfoOpen] = useState(false);
-
-    // NEW: map type toggle
     const [mapType, setMapType] = useState<"satellite" | "street">("satellite");
 
     const markerIcon = useMemo(
@@ -79,7 +78,6 @@ export default function MapPicker({
         setPosition([latlng.lat, latlng.lng]);
     }, []);
 
-    // Tile URLs
     const satelliteTiles =
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 
@@ -87,47 +85,49 @@ export default function MapPicker({
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
     return (
-        <div className="relative w-full h-full flex flex-col gap-3">
+        <div className="relative w-full h-[70vh] flex flex-col gap-3">
 
-            {/* Map Type Toggle */}
-            <Button
-                size="sm"
-                variant="secondary"
-                className="absolute top-3 left-3 z-[1000] rounded-md shadow"
-                onClick={() =>
-                    setMapType((prev) =>
-                        prev === "satellite" ? "street" : "satellite"
-                    )
-                }
-            >
-                {mapType === "satellite" ? "Street Map" : "Satellite"}
-            </Button>
+            {/* Top-right controls */}
+            <div className="absolute top-3 right-3 z-[1000] flex items-center gap-2">
 
-            {/* Info Button */}
+                {/* Map type toggle */}
+                <Button
+                    size="icon"
+                    variant="secondary"
+                    className="rounded-full shadow"
+                    onClick={() =>
+                        setMapType((prev) =>
+                            prev === "satellite" ? "street" : "satellite"
+                        )
+                    }
+                >
+                    {mapType === "satellite" ? (
+                        <MapIcon className="h-4 w-4" />
+                    ) : (
+                        <Globe className="h-4 w-4" />
+                    )}
+                </Button>
+
+                {/* Info button (manual trigger) */}
+                <Button
+                    size="icon"
+                    variant="secondary"
+                    className="rounded-full shadow"
+                    onClick={() => setInfoOpen(true)}
+                >
+                    <Info className="h-4 w-4" />
+                </Button>
+            </div>
+
+            {/* Info Dialog (no DialogTrigger) */}
             <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
-                <DialogTrigger asChild>
-                    <Button
-                        size="icon"
-                        variant="secondary"
-                        className="absolute top-3 right-3 z-[1000] rounded-full shadow"
-                    >
-                        <Info className="h-4 w-4" />
-                    </Button>
-                </DialogTrigger>
-
                 <DialogContent className="max-w-sm">
                     <DialogHeader>
                         <DialogTitle>How to Use the Map</DialogTitle>
+                        <DialogDescription>
+                            Click anywhere on the map to move the marker, or drag it to fine‑tune the position.
+                        </DialogDescription>
                     </DialogHeader>
-
-                    <div className="text-sm space-y-2">
-                        <p className="font-medium">Controls</p>
-                        <ul className="list-disc ml-4 text-xs space-y-1">
-                            <li>Click anywhere on the map to move the marker</li>
-                            <li>Drag the marker to fine‑tune the position</li>
-                            <li>Confirm when you're happy with the location</li>
-                        </ul>
-                    </div>
                 </DialogContent>
             </Dialog>
 
@@ -136,14 +136,17 @@ export default function MapPicker({
                 <MapContainer
                     center={[start.lat, start.lon]}
                     zoom={16}
+                    zoomControl={false}
                     className="w-full h-full rounded-md"
                 >
+                    <ZoomControl position="bottomright" />
+
                     <TileLayer
                         url={mapType === "satellite" ? satelliteTiles : streetTiles}
                         attribution={
                             mapType === "satellite"
-                                ? 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics'
-                                : '© OpenStreetMap contributors'
+                                ? "Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics"
+                                : "© OpenStreetMap contributors"
                         }
                     />
 
