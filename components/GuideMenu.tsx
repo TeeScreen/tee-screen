@@ -68,10 +68,10 @@ export function GuideMenu() {
       icon: LandPlot,
       guides: [
         {
-          label: "How to edit hole data",
-          src: "/guides/troubleshooting.pdf",
-          title: "Troubleshooting",
-          description: "Common issues and how to resolve them",
+          label: "How to edit hole co-ordinates",
+          src: "/guides/ChangingCoordinates.pdf",
+          title: "Edit your Coordinates",
+          description: "How to edit the co-ordinates for the interactive map",
         },
       ],
     },
