@@ -13,11 +13,10 @@ import { revalidatePath } from "next/cache";
 import { AddAccountDialog } from "@/components/screen/AddAccountDialog";
 import { AccountList } from "@/components/screen/AccountList";
 import { ScreenList } from "@/components/screen/ScreenList";
-import { ScreenJsonEditor } from "@/components/ScreenJsonEditor";
 import { downloadClubImages } from "@/lib/actions/file.actions";
 import { ResetLoadedDataDialog } from "@/components/ResetData";
 import { LeadCaptureForm } from "@/components/LeadCaptureForm";
-import { GuideDialog } from "@/components/GuideDialogue";
+import { GuideDialog } from "@/components/GuideDialog";
 
 export default async function HomePage() {
     const user = await getUserInfo();
