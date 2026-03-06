@@ -14,16 +14,15 @@ import { GuideDialog } from "./GuideDialog";
 
 import {
   BookOpen,
-  Settings,
+  LandPlot,
   Users,
-  Wrench,
   HelpCircle,
 } from "lucide-react";
 
 export function GuideMenu() {
   const categories = [
     {
-      name: "Basics",
+      name: "Essentials",
       icon: BookOpen,
       guides: [
         {
@@ -38,23 +37,11 @@ export function GuideMenu() {
           title: "Dashboard Customise Visuals",
           description: "Overview of customisation options and how to update them",
         },
-      ],
-    },
-    {
-      name: "Management",
-      icon: Settings,
-      guides: [
         {
-          label: "Managing Bookings",
-          src: "/guides/managing-bookings.pdf",
-          title: "Managing Bookings",
-          description: "How to view, edit, and manage bookings",
-        },
-        {
-          label: "Court & Facility Settings",
-          src: "/guides/facility-settings.pdf",
-          title: "Facility Settings",
-          description: "Configure courts, schedules, and availability",
+          label: "Edit Your Screen",
+          src: "/guides/HowToEdit.pdf",
+          title: "How to Edit your Screen",
+          description: "Overview of how to make changes and apply them to your screen",
         },
       ],
     },
@@ -63,25 +50,25 @@ export function GuideMenu() {
       icon: Users,
       guides: [
         {
-          label: "User Permissions",
-          src: "/guides/user-permissions.pdf",
-          title: "User Permissions",
-          description: "Understanding roles and access levels",
+          label: "Change User Information",
+          src: "/guides/HowtoChangeYourBasicAccountSettings.pdf",
+          title: "Change User Information",
+          description: "Make changes to your user information",
         },
         {
-          label: "Managing Members",
-          src: "/guides/managing-members.pdf",
-          title: "Managing Members",
-          description: "Add, edit, and manage member accounts",
+          label: "Change Email or Password",
+          src: "/guides/ChangeEmailAndPassword.pdf",
+          title: "Change Email or Password",
+          description: "Make secure changes to your email or password",
         },
       ],
     },
     {
-      name: "Troubleshooting",
-      icon: Wrench,
+      name: "Golf",
+      icon: LandPlot,
       guides: [
         {
-          label: "Common Issues",
+          label: "How to edit hole data",
           src: "/guides/troubleshooting.pdf",
           title: "Troubleshooting",
           description: "Common issues and how to resolve them",

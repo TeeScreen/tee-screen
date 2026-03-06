@@ -12,16 +12,19 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { Loader2, Trash } from "lucide-react";
+import {useDirtyState} from "@/stores/user-store";
 
 export function ConfirmDeleteButton({ action }: { action: () => Promise<void> }) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const {setDirty} = useDirtyState();
 
     async function onConfirm() {
         setLoading(true);
         await action();
         setLoading(false);
         setOpen(false);
+        setDirty(true);
     }
 
     return (
