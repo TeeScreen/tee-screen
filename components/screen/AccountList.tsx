@@ -17,7 +17,7 @@ export function AccountList({
     if (accounts.length === 0) {
         return (
             <p className="text-sm text-muted-foreground">
-                No accounts added yet.
+                No accounts added yet. Please click the help button in the bottom right of the screen if you would like to see a guide for adding accounts.
             </p>
         );
     }
