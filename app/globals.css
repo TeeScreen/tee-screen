@@ -223,7 +223,8 @@ These serve as the fallback; there is no separate default.css file. */
     @apply w-full lg:w-[45%] lg:h-screen px-6 lg:px-16 flex flex-col overflow-y-auto;
   }
   .auth-right-section {
-    @apply w-full bg-muted max-lg:border-t lg:w-[55%] lg:h-screen px-6 py-4 md:p-6 lg:py-12 lg:px-18 flex flex-col justify-start;
+    @apply w-full bg-muted max-lg:border-t lg:w-[55%] lg:h-screen px-6 py-4 md:p-6 lg:py-12 lg:px-18
+    lg:flex lg:flex-col lg:justify-start;
   }
   .auth-blockquote {
     @apply text-sm md:text-xl lg:text-2xl font-medium mb-1 md:mb-6 lg:mb-8;
