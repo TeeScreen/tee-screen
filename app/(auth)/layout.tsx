@@ -25,14 +25,9 @@ const Layout = async ({children}: {children:React.ReactNode}) => {
             <section className="auth-right-section">
                 <div className="z-10 relative lg:mt-4 lg:mb-16">
                     <blockquote className="auth-blockquote">
-                        The new Tee Screen Portal. Manage your screen content anywhere. Now supporting mobile
+                        Your previous screen account will not work to login for this portal like the old portal.
+                        Please create a personal account if you have not used the new portal before. Once your personal account has been made you can then link your pre-existing screen accounts
                     </blockquote>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <cite className="auth-testimonial-author">- Arthur.J</cite>
-                            <p className="max-md:test-xs text-gray-500">CTO</p>
-                        </div>
-                    </div>
                 </div>
 
                 <div className="flex-1 relative">
