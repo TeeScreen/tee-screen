@@ -43,7 +43,7 @@ export const sidebarItems: NavGroup[] = [
     label: "Dashboards",
     items: [
       {
-        title: "Home",
+        title: "Screens",
         url: "/dashboard/home",
         icon: Home,
       },

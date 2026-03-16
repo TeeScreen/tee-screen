@@ -50,34 +50,37 @@ export function ScreenItem({
 
     return (
         <div
-            className={`p-4 border rounded-lg w-full flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between ${
-                isLoaded ? "bg-muted border-primary/10" : ""
+            className={`border rounded-xl p-4 flex flex-col gap-4 shadow-sm transition ${
+                isLoaded ? "bg-muted border-primary/30" : "bg-card"
             }`}
         >
-            {/* LEFT SIDE — SCREEN NAME */}
-            <p className="font-medium break-all">
+            {/* SCREEN NAME */}
+            <p className="font-semibold text-lg text-center break-all">
                 {screenName}
-                {isLoaded && (
-                    <span className="ml-2 text-xs text-primary font-semibold">
-                        (Loaded)
-                    </span>
-                )}
             </p>
 
-            {/* RIGHT SIDE — BUTTON */}
-            <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                <Button
-                    className="flex-1 sm:flex-none"
-                    variant={isLoaded ? "secondary" : "default"}
-                    disabled={isLoaded || isLoading}
-                    onClick={handleClick}
-                >
-                    {isLoading && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    {isLoaded ? "Loaded" : isLoading ? "Loading..." : "Load Screen"}
-                </Button>
+            {/* SCREENSHOT IMAGE (9:16 ratio) */}
+            <div className="w-full aspect-[9/16] bg-muted rounded-md overflow-hidden flex items-center justify-center">
+                <img
+                    src={`/screenshots/${screenName}.jpg`}
+                    alt={screenName}
+                    className="object-cover w-full h-full"
+                    onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/placeholder-9x16.png";
+                    }}
+                />
             </div>
+
+            {/* LOAD BUTTON */}
+            <Button
+                className="w-full"
+                variant={isLoaded ? "secondary" : "default"}
+                disabled={isLoaded || isLoading}
+                onClick={handleClick}
+            >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoaded ? "Loaded" : isLoading ? "Loading..." : "Load Screen"}
+            </Button>
 
             {/* CONFIRMATION DIALOG */}
             <Dialog open={open} onOpenChange={(v) => !isLoading && setOpen(v)}>
@@ -85,8 +88,7 @@ export function ScreenItem({
                     <DialogHeader>
                         <DialogTitle>Unsaved Changes</DialogTitle>
                         <DialogDescription>
-                            Loading a new screen will discard your unsaved changes.
-                            Do you want to continue?
+                            Loading a new screen will discard your unsaved changes. Continue?
                         </DialogDescription>
                     </DialogHeader>
 
@@ -104,9 +106,7 @@ export function ScreenItem({
                             onClick={handleLoad}
                             disabled={isLoading}
                         >
-                            {isLoading && (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            )}
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {isLoading ? "Loading..." : "Continue"}
                         </Button>
                     </DialogFooter>

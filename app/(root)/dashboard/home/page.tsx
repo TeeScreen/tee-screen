@@ -3,7 +3,6 @@ import {
     addAccountData,
     removeAccountData,
     saveUserInfo,
-    updateScreenJson,
     resetScreenChange,
 } from "@/lib/actions/user.actions";
 
@@ -11,11 +10,11 @@ export const dynamic = "force-dynamic";
 
 import { revalidatePath } from "next/cache";
 import { AddAccountDialog } from "@/components/screen/AddAccountDialog";
-import { AccountList } from "@/components/screen/AccountList";
 import { ScreenList } from "@/components/screen/ScreenList";
 import { downloadClubImages } from "@/lib/actions/file.actions";
 import { ResetLoadedDataDialog } from "@/components/ResetData";
 import { LeadCaptureForm } from "@/components/LeadCaptureForm";
+import { AccountDropdown } from "@/components/screen/AccountDropdown";
 
 export default async function HomePage() {
     const user = await getUserInfo();
@@ -23,61 +22,53 @@ export default async function HomePage() {
     const loadedAccount = user?.loadedAccount || null;
     const screenNames = user?.screenNames || [];
     const loadedScreen = user?.loadedScreen || null;
-    const screenJson = user?.screenJson;
 
-    // Reset all loaded data
     async function handleReset() {
         "use server";
         await resetScreenChange();
-        await saveUserInfo({
-            loadedAccount: "",
-            screenNames: [],
-        });
-
+        await saveUserInfo({ loadedAccount: "", screenNames: [] });
         revalidatePath("/");
     }
 
-    // Add Account
     async function handleAddAccount(formData: FormData) {
         "use server";
-
         const accountLogin = formData.get("accountLogin") as string;
         const accountPW = formData.get("accountPW") as string;
-
         await addAccountData({ accountLogin, accountPW });
         revalidatePath("/");
     }
 
-    // Delete Account
-    async function handleDeleteAccount(accountLogin: string) {
+    async function handleDeleteAccount(formData: FormData) {
         "use server";
+        const login = formData.get("login") as string;
         await handleReset();
-        await removeAccountData(accountLogin);
+        await removeAccountData(login);
         revalidatePath("/");
     }
 
-    // Load Account Details
-    async function handleLoadAccountDetails(accountLogin: string, accountPW: string) {
+    async function handleLoadAccountDetails(formData: FormData) {
         "use server";
+        const login = formData.get("login") as string;
+        const password = formData.get("password") as string;
 
         const response = await fetch(
-            `https://teescreenapp.com/api/auth_accounts?user=${accountLogin}&password=${accountPW}`
+            `https://teescreenapp.com/api/auth_accounts?user=${login}&password=${password}`
         );
 
         const data = await response.json();
+
         await saveUserInfo({
-            loadedAccount: accountLogin,
+            loadedAccount: login,
             screenNames: data,
         });
 
         revalidatePath("/");
     }
 
-    // Load a specific screen
     async function handleLoadScreen(screenName: string) {
         "use server";
 
-        const account = accounts.find((a: any) => a.accountLogin === loadedAccount);
+        const account = accounts.find(a => a.accountLogin === loadedAccount);
         if (!account) return;
 
         const response = await fetch(
@@ -107,14 +98,15 @@ export default async function HomePage() {
 
             <AddAccountDialog action={handleAddAccount} />
 
-            <div className="overflow-x-auto">
-                <AccountList
+            {/* NEW DROPDOWN + ACCOUNT PANEL */}
+            {accounts.length > 0 && (
+                <AccountDropdown
                     accounts={accounts}
                     loadedAccount={loadedAccount}
-                    onLoad={handleLoadAccountDetails}
-                    onDelete={handleDeleteAccount}
+                    loadAction={handleLoadAccountDetails}
+                    deleteAction={handleDeleteAccount}
                 />
-            </div>
+            )}
 
             {loadedScreen && (
                 <div className="mt-4 sm:mt-2">
