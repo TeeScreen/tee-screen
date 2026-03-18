@@ -68,7 +68,7 @@ export default async function HomePage() {
     async function handleLoadScreen(screenName: string) {
         "use server";
 
-        const account = accounts.find(a => a.accountLogin === loadedAccount);
+        const account = accounts.find((a: any) => a.accountLogin === loadedAccount);
         if (!account) return;
 
         const response = await fetch(
