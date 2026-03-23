@@ -9,14 +9,14 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
-import {useState} from "react";
+import { useState } from "react";
+import { Plus } from "lucide-react";
 
 export function AddAccountDialog({
-                                    action,
-                                }: {
+                                     action,
+                                 }: {
     action: (formData: FormData) => void;
 }) {
-
     const [open, setOpen] = useState(false);
 
     function handleSubmit(formData: FormData) {
@@ -24,11 +24,19 @@ export function AddAccountDialog({
         setOpen(false);
     }
 
-
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>Add Account</Button>
+                {/* Mobile: icon-only | Desktop: icon + label */}
+                <Button
+                    size="sm"
+                    className="flex items-center gap-2"
+                >
+                    <Plus className="h-4 w-4" />
+
+                    {/* Hide text on mobile */}
+                    <span className="hidden sm:inline">Add Account</span>
+                </Button>
             </DialogTrigger>
 
             <DialogContent>

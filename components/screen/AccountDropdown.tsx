@@ -35,7 +35,7 @@ export function AccountDropdown({
     loadAction: (formData: FormData) => Promise<void>;
     deleteAction: (formData: FormData) => Promise<void>;
 }) {
-    const { dirty, setDirty } = useDirtyState();
+    const {dirty, setDirty} = useDirtyState();
     const [pending, setPending] = useState<string | null>(null);
     const [open, setOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
@@ -80,10 +80,15 @@ export function AccountDropdown({
     return (
         <div className="flex flex-col gap-6 w-full max-w-lg">
 
+            {/* TITLE */}
+            <h2 className="text-sm font-medium text-muted-foreground">
+                Selected Account
+            </h2>
+
             {/* DROPDOWN */}
             <Select value={loadedAccount ?? ""} onValueChange={handleSelect}>
                 <SelectTrigger>
-                    <SelectValue placeholder="Select an account…" />
+                    <SelectValue placeholder="Select an account…"/>
                 </SelectTrigger>
 
                 <SelectContent>
@@ -111,7 +116,7 @@ export function AccountDropdown({
                         </Button>
 
                         <Button variant="destructive" disabled={isPending} onClick={confirmLoad}>
-                            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                             {isPending ? "Loading…" : "Continue"}
                         </Button>
                     </DialogFooter>

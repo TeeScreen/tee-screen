@@ -8,6 +8,7 @@ import FooterLink from "@/components/forms/FooterLink";
 import { toast } from "sonner"
 import {signUpWithEmail} from "@/lib/actions/auth.actions";
 import {useRouter} from "next/navigation";
+import {GoogleSignInButton} from "@/components/profile/GoogleSignIn";
 
 const SignUp = () => {
     const router = useRouter();
@@ -114,6 +115,8 @@ const SignUp = () => {
                 <Button type="submit" disabled={isSubmitting} className="w-full mt-5">
                     {isSubmitting ? 'Creating Account' : 'Create your Account'}
                 </Button>
+
+                <GoogleSignInButton/>
 
                 <FooterLink text={"Already have an account"} linkText={"Sign In"} href={"/sign-in"}/>
             </form>

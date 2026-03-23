@@ -36,6 +36,7 @@ import type { NavGroup, NavMainItem } from "@/navigation/sidebar/sidebar-items";
 export interface SubScreenTypes {
   isFootball?: boolean;
   isGolf?: boolean;
+  hasCheckIn?: boolean;
 }
 
 interface NavMainProps {
@@ -226,7 +227,8 @@ export function NavMain({
                   {group.items.map((item) => {
                     const matchesSubScreen =
                         (item.isFootball === undefined || item.isFootball === subScreenTypes?.isFootball) &&
-                        (item.isGolf === undefined || item.isGolf === subScreenTypes?.isGolf);
+                        (item.isGolf === undefined || item.isGolf === subScreenTypes?.isGolf) &&
+                      (item.hasCheckIn === undefined || item.hasCheckIn === subScreenTypes?.hasCheckIn);
 
                     if (!matchesSubScreen) return null;
 

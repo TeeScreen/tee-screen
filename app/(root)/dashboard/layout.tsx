@@ -33,6 +33,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
 
   const isFootball = userInfo?.screenJson?.isFootballClub ?? false;
   const isGolf = (userInfo?.screenJson?.isGolfClub && userInfo?.screenJson?.CanEditHoles) ?? false;
+  const hasCheckIn = (userInfo?.screenJson?.hasCheckInFunctionality) ?? false;
 
   const loadedScreen = userInfo?.loadedScreen ?? "";
   const cookieStore = await cookies();
@@ -49,7 +50,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
             variant={variant}
             collapsible={collapsible}
             loadedScreen={loadedScreen}
-            subScreenTypes={{ isFootball, isGolf }}
+            subScreenTypes={{ isFootball, isGolf, hasCheckIn }}
             user={session?.user}
         />
 

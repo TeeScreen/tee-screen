@@ -3,7 +3,7 @@ import {
     addAccountData,
     removeAccountData,
     saveUserInfo,
-    resetScreenChange,
+    resetScreenChange, addUserInfo,
 } from "@/lib/actions/user.actions";
 
 export const dynamic = "force-dynamic";
@@ -15,9 +15,12 @@ import { downloadClubImages } from "@/lib/actions/file.actions";
 import { ResetLoadedDataDialog } from "@/components/ResetData";
 import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 import { AccountDropdown } from "@/components/screen/AccountDropdown";
+import {auth} from "@/lib/better-auth/auth";
+import {headers} from "next/dist/server/request/headers";
 
 export default async function HomePage() {
-    const user = await getUserInfo();
+    let user = await getUserInfo();
+
     const accounts = user?.accountDetails || [];
     const loadedAccount = user?.loadedAccount || null;
     const screenNames = user?.screenNames || [];
@@ -26,7 +29,7 @@ export default async function HomePage() {
     async function handleReset() {
         "use server";
         await resetScreenChange();
-        await saveUserInfo({ loadedAccount: "", screenNames: [] });
+        //await saveUserInfo({ loadedAccount: "", screenNames: [] });
         revalidatePath("/");
     }
 
@@ -77,9 +80,22 @@ export default async function HomePage() {
 
         const screenData = await response.json();
 
+        const analytics_response = await fetch(
+            `https://teescreenapp.com/api/analytics_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenData.name}`
+        );
+
+        let analyticsData: any;
+
+        if(analytics_response.ok)
+        {
+            console.log(analytics_response);
+            analyticsData = await analytics_response.json();
+        }
+
         await saveUserInfo({
             loadedScreen: screenData.name,
             screenJson: screenData,
+            analyticsJson: analyticsData,
         });
 
         if (screenData["FolderNameOnServer"]) {
