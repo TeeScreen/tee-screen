@@ -8,6 +8,7 @@ import {signInWithEmail, signUpWithEmail} from "@/lib/actions/auth.actions";
 import {toast} from "sonner";
 import {useRouter} from "next/navigation";
 import {createAuthClient} from "better-auth/client";
+import {GoogleSignInButton} from "@/components/profile/GoogleSignIn";
 
 const SignIn = () => {
     const router = useRouter()
@@ -71,6 +72,8 @@ const SignIn = () => {
                 <Button type="submit" disabled={isSubmitting} className="w-full mt-5">
                     {isSubmitting ? 'Signing In' : 'Sign In'}
                 </Button>
+
+                <GoogleSignInButton/>
 
                 <FooterLink text="Don't have an account?" linkText="Create an account" href="/sign-up" />
             </form>

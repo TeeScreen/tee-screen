@@ -99,6 +99,7 @@ export async function saveUserInfo(data: {
     loadedScreen?: string;
     screenNames?: string[];
     screenJson?: any;
+    analyticsJson?: any;
 }) {
     try {
         const session = await auth.api.getSession({
@@ -128,10 +129,32 @@ export async function getUserInfo() {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
+
     if (!session?.user) return null;
 
     const userId: string = session.user.id;
-    const user = await UserInfoModel.findOne({ userId });
+
+    // Try to find existing user info
+    let user = await UserInfoModel.findOne({ userId });
+
+    // If none exists, create a new one
+    if (!user) {
+        user = new UserInfoModel({
+            userId,
+            fullName: session.user.name,
+            phoneNumber: "",
+            clubName: "",
+            clubType: "",
+            role: "",
+            accountDetails: [],
+            loadedAccount: "",
+            loadedScreen: "",
+            screenJson: null,
+        });
+
+        await user.save();
+    }
+
     return JSON.parse(JSON.stringify(user));
 }
 
@@ -253,6 +276,7 @@ export async function resetScreenChange() {
         await saveUserInfo({
             loadedScreen: "",
             screenJson: null,
+            analyticsJson: null,
         });
 
         return {success: true, message: "Reset screen"};

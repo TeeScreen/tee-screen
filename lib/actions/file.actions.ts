@@ -161,8 +161,19 @@ const uploadFolder = async (
     }
 };
 
+const getScreenPreview = async (screenName: string): Promise<string | null> => {
+    try {
+        const url = `${process.env.SERVER_URL}/screen_preview.php?filename=${screenName}.json`;
 
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) return null;
 
+        const text = await res.text();
+        return `${process.env.SERVER_URL}/${text}`.trim(); // this is already a URL returned by PHP
+    } catch {
+        return null;
+    }
+}
 
 
 export {
@@ -172,4 +183,5 @@ export {
     downloadClubImages,
     findFileSafeName,
     uploadFolder,
+    getScreenPreview,
 };

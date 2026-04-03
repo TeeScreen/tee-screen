@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -12,21 +12,68 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { useDirtyState } from "@/stores/user-store";
+import { getScreenPreview } from "@/lib/actions/file.actions";
 
 export function ScreenItem({
                                screenName,
                                loadedScreen,
                                onLoadScreen,
+                               compact,
                            }: {
     screenName: string;
     loadedScreen: string | null;
     onLoadScreen: (screenName: string) => void;
+    compact: boolean;
 }) {
     const { dirty, setDirty } = useDirtyState();
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
+    const [isVisible, setIsVisible] = useState(false);
+
+    const ref = useRef<HTMLDivElement | null>(null);
+
     const isLoaded = loadedScreen === screenName;
+
+    // Compact mode styles
+    const cardSize = compact ? "p-2 gap-2 text-xs" : "p-4 gap-4 text-base";
+    const buttonSize = compact ? "h-7 text-xs" : "h-10 text-sm";
+
+    // Width controls ratio size
+    const previewWidth = compact ? "w-[70px]" : "w-full";
+
+    // Lazy load image
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    setIsVisible(true);
+                    observer.disconnect();
+                }
+            },
+            { threshold: 0.2 }
+        );
+
+        if (ref.current) observer.observe(ref.current);
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        if (!isVisible) return;
+
+        async function fetchImage() {
+            try {
+                const url = await getScreenPreview(screenName);
+                setImageUrl(url);
+            } catch (err) {
+                console.error("Failed to load image:", err);
+                setImageUrl(null);
+            }
+        }
+
+        fetchImage();
+    }, [isVisible, screenName]);
 
     async function handleLoad() {
         setIsLoading(true);
@@ -50,43 +97,47 @@ export function ScreenItem({
 
     return (
         <div
-            className={`p-4 border rounded-lg w-full flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between ${
-                isLoaded ? "bg-muted border-primary/10" : ""
+            ref={ref}
+            className={`border rounded-lg flex flex-col shadow-sm transition ${cardSize} ${
+                isLoaded ? "bg-muted border-primary/30" : "bg-card"
             }`}
         >
-            {/* LEFT SIDE — SCREEN NAME */}
-            <p className="font-medium break-all">
-                {screenName}
-                {isLoaded && (
-                    <span className="ml-2 text-xs text-primary font-semibold">
-                        (Loaded)
-                    </span>
-                )}
-            </p>
+            <p className="font-semibold text-center break-all">{screenName}</p>
 
-            {/* RIGHT SIDE — BUTTON */}
-            <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                <Button
-                    className="flex-1 sm:flex-none"
-                    variant={isLoaded ? "secondary" : "default"}
-                    disabled={isLoaded || isLoading}
-                    onClick={handleClick}
+            {/* Ratio-safe preview */}
+            <div className="flex justify-center">
+                <div
+                    className={`relative group rounded-md overflow-hidden bg-muted ${previewWidth}`}
                 >
-                    {isLoading && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    {isLoaded ? "Loaded" : isLoading ? "Loading..." : "Load Screen"}
-                </Button>
+                    <div className="aspect-[9/16] w-full">
+                        <img
+                            src={imageUrl ?? "/placeholder-9x16.png"}
+                            alt={screenName}
+                            className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).src = "/placeholder-9x16.png";
+                            }}
+                        />
+                    </div>
+                </div>
             </div>
 
-            {/* CONFIRMATION DIALOG */}
+            <Button
+                className={`w-full ${buttonSize}`}
+                variant={isLoaded ? "secondary" : "default"}
+                disabled={isLoaded || isLoading}
+                onClick={handleClick}
+            >
+                {isLoading && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+                {isLoaded ? "Loaded" : isLoading ? "Loading..." : "Load"}
+            </Button>
+
             <Dialog open={open} onOpenChange={(v) => !isLoading && setOpen(v)}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Unsaved Changes</DialogTitle>
                         <DialogDescription>
-                            Loading a new screen will discard your unsaved changes.
-                            Do you want to continue?
+                            Loading a new screen will discard your unsaved changes. Continue?
                         </DialogDescription>
                     </DialogHeader>
 
@@ -104,9 +155,7 @@ export function ScreenItem({
                             onClick={handleLoad}
                             disabled={isLoading}
                         >
-                            {isLoading && (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            )}
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {isLoading ? "Loading..." : "Continue"}
                         </Button>
                     </DialogFooter>

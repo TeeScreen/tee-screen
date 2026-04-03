@@ -6,7 +6,7 @@ import {
   Home, ImageUp,
   type LucideIcon, NotebookTabs,
   PanelsTopLeft, PanelTopBottomDashed, Trophy,
-  Wallpaper, FileQuestionMark,
+  Wallpaper, FileQuestionMark, NotebookPen, ChartNoAxesCombined,
 } from "lucide-react";
 
 export interface NavSubItem {
@@ -29,6 +29,7 @@ export interface NavMainItem {
   isNew?: boolean;
   isFootball?: boolean;
   isGolf?: boolean;
+  hasCheckIn?: boolean;
 }
 
 export interface NavGroup {
@@ -43,7 +44,7 @@ export const sidebarItems: NavGroup[] = [
     label: "Dashboards",
     items: [
       {
-        title: "Home",
+        title: "Screens",
         url: "/dashboard/home",
         icon: Home,
       },
@@ -103,6 +104,19 @@ export const sidebarItems: NavGroup[] = [
         icon: LandPlot,
         needsLoad: true,
         isGolf: true,
+      },
+      {
+        title: "Golf Check In",
+        url: "/dashboard/golf-check-in",
+        icon: NotebookPen,
+        needsLoad: true,
+        hasCheckIn: true,
+      },
+      {
+        title: "Analytics",
+        url: "/dashboard/analytics",
+        icon: ChartNoAxesCombined,
+        needsLoad: true,
       },
     ],
   },
