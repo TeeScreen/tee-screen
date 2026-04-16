@@ -1,7 +1,6 @@
 'use client';
 import {
     Card,
-    CardAction,
     CardContent,
     CardDescription,
     CardFooter,
@@ -12,30 +11,58 @@ import {
 import { Button } from "@/components/ui/button"
 import {Field, FieldDescription, FieldLabel} from "@/components/ui/field";
 import {Input} from "@/components/ui/input";
-import {deleteFile, upload} from "@/lib/actions/file.actions";
-import {useState} from "react";
-import {Upload} from "lucide-react";
+import {upload} from "@/lib/actions/file.actions";
+import {useRef, useState} from "react";
+import {Upload, Loader2} from "lucide-react";
 import {useDirtyState} from "@/stores/user-store";
 
 export function UploadCard({folderName, newFileName}: {folderName: string, newFileName: string}) {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const {dirty, setDirty} = useDirtyState();
+    const [isUploading, setIsUploading] = useState(false);
+    const [fileSelected, setFileSelected] = useState(false);
+    const {setDirty} = useDirtyState();
 
-    const handleUpload = async (formData: FormData) => {
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-        formData.append('folderName', folderName);
-        formData.append('newFileName', newFileName);
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (isUploading || !fileSelected) return;
+
+        setIsUploading(true);
+        setErrorMessage(null);
+
+        const formData = new FormData();
+        const file = fileInputRef.current?.files?.[0];
+
+        if (!file) {
+            setErrorMessage("No file selected");
+            setIsUploading(false);
+            return;
+        }
+
+        formData.append("file", file);
+        formData.append("folderName", folderName);
+        formData.append("newFileName", newFileName);
+
         const result = await upload(formData);
+
         if (!result.success) {
             setErrorMessage(result.message);
         } else {
-            setErrorMessage(null);
             setDirty(true);
         }
+
+        // Reset file input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+
+        setFileSelected(false);
+        setIsUploading(false);
     };
 
     return (
-        <form action={handleUpload}>
+        <form onSubmit={handleSubmit}>
             <Card className="mx-auto w-full max-w-sm">
                 <CardHeader>
                     <CardTitle>Upload File</CardTitle>
@@ -43,20 +70,49 @@ export function UploadCard({folderName, newFileName}: {folderName: string, newFi
                         Choose your file to upload.
                     </CardDescription>
                 </CardHeader>
+
                 <CardContent>
                     <Field className="flex gap-2">
                         <FieldLabel htmlFor="file">File</FieldLabel>
-                        <Input name ="file" id={folderName} type="file" className="hover:file:text-primary" />
+
+                        <Input
+                            ref={fileInputRef}
+                            name="file"
+                            id={folderName}
+                            type="file"
+                            disabled={isUploading}
+                            onChange={(e) => setFileSelected(e.target.files?.length === 1)}
+                            className="hover:file:text-primary"
+                        />
+
                         <FieldDescription>Select a file to upload.</FieldDescription>
-                        {errorMessage && <p className="text-destructive">{errorMessage}</p>}
+
+                        {errorMessage && (
+                            <p className="text-destructive">{errorMessage}</p>
+                        )}
                     </Field>
                 </CardContent>
+
                 <CardFooter>
-                    <Button type="submit" className="w-full">
-                        <Upload />Upload
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={isUploading || !fileSelected}
+                    >
+                        {isUploading ? (
+                            <>
+                                <Loader2 className="animate-spin mr-2" />
+                                Uploading…
+                            </>
+                        ) : (
+                            <>
+                                <Upload className="mr-2" />
+                                Upload
+                            </>
+                        )}
                     </Button>
                 </CardFooter>
             </Card>
         </form>
-    )
+    );
 }

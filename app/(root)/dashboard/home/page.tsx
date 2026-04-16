@@ -17,6 +17,7 @@ import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 import { AccountDropdown } from "@/components/screen/AccountDropdown";
 import {auth} from "@/lib/better-auth/auth";
 import {headers} from "next/dist/server/request/headers";
+import {LoadedScreen} from "@/components/screen/LoadedScreen";
 
 export default async function HomePage() {
     let user = await getUserInfo();
@@ -74,6 +75,8 @@ export default async function HomePage() {
         const account = accounts.find((a: any) => a.accountLogin === loadedAccount);
         if (!account) return;
 
+        await resetScreenChange();
+
         const response = await fetch(
             `https://teescreenapp.com/api/screen_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenName}`
         );
@@ -109,26 +112,39 @@ export default async function HomePage() {
         <div className="@container/main flex flex-col gap-4 md:gap-6 px-4 sm:px-6">
 
             <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
-                Your Accounts
+                Your Screens
             </h1>
 
-            <AddAccountDialog action={handleAddAccount} />
-
-            {/* NEW DROPDOWN + ACCOUNT PANEL */}
             {accounts.length > 0 && (
-                <AccountDropdown
-                    accounts={accounts}
-                    loadedAccount={loadedAccount}
-                    loadAction={handleLoadAccountDetails}
-                    deleteAction={handleDeleteAccount}
-                />
-            )}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch h-100">
 
-            {loadedScreen && (
-                <div className="mt-4 sm:mt-2">
-                    <ResetLoadedDataDialog action={handleReset} />
+                    {/* LEFT: Account Dropdown */}
+                    <div className="flex flex-col h-full">
+                        <AccountDropdown
+                            accounts={accounts}
+                            loadedAccount={loadedAccount}
+                            loadAction={handleLoadAccountDetails}
+                            deleteAction={handleDeleteAccount}
+                        />
+                        <AddAccountDialog action={handleAddAccount} />
+
+                        {loadedScreen && (
+                        <div className="mt-4 sm:mt-2">
+                            <ResetLoadedDataDialog action={handleReset} />
+                        </div>
+                    )}
+                    </div>
+
+                    {/* RIGHT: Loaded Screen */}
+                    {loadedScreen && (
+                        <div className="flex flex-col h-full">
+                            <LoadedScreen screenName={loadedScreen} />
+                        </div>
+                    )}
                 </div>
             )}
+
+
 
             {screenNames.length > 0 && (
                 <div className="mt-4 sm:mt-6">
@@ -148,6 +164,8 @@ export default async function HomePage() {
 
             {accounts.length === 0 && (
                 <div className="p-4 sm:p-6 border rounded-lg bg-muted/30 flex flex-col gap-4">
+                    <AddAccountDialog action={handleAddAccount} />
+
                     <h2 className="text-lg sm:text-xl font-semibold">No Accounts Found</h2>
                     <p className="text-sm text-muted-foreground">
                         It looks like you don’t have any accounts connected yet.

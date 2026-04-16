@@ -82,7 +82,7 @@ export function AccountDropdown({
 
             {/* TITLE */}
             <h2 className="text-sm font-medium text-muted-foreground">
-                Selected Account
+                Selected Screen Login
             </h2>
 
             {/* DROPDOWN */}

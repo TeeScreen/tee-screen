@@ -27,21 +27,27 @@ export function AddAccountDialog({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                {/* Mobile: icon-only | Desktop: icon + label */}
-                <Button
-                    size="sm"
-                    className="flex items-center gap-2"
-                >
-                    <Plus className="h-4 w-4" />
-
-                    {/* Hide text on mobile */}
-                    <span className="hidden sm:inline">Add Account</span>
-                </Button>
+                <div className="py-4">
+                    <Button
+                        size="sm"
+                        className="
+                            inline-flex
+                            items-center
+                            gap-2
+                            w-auto
+                            px-2
+                            sm:px-3
+                        "
+                    >
+                        <Plus className="h-4 w-4" />
+                        <span className="hidden sm:inline">Add New Screen</span>
+                    </Button>
+                </div>
             </DialogTrigger>
 
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Add New Account</DialogTitle>
+                    <DialogTitle>Add New Screen Login</DialogTitle>
                 </DialogHeader>
 
                 <form action={handleSubmit} className="space-y-4">
@@ -51,7 +57,7 @@ export function AddAccountDialog({
                             name="accountLogin"
                             required
                             className="w-full border px-3 py-2 rounded"
-                            placeholder="e.g. dashboard01"
+                            placeholder="screen or admin username"
                         />
                     </div>
 
@@ -61,7 +67,7 @@ export function AddAccountDialog({
                             name="accountPW"
                             type="password"
                             className="w-full border px-3 py-2 rounded"
-                            placeholder="Optional password"
+                            placeholder="password"
                         />
                     </div>
 
