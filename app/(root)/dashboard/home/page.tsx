@@ -73,40 +73,74 @@ export default async function HomePage() {
         "use server";
 
         const account = accounts.find((a: any) => a.accountLogin === loadedAccount);
-        if (!account) return;
+        if (!account) {
+            console.error("No matching account found for loadedAccount:", loadedAccount);
+            return;
+        }
 
         await resetScreenChange();
 
-        const response = await fetch(
+        // --- Fetch Screen Data ---
+        const screenRes = await fetch(
             `https://teescreenapp.com/api/screen_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenName}`
         );
 
-        const screenData = await response.json();
-
-        const analytics_response = await fetch(
-            `https://teescreenapp.com/api/analytics_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenData.name}`
-        );
-
-        let analyticsData: any;
-
-        if(analytics_response.ok)
-        {
-            console.log(analytics_response);
-            analyticsData = await analytics_response.json();
+        if (!screenRes.ok) {
+            console.error("Failed to fetch screen data:", screenRes.status, screenRes.statusText);
+            return;
         }
 
+        let screenData: any;
+        try {
+            screenData = await screenRes.json();
+        } catch (err) {
+            console.error("Invalid JSON in screen_data response:", err);
+            return;
+        }
+
+        // --- Fetch Analytics Data (Safe / Optional) ---
+        let analyticsData: any = null;
+
+        try {
+            const analyticsRes = await fetch(
+                `https://teescreenapp.com/api/analytics_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenData.name}`
+            );
+
+            if (!analyticsRes.ok) {
+                console.warn(
+                    `Analytics not available for screen "${screenData.name}". Status:`,
+                    analyticsRes.status
+                );
+            } else {
+                try {
+                    analyticsData = await analyticsRes.json();
+                } catch (err) {
+                    console.warn("Analytics JSON malformed:", err);
+                }
+            }
+        } catch (err) {
+            console.warn("Analytics request failed (network or server error):", err);
+        }
+
+        // --- Save User Info ---
         await saveUserInfo({
             loadedScreen: screenData.name,
             screenJson: screenData,
-            analyticsJson: analyticsData,
+            analyticsJson: analyticsData, // may be null
         });
 
+        // --- Download Images if available ---
         if (screenData["FolderNameOnServer"]) {
-            await downloadClubImages(screenData["FolderNameOnServer"]);
+            try {
+                await downloadClubImages(screenData["FolderNameOnServer"]);
+            } catch (err) {
+                console.warn("Failed to download club images:", err);
+            }
         }
 
         revalidatePath("/");
     }
+
 
     return (
         <div className="@container/main flex flex-col gap-4 md:gap-6 px-4 sm:px-6">
