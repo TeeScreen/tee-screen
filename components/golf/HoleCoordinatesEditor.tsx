@@ -28,7 +28,7 @@ export default function HoleCoordinatesEditor({
                                               }: HoleCoordinatesEditorProps){
     const clubLocation = courseLatLon ?? { lat: 0, lon: 0 };
 
-    const normalize = (value) => ({
+    const normalize = (value: any) => ({
         lat: value?.x ?? clubLocation.lat,
         lon: value?.y ?? clubLocation.lon,
     });
