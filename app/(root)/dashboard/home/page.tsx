@@ -1,12 +1,12 @@
+"use server";
+
 import {
     getUserInfo,
     addAccountData,
     removeAccountData,
     saveUserInfo,
-    resetScreenChange, addUserInfo,
+    resetScreenChange,
 } from "@/lib/actions/user.actions";
-
-export const dynamic = "force-dynamic";
 
 import { revalidatePath } from "next/cache";
 import { AddAccountDialog } from "@/components/screen/AddAccountDialog";
@@ -15,9 +15,8 @@ import { downloadClubImages } from "@/lib/actions/file.actions";
 import { ResetLoadedDataDialog } from "@/components/ResetData";
 import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 import { AccountDropdown } from "@/components/screen/AccountDropdown";
-import {auth} from "@/lib/better-auth/auth";
-import {headers} from "next/dist/server/request/headers";
-import {LoadedScreen} from "@/components/screen/LoadedScreen";
+import { LoadedScreen } from "@/components/screen/LoadedScreen";
+import { Button } from "@/components/ui/button";
 
 export default async function HomePage() {
     let user = await getUserInfo();
@@ -27,10 +26,13 @@ export default async function HomePage() {
     const screenNames = user?.screenNames || [];
     const loadedScreen = user?.loadedScreen || null;
 
+    // -----------------------------
+    // SERVER ACTIONS
+    // -----------------------------
+
     async function handleReset() {
         "use server";
         await resetScreenChange();
-        //await saveUserInfo({ loadedAccount: "", screenNames: [] });
         revalidatePath("/");
     }
 
@@ -69,10 +71,42 @@ export default async function HomePage() {
         revalidatePath("/");
     }
 
+    // -----------------------------
+    // NEW: RELOAD ACCOUNT
+    // -----------------------------
+    async function handleReloadAccount() {
+        "use server";
+
+        if (!loadedAccount) return;
+
+        const account = accounts.find(
+            (a: any) => a.accountLogin === loadedAccount
+        );
+        if (!account) return;
+
+        const response = await fetch(
+            `https://teescreenapp.com/api/auth_accounts?user=${account.accountLogin}&password=${account.accountPW}`
+        );
+
+        const data = await response.json();
+
+        await saveUserInfo({
+            loadedAccount: loadedAccount,
+            screenNames: data,
+        });
+
+        revalidatePath("/");
+    }
+
+    // -----------------------------
+    // LOAD SCREEN
+    // -----------------------------
     async function handleLoadScreen(screenName: string) {
         "use server";
 
-        const account = accounts.find((a: any) => a.accountLogin === loadedAccount);
+        const account = accounts.find(
+            (a: any) => a.accountLogin === loadedAccount
+        );
         if (!account) {
             console.error("No matching account found for loadedAccount:", loadedAccount);
             return;
@@ -80,7 +114,6 @@ export default async function HomePage() {
 
         await resetScreenChange();
 
-        // --- Fetch Screen Data ---
         const screenRes = await fetch(
             `https://teescreenapp.com/api/screen_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenName}`
         );
@@ -98,7 +131,6 @@ export default async function HomePage() {
             return;
         }
 
-        // --- Fetch Analytics Data (Safe / Optional) ---
         let analyticsData: any = null;
 
         try {
@@ -106,42 +138,37 @@ export default async function HomePage() {
                 `https://teescreenapp.com/api/analytics_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenData.name}`
             );
 
-            if (!analyticsRes.ok) {
-                console.warn(
-                    `Analytics not available for screen "${screenData.name}". Status:`,
-                    analyticsRes.status
-                );
-            } else {
+            if (analyticsRes.ok) {
                 try {
                     analyticsData = await analyticsRes.json();
-                } catch (err) {
-                    console.warn("Analytics JSON malformed:", err);
+                } catch {
+                    console.warn("Analytics JSON malformed");
                 }
             }
-        } catch (err) {
-            console.warn("Analytics request failed (network or server error):", err);
+        } catch {
+            console.warn("Analytics request failed");
         }
 
-        // --- Save User Info ---
         await saveUserInfo({
             loadedScreen: screenData.name,
             screenJson: screenData,
-            analyticsJson: analyticsData, // may be null
+            analyticsJson: analyticsData,
         });
 
-        // --- Download Images if available ---
         if (screenData["FolderNameOnServer"]) {
             try {
                 await downloadClubImages(screenData["FolderNameOnServer"]);
-            } catch (err) {
-                console.warn("Failed to download club images:", err);
+            } catch {
+                console.warn("Failed to download club images");
             }
         }
 
         revalidatePath("/");
     }
 
-
+    // -----------------------------
+    // RENDER
+    // -----------------------------
     return (
         <div className="@container/main flex flex-col gap-4 md:gap-6 px-4 sm:px-6">
 
@@ -152,7 +179,7 @@ export default async function HomePage() {
             {accounts.length > 0 && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch h-100">
 
-                    {/* LEFT: Account Dropdown */}
+                    {/* LEFT COLUMN */}
                     <div className="flex flex-col h-full">
                         <AccountDropdown
                             accounts={accounts}
@@ -160,16 +187,30 @@ export default async function HomePage() {
                             loadAction={handleLoadAccountDetails}
                             deleteAction={handleDeleteAccount}
                         />
+
                         <AddAccountDialog action={handleAddAccount} />
 
+                        {/* NEW: Reload Account Button */}
+                        {loadedAccount && (
+                            <form action={handleReloadAccount}>
+                                <Button
+                                    type="submit"
+                                    variant="outline"
+                                    className="mt-2"
+                                >
+                                    Reload Account
+                                </Button>
+                            </form>
+                        )}
+
                         {loadedScreen && (
-                        <div className="mt-4 sm:mt-2">
-                            <ResetLoadedDataDialog action={handleReset} />
-                        </div>
-                    )}
+                            <div className="mt-4 sm:mt-2">
+                                <ResetLoadedDataDialog action={handleReset} />
+                            </div>
+                        )}
                     </div>
 
-                    {/* RIGHT: Loaded Screen */}
+                    {/* RIGHT COLUMN */}
                     {loadedScreen && (
                         <div className="flex flex-col h-full">
                             <LoadedScreen screenName={loadedScreen} />
@@ -177,8 +218,6 @@ export default async function HomePage() {
                     )}
                 </div>
             )}
-
-
 
             {screenNames.length > 0 && (
                 <div className="mt-4 sm:mt-6">

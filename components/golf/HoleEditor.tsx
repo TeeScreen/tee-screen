@@ -1,119 +1,80 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-    AccordionItem,
-    AccordionTrigger,
-    AccordionContent,
-    Accordion,
-} from "@/components/ui/accordion";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import HoleCoordinatesEditor from "./HoleCoordinatesEditor";
 import HoleYardageEditor from "./HoleYardageEditor";
 import HoleDetailsEditor from "./HoleDetailsEditor";
-import UploadSection from "@/components/UploadSection";
 
 type HoleEditorProps = {
     value: string;
     courseName: string;
     hole: any;
     index: number;
-    form: any; // UseFormReturn<any>
+    form: any;
     updateCourse: (courseName: string, path: string, value: any) => void;
-    courseLatLon?: { lat: number; lon: number }; // optional, for map picker default
+    updateCourseBatch: (courseName: string, updates: Record<string, any>) => void;
+    courseLatLon?: { lat: number; lon: number };
 };
 
 export default function HoleEditor({
-                                       value,
                                        courseName,
                                        hole,
                                        index,
                                        form,
                                        updateCourse,
+                                       updateCourseBatch,
                                        courseLatLon
                                    }: HoleEditorProps) {
-    const sectionIds = ["coordinates", "yardages", "details"];
-    const [openSections, setOpenSections] = useState<string[]>([]);
-
-    const expandAllSections = () => setOpenSections(sectionIds);
-    const collapseAllSections = () => setOpenSections([]);
-    console.log(form);
     return (
-        <AccordionItem value={value}>
-            <AccordionTrigger>
+        <div className="space-y-6">
+
+            {/* HEADER */}
+            <h3 className="text-xl font-semibold">
                 Hole {hole.holeNumber ?? index + 1}
-            </AccordionTrigger>
+            </h3>
 
-            <AccordionContent className="space-y-3 p-2">
-                <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-base">Hole Sections</h4>
-                    <div className="flex gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={expandAllSections}
-                        >
-                            Expand Sections
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={collapseAllSections}
-                        >
-                            Collapse Sections
-                        </Button>
-                    </div>
-                </div>
+            {/* --- YARDAGES SECTION --- */}
+            <div className="border rounded p-3 space-y-3">
+                <h4 className="font-semibold text-base">Yardages</h4>
 
-                <Accordion
-                    type="multiple"
-                    value={openSections}
-                    onValueChange={(val) => setOpenSections(val as string[])}
-                    className="border rounded p-2"
-                >
-                    <AccordionItem value="coordinates">
-                        <AccordionTrigger>Coordinates</AccordionTrigger>
-                        <AccordionContent className="space-y-3 p-2">
-                            <HoleCoordinatesEditor
-                                courseName={courseName}
-                                hole={hole}
-                                index={index}
-                                form={form}
-                                updateCourse={updateCourse}
-                                courseLatLon={courseLatLon}
-                            />
-                        </AccordionContent>
-                    </AccordionItem>
+                <HoleYardageEditor
+                    courseName={courseName}
+                    hole={hole}
+                    index={index}
+                    form={form}
+                    updateCourse={updateCourse}
+                />
+            </div>
 
-                    <AccordionItem value="yardages">
-                        <AccordionTrigger>Yardages</AccordionTrigger>
-                        <AccordionContent className="space-y-3 p-2">
-                            <HoleYardageEditor
-                                courseName={courseName}
-                                hole={hole}
-                                index={index}
-                                form={form}
-                                updateCourse={updateCourse}
-                            />
-                        </AccordionContent>
-                    </AccordionItem>
+            {/* --- DETAILS SECTION --- */}
+            <div className="border rounded p-3 space-y-3">
+                <h4 className="font-semibold text-base">Details</h4>
 
-                    <AccordionItem value="details">
-                        <AccordionTrigger>Details</AccordionTrigger>
-                        <AccordionContent className="space-y-3 p-2">
-                            <HoleDetailsEditor
-                                courseName={courseName}
-                                hole={hole}
-                                index={index}
-                                form={form}
-                                updateCourse={updateCourse}
-                            />
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
-            </AccordionContent>
-        </AccordionItem>
+                <HoleDetailsEditor
+                    courseName={courseName}
+                    hole={hole}
+                    index={index}
+                    form={form}
+                    updateCourse={updateCourse}
+                />
+            </div>
+
+            {/* --- COORDINATES SECTION --- */}
+            <div className="border rounded p-3 space-y-3">
+                <h4 className="font-semibold text-base">Coordinates</h4>
+
+                <HoleCoordinatesEditor
+                    courseName={courseName}
+                    hole={hole}
+                    index={index}
+                    form={form}
+                    updateCourse={updateCourse}
+                    updateCourseBatch={updateCourseBatch}
+                    courseLatLon={courseLatLon}
+                />
+            </div>
+
+        </div>
     );
 }

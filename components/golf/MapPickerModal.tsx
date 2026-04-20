@@ -5,18 +5,29 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-// MUST be dynamic — React‑Leaflet cannot run on the server
+type MarkerKey =
+    | "holePointLatLong"
+    | "whiteTeePointLatLong"
+    | "yellowTeePointLatLong"
+    | "redTeePointLatLong";
+
+type LatLon = { lat: number; lon: number };
+
 const MapPicker = dynamic(() => import("./MapPicker"), {
     ssr: false,
     loading: () => <div className="p-6">Loading map…</div>,
 });
 
 export default function MapPickerModal({
-                                           start,
+                                           points,
+                                           clubLocation,
+                                           holeNumber,
                                            onSelect,
                                        }: {
-    start: { lat: number; lon: number };
-    onSelect: (coords: { lat: number; lon: number }) => void;
+    points: Record<MarkerKey, LatLon>;
+    clubLocation: LatLon;
+    holeNumber: number;
+    onSelect: (updated: Record<MarkerKey, LatLon>) => void;
 }) {
     const [open, setOpen] = useState(false);
 
@@ -27,16 +38,18 @@ export default function MapPickerModal({
             </Button>
 
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="sm:max-w-[800px] w-full max-w-none">
+                <DialogContent className="sm:max-w-[900px] w-full max-w-none">
                     <DialogHeader className="p-4">
-                        <DialogTitle>Select Location</DialogTitle>
+                        <DialogTitle>Hole {holeNumber} — Set Coordinates</DialogTitle>
                     </DialogHeader>
 
-                    <div className="p=6">
+                    <div className="p-6">
                         <MapPicker
-                            start={start}
-                            onConfirm={(coords) => {
-                                onSelect(coords);
+                            points={points}
+                            clubLocation={clubLocation}
+                            holeNumber={holeNumber}
+                            onConfirm={(updated) => {
+                                onSelect(updated);
                                 setOpen(false);
                             }}
                             onCancel={() => setOpen(false)}
