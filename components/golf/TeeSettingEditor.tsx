@@ -54,10 +54,10 @@ export function TeeSettingsEditor({ localJson, updateJson }: TeeSettingsEditorPr
                 <AccordionContent>
                     <div className="rounded-lg border p-4 space-y-6 bg-neutral-900/40">
 
-                        {/* WHITE */}
+                        {/* Back */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                             <div>
-                                <Label>White Tee Label</Label>
+                                <Label className="pb-2">Back Tee Label</Label>
                                 <Input
                                     value={whiteTeeLabel}
                                     onChange={(e) => updateField("whiteTeeLabel", e.target.value)}
@@ -65,7 +65,7 @@ export function TeeSettingsEditor({ localJson, updateJson }: TeeSettingsEditorPr
                             </div>
 
                             <div>
-                                <Label>White Tee Colour</Label>
+                                <Label className="pb-2">Back Tee Colour</Label>
                                 <div className="flex items-center gap-3">
                                     <input
                                         type="color"
@@ -82,10 +82,10 @@ export function TeeSettingsEditor({ localJson, updateJson }: TeeSettingsEditorPr
                             </div>
                         </div>
 
-                        {/* YELLOW */}
+                        {/* Middle */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                             <div>
-                                <Label>Yellow Tee Label</Label>
+                                <Label className="pb-2">Middle Tee Label</Label>
                                 <Input
                                     value={yellowTeeLabel}
                                     onChange={(e) => updateField("yellowTeeLabel", e.target.value)}
@@ -93,7 +93,7 @@ export function TeeSettingsEditor({ localJson, updateJson }: TeeSettingsEditorPr
                             </div>
 
                             <div>
-                                <Label>Yellow Tee Colour</Label>
+                                <Label className="pb-2">Middle Tee Colour</Label>
                                 <div className="flex items-center gap-3">
                                     <input
                                         type="color"
@@ -110,10 +110,10 @@ export function TeeSettingsEditor({ localJson, updateJson }: TeeSettingsEditorPr
                             </div>
                         </div>
 
-                        {/* RED */}
+                        {/* Front */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                             <div>
-                                <Label>Red Tee Label</Label>
+                                <Label className="pb-2">Front Tee Label</Label>
                                 <Input
                                     value={redTeeLabel}
                                     onChange={(e) => updateField("redTeeLabel", e.target.value)}
@@ -121,7 +121,7 @@ export function TeeSettingsEditor({ localJson, updateJson }: TeeSettingsEditorPr
                             </div>
 
                             <div>
-                                <Label>Red Tee Colour</Label>
+                                <Label className="pb-2">Front Tee Colour</Label>
                                 <div className="flex items-center gap-3">
                                     <input
                                         type="color"
