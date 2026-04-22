@@ -27,6 +27,7 @@ type MarkerKey =
     | "redTeePointLatLong";
 
 type LatLon = { lat: number; lon: number };
+type RGBA = { r: number; g: number; b: number; a: number };
 
 function ZoomWatcher({ onZoom }: { onZoom: (z: number) => void }) {
     useMapEvents({
@@ -43,12 +44,16 @@ export default function MapPicker({
                                       holeNumber,
                                       onConfirm,
                                       onCancel,
+                                      teeLabels,
+                                      teeColours,
                                   }: {
     points: Record<MarkerKey, LatLon>;
     clubLocation: LatLon;
     holeNumber: number;
     onConfirm: (updated: Record<MarkerKey, LatLon>) => void;
     onCancel: () => void;
+    teeLabels: Record<MarkerKey, string>;
+    teeColours: Record<MarkerKey, RGBA>;
 }) {
     const [positions, setPositions] = useState(points);
     const [mapType, setMapType] = useState<"satellite" | "street">("satellite");
@@ -108,7 +113,7 @@ export default function MapPicker({
                         transform: rotate(-45deg);
                         font-size: 9px;
                         font-weight: 700;
-                        color: #fff;
+                        color: ${color === "#ffffff" ? "#000" : "#fff"};
                     ">
                         ${label}
                     </div>
@@ -118,11 +123,15 @@ export default function MapPicker({
             iconAnchor: [11, 11],
         });
 
+    const rgbaToHex = (rgba: RGBA) =>
+        `#${[rgba.r, rgba.g, rgba.b]
+            .map((v) => v.toString(16).padStart(2, "0"))
+            .join("")}`;
     const markerIcons: Record<MarkerKey, L.DivIcon> = {
         holePointLatLong: makeDiamondIcon("#00c853", String(holeNumber)),
-        whiteTeePointLatLong: makeCircleIcon("#ffffff", `W${holeNumber}`),
-        yellowTeePointLatLong: makeCircleIcon("#ffd600", `Y${holeNumber}`),
-        redTeePointLatLong: makeCircleIcon("#d50000", `R${holeNumber}`),
+        whiteTeePointLatLong: makeCircleIcon(rgbaToHex(teeColours.whiteTeePointLatLong), String(holeNumber)),
+        yellowTeePointLatLong: makeCircleIcon(rgbaToHex(teeColours.yellowTeePointLatLong), String(holeNumber)),
+        redTeePointLatLong: makeCircleIcon(rgbaToHex(teeColours.redTeePointLatLong), String(holeNumber)),
     };
 
     const handleDragEnd = (key: MarkerKey) => (e: any) => {
@@ -221,18 +230,21 @@ export default function MapPicker({
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <span className="inline-block w-3 h-3 rounded-full bg-white border border-gray-400" />
-                    <span>White Tee (W{holeNumber})</span>
+                    <span className="inline-block w-3 h-3 rounded-full"
+                          style={{ backgroundColor: rgbaToHex(teeColours.whiteTeePointLatLong) }}/>
+                    <span>{teeLabels.whiteTeePointLatLong} Tee ({holeNumber})</span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <span className="inline-block w-3 h-3 rounded-full bg-[#ffd600]" />
-                    <span>Yellow Tee (Y{holeNumber})</span>
+                    <span className="inline-block w-3 h-3 rounded-full"
+                          style={{ backgroundColor: rgbaToHex(teeColours.yellowTeePointLatLong) }}/>
+                    <span>{teeLabels.yellowTeePointLatLong} Tee ({holeNumber})</span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <span className="inline-block w-3 h-3 rounded-full bg-[#d50000]" />
-                    <span>Red Tee (R{holeNumber})</span>
+                    <span className="inline-block w-3 h-3 rounded-full"
+                          style={{ backgroundColor: rgbaToHex(teeColours.redTeePointLatLong) }}/>
+                    <span>{teeLabels.redTeePointLatLong} Tee ({holeNumber})</span>
                 </div>
             </div>
 

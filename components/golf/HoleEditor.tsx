@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
-import { Button } from "@/components/ui/button";
 import HoleCoordinatesEditor from "./HoleCoordinatesEditor";
 import HoleYardageEditor from "./HoleYardageEditor";
 import HoleDetailsEditor from "./HoleDetailsEditor";
+
+type RGBA = { r: number; g: number; b: number; a: number };
 
 type HoleEditorProps = {
     value: string;
@@ -15,6 +16,17 @@ type HoleEditorProps = {
     updateCourse: (courseName: string, path: string, value: any) => void;
     updateCourseBatch: (courseName: string, updates: Record<string, any>) => void;
     courseLatLon?: { lat: number; lon: number };
+
+    // NEW — global tee settings passed from HolesEditorWrapper
+    teeSettings: {
+        whiteTeeLabel: string;
+        yellowTeeLabel: string;
+        redTeeLabel: string;
+
+        TeeColourWhite: RGBA;
+        TeeColourYellow: RGBA;
+        TeeColourRed: RGBA;
+    };
 };
 
 export default function HoleEditor({
@@ -24,7 +36,8 @@ export default function HoleEditor({
                                        form,
                                        updateCourse,
                                        updateCourseBatch,
-                                       courseLatLon
+                                       courseLatLon,
+                                       teeSettings,
                                    }: HoleEditorProps) {
     return (
         <div className="space-y-6">
@@ -44,6 +57,7 @@ export default function HoleEditor({
                     index={index}
                     form={form}
                     updateCourse={updateCourse}
+                    teeSettings={teeSettings}   // ✔ dynamic tee labels
                 />
             </div>
 
@@ -72,6 +86,7 @@ export default function HoleEditor({
                     updateCourse={updateCourse}
                     updateCourseBatch={updateCourseBatch}
                     courseLatLon={courseLatLon}
+                    teeSettings={teeSettings}   // ✔ dynamic labels + colours
                 />
             </div>
 

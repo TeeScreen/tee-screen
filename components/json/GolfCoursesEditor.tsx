@@ -22,6 +22,7 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
+import {TeeSettingsEditor} from "@/components/golf/TeeSettingEditor";
 
 export function GolfCoursesEditor({
                                       json,
@@ -195,6 +196,11 @@ export function GolfCoursesEditor({
                 Add New Course
             </Button>
 
+            <TeeSettingsEditor
+                localJson={localJson}
+                updateJson={updateJson}
+            />
+
             {/* COURSE LIST */}
             <Accordion type="multiple" className="space-y-4">
                 {Object.entries(localJson.golfCoursesData).map(
@@ -239,6 +245,15 @@ export function GolfCoursesEditor({
                                     updateCourse={updateCourse}
                                     updateCourseBatch={updateCourseBatch}
                                     courseLatLon={courseLatLon}
+                                    teeSettings={{
+                                        whiteTeeLabel: localJson.whiteTeeLabel,
+                                        yellowTeeLabel: localJson.yellowTeeLabel,
+                                        redTeeLabel: localJson.redTeeLabel,
+
+                                        TeeColourWhite: localJson.TeeColourWhite,
+                                        TeeColourYellow: localJson.TeeColourYellow,
+                                        TeeColourRed: localJson.TeeColourRed,
+                                    }}
                                 />
 
                                 <HandicapEditor

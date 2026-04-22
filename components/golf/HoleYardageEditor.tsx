@@ -8,14 +8,13 @@ type HoleYardageEditorProps = {
     index: number;
     form: any;
     updateCourse: (courseName: string, path: string, value: any) => void;
-};
 
-// Friendly labels for UI
-const LABELS: Record<string, string> = {
-    yardsToHole: "Hole Yardage",
-    whiteYardsToHole: "White Tee Yardage",
-    yellowYardsToHole: "Yellow Tee Yardage",
-    redYardsToHole: "Red Tee Yardage",
+    // NEW — global tee settings
+    teeSettings: {
+        whiteTeeLabel: string;
+        yellowTeeLabel: string;
+        redTeeLabel: string;
+    };
 };
 
 export default function HoleYardageEditor({
@@ -24,13 +23,22 @@ export default function HoleYardageEditor({
                                               index,
                                               form,
                                               updateCourse,
+                                              teeSettings,
                                           }: HoleYardageEditorProps) {
     const yardageKeys = [
         "yardsToHole",
         "whiteYardsToHole",
         "yellowYardsToHole",
         "redYardsToHole",
-    ];
+    ] as const;
+
+    // Dynamic labels using global tee settings
+    const LABELS: Record<(typeof yardageKeys)[number], string> = {
+        yardsToHole: "Hole Yardage",
+        whiteYardsToHole: `${teeSettings.whiteTeeLabel} Yardage`,
+        yellowYardsToHole: `${teeSettings.yellowTeeLabel} Yardage`,
+        redYardsToHole: `${teeSettings.redTeeLabel} Yardage`,
+    };
 
     return (
         <div className="grid gap-3 md:grid-cols-2">
@@ -41,7 +49,7 @@ export default function HoleYardageEditor({
                     <InputField
                         key={key}
                         name={`${courseName}.holesData.${index}.${key}`}
-                        label={LABELS[key]}   // ← Friendly label here
+                        label={LABELS[key]}
                         type="number"
                         defaultValue={value}
                         register={form.register}

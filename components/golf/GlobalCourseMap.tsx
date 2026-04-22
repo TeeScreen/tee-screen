@@ -27,6 +27,7 @@ type MarkerKey =
     | "redTeePointLatLong";
 
 type LatLon = { lat: number; lon: number };
+type RGBA = { r: number; g: number; b: number; a: number };
 
 export type HoleData = {
     holeNumber: number;
@@ -50,11 +51,21 @@ export default function GlobalCourseMap({
                                             clubLocation,
                                             onConfirm,
                                             onCancel,
+                                            teeSettings
                                         }: {
     holes: HoleData[];
     clubLocation: LatLon;
     onConfirm: (updated: HoleData[]) => Promise<void> | void;
     onCancel: () => void;
+    teeSettings: {
+        whiteTeeLabel: string;
+        yellowTeeLabel: string;
+        redTeeLabel: string;
+
+        TeeColourWhite: RGBA;
+        TeeColourYellow: RGBA;
+        TeeColourRed: RGBA;
+    };
 }) {
     const [zoom, setZoom] = useState(16);
     const [mapType, setMapType] = useState<"satellite" | "street">("satellite");
@@ -150,6 +161,11 @@ export default function GlobalCourseMap({
         );
     };
 
+    const rgbaToHex = (rgba: RGBA) =>
+        `#${[rgba.r, rgba.g, rgba.b]
+            .map((v) => v.toString(16).padStart(2, "0"))
+            .join("")}`;
+
     const handleConfirm = async () => {
         setSaving(true);
         await onConfirm(localHoles);
@@ -160,7 +176,7 @@ export default function GlobalCourseMap({
         <div className="relative w-full h-full">
 
             {/* ⭐ Vertical Hole Filter Panel */}
-            <div className="absolute top-3 left-3 z-[1000] bg-white/85 backdrop-blur-md px-3 py-3 rounded shadow flex flex-col gap-2 w-24">
+            <div className="absolute top-3 left-3 z-[1000] backdrop-blur-md px-3 py-3 rounded shadow flex flex-col gap-2 w-24">
 
                 <Button
                     size="sm"
@@ -294,18 +310,21 @@ export default function GlobalCourseMap({
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <span className="inline-block w-3 h-3 rounded-full bg-white border border-gray-400" />
-                    <span>White Tee</span>
+                    <span className="inline-block w-3 h-3 rounded-full"
+                          style={{ backgroundColor: rgbaToHex(teeSettings.TeeColourWhite) }}/>
+                    <span>{teeSettings.whiteTeeLabel} Tee</span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <span className="inline-block w-3 h-3 rounded-full bg-[#ffd600]" />
-                    <span>Yellow Tee</span>
+                    <span className="inline-block w-3 h-3 rounded-full"
+                          style={{ backgroundColor: rgbaToHex(teeSettings.TeeColourYellow) }}/>
+                    <span>{teeSettings.yellowTeeLabel} Tee</span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <span className="inline-block w-3 h-3 rounded-full bg-[#d50000]" />
-                    <span>Red Tee</span>
+                    <span className="inline-block w-3 h-3 rounded-full"
+                          style={{ backgroundColor: rgbaToHex(teeSettings.TeeColourRed) }}/>
+                    <span>{teeSettings.redTeeLabel} Tee</span>
                 </div>
             </div>
 
@@ -336,17 +355,17 @@ export default function GlobalCourseMap({
                             {
                                 key: "whiteTeePointLatLong" as MarkerKey,
                                 coords: hole.whiteTeePointLatLong,
-                                icon: makeCircleIcon("#ffffff", `W${holeNum}`),
+                                icon: makeCircleIcon(rgbaToHex(teeSettings.TeeColourWhite), `${holeNum}`),
                             },
                             {
                                 key: "yellowTeePointLatLong" as MarkerKey,
                                 coords: hole.yellowTeePointLatLong,
-                                icon: makeCircleIcon("#ffd600", `Y${holeNum}`),
+                                icon: makeCircleIcon(rgbaToHex(teeSettings.TeeColourYellow), `${holeNum}`),
                             },
                             {
                                 key: "redTeePointLatLong" as MarkerKey,
                                 coords: hole.redTeePointLatLong,
-                                icon: makeCircleIcon("#d50000", `R${holeNum}`),
+                                icon: makeCircleIcon(rgbaToHex(teeSettings.TeeColourRed), `${holeNum}`),
                             },
                         ];
 

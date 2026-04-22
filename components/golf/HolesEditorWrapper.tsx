@@ -17,6 +17,8 @@ const GlobalCourseMap = dynamic(
     { ssr: false }
 );
 
+type RGBA = { r: number; g: number; b: number; a: number };
+
 type HolesEditorProps = {
     courseName: string;
     holesData: any[];
@@ -24,6 +26,17 @@ type HolesEditorProps = {
     updateCourse: (courseName: string, path: string, value: any) => void;
     updateCourseBatch: (courseName: string, updates: Record<string, any>) => void;
     courseLatLon?: { lat: number; lon: number };
+
+    // NEW — global tee settings from GolfCoursesEditor
+    teeSettings: {
+        whiteTeeLabel: string;
+        yellowTeeLabel: string;
+        redTeeLabel: string;
+
+        TeeColourWhite: RGBA;
+        TeeColourYellow: RGBA;
+        TeeColourRed: RGBA;
+    };
 };
 
 export default function HolesEditor({
@@ -33,11 +46,12 @@ export default function HolesEditor({
                                         updateCourse,
                                         updateCourseBatch,
                                         courseLatLon,
+                                        teeSettings,
                                     }: HolesEditorProps) {
     const [globalMapOpen, setGlobalMapOpen] = useState(false);
     const [activeHoleIndex, setActiveHoleIndex] = useState<number | null>(null);
 
-    // ⭐ FIX: Normalize coordinates to prevent undefined lat/lon
+    // ⭐ Normalize coordinates to prevent undefined lat/lon
     const normalizedHoles = holesData.map((hole, i) => ({
         holeNumber: i + 1,
         holePointLatLong: {
@@ -85,6 +99,10 @@ export default function HolesEditor({
                         <GlobalCourseMap
                             holes={normalizedHoles}
                             clubLocation={courseLatLon ?? { lat: 0, lon: 0 }}
+
+                            // ⭐ Pass tee colours + labels to global map
+                            teeSettings={teeSettings}
+
                             onConfirm={async (updatedHoles) => {
                                 const updates: Record<string, any> = {};
 
@@ -145,6 +163,9 @@ export default function HolesEditor({
                         updateCourse={updateCourse}
                         updateCourseBatch={updateCourseBatch}
                         courseLatLon={courseLatLon}
+
+                        // ⭐ Pass tee settings to HoleEditor
+                        teeSettings={teeSettings}
                     />
                 </div>
             )}

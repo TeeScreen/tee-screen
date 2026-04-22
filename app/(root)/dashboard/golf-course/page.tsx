@@ -26,6 +26,7 @@ export default async function Page() {
                         action={updateScreenJson}
                     />
                 )}
+
                 {screenJson && (
                     <Accordion type="multiple" className="space-y-4">
                         {Object.entries(screenJson.golfCoursesData).map(

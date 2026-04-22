@@ -12,6 +12,7 @@ type MarkerKey =
     | "redTeePointLatLong";
 
 type LatLon = { lat: number; lon: number };
+type RGBA = { r: number; g: number; b: number; a: number };
 
 const MapPicker = dynamic(() => import("./MapPicker"), {
     ssr: false,
@@ -22,11 +23,18 @@ export default function MapPickerModal({
                                            points,
                                            clubLocation,
                                            holeNumber,
+                                           teeLabels,
+                                           teeColours,
                                            onSelect,
                                        }: {
     points: Record<MarkerKey, LatLon>;
     clubLocation: LatLon;
     holeNumber: number;
+
+    // NEW
+    teeLabels: Record<MarkerKey, string>;
+    teeColours: Record<MarkerKey, RGBA>;
+
     onSelect: (updated: Record<MarkerKey, LatLon>) => void;
 }) {
     const [open, setOpen] = useState(false);
@@ -48,6 +56,11 @@ export default function MapPickerModal({
                             points={points}
                             clubLocation={clubLocation}
                             holeNumber={holeNumber}
+
+                            // NEW — dynamic labels + colours
+                            teeLabels={teeLabels}
+                            teeColours={teeColours}
+
                             onConfirm={(updated) => {
                                 onSelect(updated);
                                 setOpen(false);

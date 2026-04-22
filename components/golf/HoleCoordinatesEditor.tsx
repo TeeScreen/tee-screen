@@ -1,10 +1,15 @@
 import MapPickerModal from "@/components/golf/MapPickerModal";
 
-const LABELS: Record<string, string> = {
-    holePointLatLong: "Hole Center",
-    whiteTeePointLatLong: "White Tee",
-    yellowTeePointLatLong: "Yellow Tee",
-    redTeePointLatLong: "Red Tee",
+type RGBA = { r: number; g: number; b: number; a: number };
+
+type TeeSettings = {
+    whiteTeeLabel: string;
+    yellowTeeLabel: string;
+    redTeeLabel: string;
+
+    TeeColourWhite: RGBA;
+    TeeColourYellow: RGBA;
+    TeeColourRed: RGBA;
 };
 
 type HoleCoordinatesEditorProps = {
@@ -15,6 +20,9 @@ type HoleCoordinatesEditorProps = {
     updateCourse: (courseName: string, path: string, value: any) => void;
     updateCourseBatch: (courseName: string, updates: Record<string, any>) => void;
     courseLatLon?: { lat: number; lon: number };
+
+    // NEW: global tee settings
+    teeSettings: TeeSettings;
 };
 
 export default function HoleCoordinatesEditor({
@@ -25,7 +33,8 @@ export default function HoleCoordinatesEditor({
                                                   updateCourse,
                                                   updateCourseBatch,
                                                   courseLatLon,
-                                              }: HoleCoordinatesEditorProps){
+                                                  teeSettings,
+                                              }: HoleCoordinatesEditorProps) {
     const clubLocation = courseLatLon ?? { lat: 0, lon: 0 };
 
     const normalize = (value: any) => ({
@@ -40,6 +49,22 @@ export default function HoleCoordinatesEditor({
         redTeePointLatLong: normalize(hole.redTeePointLatLong),
     };
 
+    // Dynamic labels from global tee settings
+    const LABELS: Record<string, string> = {
+        holePointLatLong: "Hole Center",
+        whiteTeePointLatLong: teeSettings.whiteTeeLabel,
+        yellowTeePointLatLong: teeSettings.yellowTeeLabel,
+        redTeePointLatLong: teeSettings.redTeeLabel,
+    };
+
+    // Dynamic colours for MapPicker markers
+    const COLOURS = {
+        holePointLatLong: { r: 255, g: 255, b: 255, a: 255 },
+        whiteTeePointLatLong: teeSettings.TeeColourWhite,
+        yellowTeePointLatLong: teeSettings.TeeColourYellow,
+        redTeePointLatLong: teeSettings.TeeColourRed,
+    };
+
     const holeNumber = index + 1;
 
     return (
@@ -52,6 +77,8 @@ export default function HoleCoordinatesEditor({
                     points={points}
                     clubLocation={clubLocation}
                     holeNumber={holeNumber}
+                    teeColours={COLOURS} // NEW
+                    teeLabels={LABELS}   // NEW
                     onSelect={(updated) => {
                         const updates: Record<string, any> = {};
 
