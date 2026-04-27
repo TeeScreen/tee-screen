@@ -5,6 +5,10 @@ import { ChangeEmailDialog } from "@/components/profile/ChangeEmailDialog";
 import { ChangePasswordDialog } from "@/components/profile/ChangePasswordDialog";
 
 const SecurityCard = async () => {
+    if (!auth) {
+        // If auth is not initialised, fail loudly and predictably.
+        throw new Error("Auth module not initialised");
+    }
     const session = await auth.api.getSession({
         headers: await headers(),
     });
