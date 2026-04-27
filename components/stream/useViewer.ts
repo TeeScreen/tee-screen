@@ -5,7 +5,7 @@ export function useViewer(senderId: string) {
     const [connected, setConnected] = useState(false);
 
     useEffect(() => {
-        const ws = new WebSocket("ws://localhost:5000");
+        const ws = new WebSocket("wss://websocketserver-aqmy.onrender.com/ws");
 
         let pc: RTCPeerConnection | null = null;
 
