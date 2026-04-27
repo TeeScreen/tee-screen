@@ -1,77 +1,51 @@
-// src/lib/better-auth/auth.ts (adjust path as needed)
+import { betterAuth } from "better-auth";
+import {mongodbAdapter} from "better-auth/adapters/mongodb";
+import {connectToDatabase} from "@/database/mongoose";
+import {nextCookies} from "better-auth/next-js";
 
-import { betterAuth, type BetterAuthOptions, type Auth } from "better-auth";
-import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { nextCookies } from "better-auth/next-js";
+let authInstance: ReturnType<typeof betterAuth> | null = null;
 
-import { connectToDatabase } from "@/database/mongoose";
-
-let authInstance: Auth<BetterAuthOptions> | null = null;
-
-export const getAuth = async (): Promise<Auth<BetterAuthOptions>> => {
+export const getAuth = async () => {
     if (authInstance) return authInstance;
 
-    // 1. Connect to DB
     const mongoose = await connectToDatabase();
     const db = mongoose.connection.db;
 
-    if (!db) {
-        throw new Error("Missing database connection");
-    }
+    if(!db) throw new Error("Missing database connection");
 
-    // 2. Validate required env vars
-    const secret = process.env.BETTER_AUTH_SECRET;
-    const baseUrl = process.env.BETTER_AUTH_URL;
-    const googleClientId = process.env.GOOGLE_CLIENT_ID;
-    const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    authInstance = betterAuth({
+        database: mongodbAdapter(db as any),
 
-    if (!secret || !baseUrl) {
-        throw new Error("Missing BETTER_AUTH_SECRET or BETTER_AUTH_URL");
-    }
-
-    if (!googleClientId || !googleClientSecret) {
-        throw new Error("Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET");
-    }
-
-    // 3. Create Better Auth instance with correct generic
-    authInstance = betterAuth<BetterAuthOptions>({
-        database: mongodbAdapter(db as any) as ReturnType<typeof mongodbAdapter>,
-
-        secret,
-        baseUrl,
-
+        secret: process.env.BETTER_AUTH_SECRET,
+        baseUrl: process.env.BETTER_AUTH_URL,
         emailAndPassword: {
-            enabled: true,
-            disableSignUp: false,
-            requireEmailVerification: false,
-            minPasswordLength: 8,
-            maxPasswordLength: 128,
-            autoSignIn: true,
+            enabled : true,
+            disableSignUp : false,
+            requireEmailVerification : false,
+            minPasswordLength : 8,
+            maxPasswordLength : 128,
+            autoSignIn: true
         },
-
         plugins: [nextCookies()],
-
         user: {
             changeEmail: {
                 enabled: true,
-                updateEmailWithoutVerification: true,
+                updateEmailWithoutVerification: true
             },
             deleteUser: {
-                enabled: true,
-            },
+                enabled: true
+            }
         },
-
         socialProviders: {
             google: {
                 prompt: "select_account",
-                clientId: googleClientId,
-                clientSecret: googleClientSecret,
+                clientId: process.env.GOOGLE_CLIENT_ID as string,
+                clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
             },
         },
     });
 
     return authInstance;
-};
+}
 
-// Eager singleton export – guaranteed non‑null or throws on startup
 export const auth = await getAuth();
