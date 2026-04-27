@@ -7,6 +7,11 @@ import { redirect } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 const Layout = async ({ children }: { children: React.ReactNode }) => {
+    if (!auth) {
+        // If auth is not initialised, fail loudly and predictably.
+        throw new Error("Auth module not initialised");
+    }
+
     const session = await auth.api.getSession({ headers: await headers() });
 
     if (session?.user) redirect("/");
