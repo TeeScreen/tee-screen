@@ -7,6 +7,10 @@ import {redirect} from "next/navigation";
 
 export const signUpWithEmail = async ({email, password, fullName, phoneNumber, clubName, clubType, role}:SignUpFormData) => {
     try {
+        if (!auth) {
+            // If auth is not initialised, fail loudly and predictably.
+            throw new Error("Auth module not initialised");
+        }
         const response = await auth.api.signUpEmail({
             body: {
                 email:email,
@@ -41,6 +45,10 @@ export const signUpWithEmail = async ({email, password, fullName, phoneNumber, c
 
 export const signOut = async () => {
     try {
+        if (!auth) {
+            // If auth is not initialised, fail loudly and predictably.
+            throw new Error("Auth module not initialised");
+        }
         await auth.api.signOut({headers: await headers()});
         return {
             success: true,
@@ -57,6 +65,10 @@ export const signOut = async () => {
 
 export const signInWithEmail = async ({email, password, rememberMe}:SignInFormData) => {
     try {
+        if (!auth) {
+            // If auth is not initialised, fail loudly and predictably.
+            throw new Error("Auth module not initialised");
+        }
         const response = await auth.api.signInEmail({
             body: {
                 email: email,
@@ -87,6 +99,10 @@ export async function deleteUserAction(password: string) {
     try {
 
         await deleteUserInfo();
+        if (!auth) {
+            // If auth is not initialised, fail loudly and predictably.
+            throw new Error("Auth module not initialised");
+        }
         await auth.api.deleteUser({
             body: {
                 password: password,
@@ -108,7 +124,10 @@ export async function updateEmailAction(formData: FormData) {
     try {
         const email = formData.get("email") as string;
         const password = formData.get("password") as string;
-
+        if (!auth) {
+            // If auth is not initialised, fail loudly and predictably.
+            throw new Error("Auth module not initialised");
+        }
         await auth.api.verifyPassword({
             body: {
                 password: password // required
@@ -137,6 +156,10 @@ export async function updatePasswordAction(formData: FormData) {
     const password = formData.get("password") as string;
 
     try {
+        if (!auth) {
+            // If auth is not initialised, fail loudly and predictably.
+            throw new Error("Auth module not initialised");
+        }
         await auth.api.changePassword({
             body: {
                 newPassword: newPassword,

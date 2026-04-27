@@ -52,6 +52,10 @@ export async function addUserInfo(data: {
 
 export async function deleteUserInfo() {
     try {
+        if (!auth) {
+            // If auth is not initialised, fail loudly and predictably.
+            throw new Error("Auth module not initialised");
+        }
         const session = await auth.api.getSession({
             headers: await headers(),
         });
@@ -102,6 +106,10 @@ export async function saveUserInfo(data: {
     analyticsJson?: any;
 }) {
     try {
+        if (!auth) {
+            // If auth is not initialised, fail loudly and predictably.
+            throw new Error("Auth module not initialised");
+        }
         const session = await auth.api.getSession({
             headers: await headers(),
         });
@@ -126,6 +134,10 @@ export async function saveUserInfo(data: {
 }
 
 export async function getUserInfo() {
+    if (!auth) {
+        // If auth is not initialised, fail loudly and predictably.
+        throw new Error("Auth module not initialised");
+    }
     const session = await auth.api.getSession({
         headers: await headers(),
     });
@@ -159,6 +171,10 @@ export async function getUserInfo() {
 }
 
 export async function addAccountData(account: AccountData) {
+    if (!auth) {
+        // If auth is not initialised, fail loudly and predictably.
+        throw new Error("Auth module not initialised");
+    }
     const session = await auth.api.getSession({
         headers: await headers(),
     });
@@ -188,6 +204,10 @@ export async function addAccountData(account: AccountData) {
 }
 
 export async function removeAccountData(accountLogin: string) {
+    if (!auth) {
+        // If auth is not initialised, fail loudly and predictably.
+        throw new Error("Auth module not initialised");
+    }
     const session = await auth.api.getSession({
         headers: await headers(),
     });
