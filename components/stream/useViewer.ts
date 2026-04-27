@@ -1,95 +1,189 @@
 import { useEffect, useRef, useState } from "react";
 
+type ConnState =
+    | "idle"
+    | "signaling"
+    | "connecting"
+    | "connected"
+    | "disconnected"
+    | "failed"
+    | "sender-unavailable";
+
+const SIGNAL_URL = "wss://websocketserver-aqmy.onrender.com/ws";
+//const SIGNAL_URL = "ws://http://localhost:5000";
+
 export function useViewer(senderId: string) {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [connected, setConnected] = useState(false);
+    const [state, setState] = useState<ConnState>("idle");
+    const [error, setError] = useState<string | null>(null);
+
+    // Refs so React strict-mode double-invoke doesn't leak peer connections
+    const wsRef = useRef<WebSocket | null>(null);
+    const pcRef = useRef<RTCPeerConnection | null>(null);
+    const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
+    const cancelledRef = useRef(false);
 
     useEffect(() => {
-        const ws = new WebSocket("wss://websocketserver-aqmy.onrender.com/ws");
+        cancelledRef.current = false;
+        setError(null);
+        setState("signaling");
 
-        let pc: RTCPeerConnection | null = null;
+        const ws = new WebSocket(SIGNAL_URL);
+        wsRef.current = ws;
 
         ws.onopen = () => {
-            ws.send(
-                JSON.stringify({
-                    type: "request-sender",
-                    senderId
-                })
-            );
+            if (cancelledRef.current) return;
+            ws.send(JSON.stringify({ type: "request-sender", senderId }));
+        };
+
+        ws.onerror = (e) => {
+            console.error("[Viewer] WS error", e);
+            setError("signaling error");
+            setState("failed");
+        };
+
+        ws.onclose = () => {
+            console.log("[Viewer] WS closed");
         };
 
         ws.onmessage = async (event) => {
-            const msg = JSON.parse(event.data);
+            if (cancelledRef.current) return;
+
+            let msg: any;
+            try { msg = JSON.parse(event.data); }
+            catch { return; }
+
+            console.log("[Viewer] WS recv:", msg.type);
+
+            // ----------------------------------------------------
+            // Sender unavailable
+            // ----------------------------------------------------
+            if (msg.type === "sender-unavailable") {
+                setState("sender-unavailable");
+                return;
+            }
+
+            // ----------------------------------------------------
+            // Sender disconnected mid-stream
+            // ----------------------------------------------------
+            if (msg.type === "sender-disconnected") {
+                setState("disconnected");
+                return;
+            }
 
             // ----------------------------------------------------
             // 1. Sender delivered its offer SDP
             // ----------------------------------------------------
             if (msg.type === "deliver-peer-id") {
-                const offerSDP = msg.peerId;
+                const offerSDP: string = msg.peerId;
 
-                pc = new RTCPeerConnection({
+                const pc = new RTCPeerConnection({
                     iceServers: [
-                        { urls: ["stun:stun.l.google.com:19302"] }
+                        { urls: ["stun:stun.l.google.com:19302"] },
+                        // Plug a TURN here for cross-NAT (mobile carriers etc.):
+                        // {
+                        //     urls: "turn:openrelay.metered.ca:80",
+                        //     username: "openrelayproject",
+                        //     credential: "openrelayproject"
+                        // }
                     ]
                 });
+                pcRef.current = pc;
+                setState("connecting");
 
-                // When Unity sends media tracks
                 pc.ontrack = (e) => {
-                    if (videoRef.current) {
-                        videoRef.current.srcObject = e.streams[0];
+                    console.log("[Viewer] ontrack", e.streams);
+                    const video = videoRef.current;
+                    if (!video) return;
+
+                    if (video.srcObject !== e.streams[0]) {
+                        video.srcObject = e.streams[0];
                     }
+                    // Try to start playback explicitly. Autoplay can block silently otherwise.
+                    video.play().catch((err) => {
+                        console.warn("[Viewer] play() blocked:", err.message);
+                    });
                 };
 
-                // Send ICE candidates back to sender
                 pc.onicecandidate = (e) => {
-                    if (e.candidate) {
-                        ws.send(
-                            JSON.stringify({
-                                type: "viewer-ice",
-                                candidate: e.candidate
-                            })
-                        );
+                    if (e.candidate && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: "viewer-ice", candidate: e.candidate }));
                     }
                 };
 
-                // Apply remote offer
-                await pc.setRemoteDescription({
-                    type: "offer",
-                    sdp: offerSDP
-                });
+                pc.oniceconnectionstatechange = () => {
+                    console.log("[Viewer] iceState:", pc.iceConnectionState);
+                    switch (pc.iceConnectionState) {
+                        case "connected":
+                        case "completed":
+                            setState("connected");
+                            break;
+                        case "disconnected":
+                            setState("disconnected");
+                            break;
+                        case "failed":
+                            setState("failed");
+                            setError("ICE failed — likely needs TURN");
+                            break;
+                    }
+                };
 
-                // Create answer
-                const answer = await pc.createAnswer();
-                await pc.setLocalDescription(answer);
+                try {
+                    await pc.setRemoteDescription({ type: "offer", sdp: offerSDP });
 
-                // Send answer back to sender
-                ws.send(
-                    JSON.stringify({
-                        type: "viewer-answer",
-                        answer: answer.sdp
-                    })
-                );
+                    // Flush ICE candidates that arrived BEFORE pc was created
+                    for (const c of pendingIceRef.current) {
+                        try { await pc.addIceCandidate(c); }
+                        catch (err) { console.warn("[Viewer] flush ICE failed", err); }
+                    }
+                    pendingIceRef.current = [];
 
-                setConnected(true);
+                    const answer = await pc.createAnswer();
+                    await pc.setLocalDescription(answer);
+
+                    ws.send(JSON.stringify({ type: "viewer-answer", answer: answer.sdp }));
+                } catch (err: any) {
+                    console.error("[Viewer] negotiation failed", err);
+                    setError(err?.message ?? "negotiation failed");
+                    setState("failed");
+                }
+                return;
             }
 
             // ----------------------------------------------------
-            // 2. Sender ICE candidate → add to peer connection
+            // 2. Sender ICE candidate
+            //    If pc isn't ready yet, queue it. The OLD code dropped these.
             // ----------------------------------------------------
-            if (msg.type === "sender-ice" && pc) {
-                try {
-                    await pc.addIceCandidate(msg.candidate);
-                } catch (err) {
-                    console.error("Failed to add ICE candidate", err);
+            if (msg.type === "sender-ice") {
+                const cand: RTCIceCandidateInit = msg.candidate;
+                if (!cand) return;
+                if (pcRef.current && pcRef.current.remoteDescription) {
+                    try { await pcRef.current.addIceCandidate(cand); }
+                    catch (err) { console.warn("[Viewer] addIceCandidate failed", err); }
+                } else {
+                    pendingIceRef.current.push(cand);
+                    console.log("[Viewer] queued sender ICE (pc not ready yet)");
                 }
             }
         };
 
         return () => {
-            ws.close();
-            pc?.close();
+            cancelledRef.current = true;
+            try { ws.close(); } catch {}
+            try { pcRef.current?.close(); } catch {}
+            wsRef.current = null;
+            pcRef.current = null;
+            pendingIceRef.current = [];
         };
     }, [senderId]);
 
-    return { videoRef, connected };
+    // Manual unmute helper (autoplay policies)
+    const unmute = () => {
+        const v = videoRef.current;
+        if (!v) return;
+        v.muted = false;
+        v.play().catch(() => {});
+    };
+
+    return { videoRef, state, error, unmute };
 }
