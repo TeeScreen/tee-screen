@@ -22,7 +22,10 @@ import {toast} from "sonner";
 import { DiscardDialog } from "@/components/DiscardDialogue";
 export const dynamic = "force-dynamic";
 export default async function Layout({ children }: Readonly<{ children: ReactNode }>) {
-
+  if (!auth) {
+    // If auth is not initialised, fail loudly and predictably.
+    throw new Error("Auth module not initialised");
+  }
   const session = await auth.api.getSession({headers: await headers()})
   if(!session?.user) redirect("/sign-in");
 
