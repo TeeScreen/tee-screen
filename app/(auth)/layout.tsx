@@ -48,11 +48,10 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
                     </blockquote>
                 </div>
 
-                {/* VIDEO */}
-                <div className="w-full h-64 lg:h-[400px] overflow-hidden">
+                <div className="w-full h-64 lg:h-[400px] flex items-center justify-center bg-black">
                     <video
                         src="/assets/video/CreateAccountGuide.mp4"
-                        className="w-full h-full object-cover"
+                        className="max-w-full max-h-full object-contain"
                         controls
                         autoPlay
                         muted
@@ -60,6 +59,7 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
                         playsInline
                     />
                 </div>
+
 
             </section>
         </main>
