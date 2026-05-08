@@ -11,12 +11,13 @@ import {
 import { revalidatePath } from "next/cache";
 import { AddAccountDialog } from "@/components/screen/AddAccountDialog";
 import { ScreenList } from "@/components/screen/ScreenList";
-import { downloadClubImages } from "@/lib/actions/file.actions";
+import {copyScreenChanges, downloadClubImages} from "@/lib/actions/file.actions";
 import { ResetLoadedDataDialog } from "@/components/ResetData";
 import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 import { AccountDropdown } from "@/components/screen/AccountDropdown";
 import { LoadedScreen } from "@/components/screen/LoadedScreen";
 import { Button } from "@/components/ui/button";
+import {toast} from "sonner";
 
 export default async function HomePage() {
     let user = await getUserInfo();
@@ -166,6 +167,21 @@ export default async function HomePage() {
         revalidatePath("/");
     }
 
+// -----------------------------
+    async function handleCopy(formData: FormData) {
+        "use server";
+
+        const selected = formData.getAll("selectedScreens") as string[];
+
+        const res = await copyScreenChanges(selected);
+        if (res?.success) {
+            // toast cannot be called here (server side), but we can return a flag
+            return { success: true };
+        } else {
+            return { success: false };
+        }
+    }
+
     // -----------------------------
     // RENDER
     // -----------------------------
@@ -230,6 +246,7 @@ export default async function HomePage() {
                             screens={screenNames}
                             loadedScreen={loadedScreen}
                             onLoadScreen={handleLoadScreen}
+                            onCopyChanges={handleCopy}
                         />
                     </div>
                 </div>
