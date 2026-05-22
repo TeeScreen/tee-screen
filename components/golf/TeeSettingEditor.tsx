@@ -3,6 +3,7 @@
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {useDirtyState} from "@/stores/user-store";
 
 type RGBA = { r: number; g: number; b: number; a: number };
 
@@ -20,6 +21,7 @@ export function TeeSettingsEditor({ localJson, updateJson }: TeeSettingsEditorPr
         TeeColourYellow,
         TeeColourRed,
     } = localJson;
+    const {setDirty} = useDirtyState();
 
     const rgbaToHex = (rgba: RGBA) =>
         `#${[rgba.r, rgba.g, rgba.b]
@@ -41,6 +43,7 @@ export function TeeSettingsEditor({ localJson, updateJson }: TeeSettingsEditorPr
             ...localJson,
             [key]: value,
         };
+        setDirty(true);
         updateJson(newJson);
     }
 
@@ -48,11 +51,23 @@ export function TeeSettingsEditor({ localJson, updateJson }: TeeSettingsEditorPr
         <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="tee-settings">
                 <AccordionTrigger className="text-lg font-semibold">
-                    Club Tee Labels & Colours
+                    Tee Settings and Colours
                 </AccordionTrigger>
 
                 <AccordionContent>
                     <div className="rounded-lg border p-4 space-y-6 bg-neutral-900/40">
+                        {/* Toggle Hide Holes */}
+                        {/* Toggle Hide Holes */}
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="checkbox"
+                                checked={Boolean(localJson.hideHolesOnScreen)}
+                                onChange={(e) => updateField("hideHolesOnScreen", e.target.checked)}
+                                className="h-5 w-5 cursor-pointer"
+                            />
+                            <Label className="text-sm">Hide Holes On Screen</Label>
+                        </div>
+
 
                         {/* Back */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">

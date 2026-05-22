@@ -5,7 +5,7 @@ import {headers} from "next/headers";
 import {redirect} from "next/navigation";
 import {revalidatePath} from "next/cache";
 import {AccountData, UserInfoModel} from "@/database/models/user.model";
-import {deleteFolder, uploadFolder} from "@/lib/actions/file.actions";
+import {deleteFolder, downloadClubImages, uploadFolder} from "@/lib/actions/file.actions";
 import {UPLOAD_DIR} from "@/lib/constants";
 import fs from "fs/promises";
 
@@ -288,23 +288,81 @@ export async function applyScreenChange() {
     }
 }
 
-
-export async function resetScreenChange() {
+export async function resetScreenChange(resetLoaded: boolean = false) {
     try {
         const userInfo = await getUserInfo();
-        await deleteFolder(userInfo.screenJson["FolderNameOnServer"]);
-        await saveUserInfo({
-            loadedScreen: "",
+
+        // Clean up any server folder tied to the current screen
+        if (userInfo?.screenJson?.FolderNameOnServer) {
+            await deleteFolder(userInfo.screenJson.FolderNameOnServer);
+        }
+
+        // Base reset payload
+        const resetPayload: any = {
             screenJson: null,
             analyticsJson: null,
-        });
+        };
 
-        return {success: true, message: "Reset screen"};
-    }catch(e)
-    {
-        return {success: false, error: "Failed to reset screen"};
+        if (resetLoaded) {
+            resetPayload.loadedScreen = "";
+        }
+
+        await saveUserInfo(resetPayload);
+
+        // Reload fresh data if a loadedScreen exists
+        if (!resetLoaded && userInfo.loadedScreen) {
+            const account = userInfo.accountDetails?.find(
+                (a: any) => a.accountLogin === userInfo.loadedAccount
+            );
+            if (!account) {
+                return { success: false, error: "No account found" };
+            }
+
+            const screenRes = await fetch(
+                `https://teescreenapp.com/api/screen_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${userInfo.loadedScreen}`
+            );
+            if (!screenRes.ok) {
+                return { success: false, error: "Failed to fetch screen data" };
+            }
+
+            const screenData = await screenRes.json();
+
+            let analyticsData: any = null;
+            try {
+                const analyticsRes = await fetch(
+                    `https://teescreenapp.com/api/analytics_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenData.name}`
+                );
+                if (analyticsRes.ok) {
+                    analyticsData = await analyticsRes.json();
+                }
+            } catch {
+                console.warn("Analytics request failed");
+            }
+
+            await saveUserInfo({
+                loadedScreen: screenData.name,
+                screenJson: screenData,
+                analyticsJson: analyticsData,
+            });
+
+            if (screenData.FolderNameOnServer) {
+                try {
+                    await downloadClubImages(screenData.FolderNameOnServer);
+                } catch {
+                    console.warn("Failed to download club images");
+                }
+            }
+
+            revalidatePath("/");
+        }
+
+        return { success: true, message: "Reset and refreshed screen" };
+    } catch (e) {
+        console.error("resetScreenChange error:", e);
+        return { success: false, error: "Failed to reset screen" };
     }
 }
+
 
 
 

@@ -32,7 +32,7 @@ export default async function HomePage() {
 
     async function handleReset() {
         "use server";
-        await resetScreenChange();
+        await resetScreenChange(true);
         revalidatePath("/");
     }
 
