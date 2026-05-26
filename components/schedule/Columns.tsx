@@ -18,11 +18,33 @@ function toTime(value: string): string {
     }
 }
 
-function updateCell(table: any, rowIndex: number, field: keyof ScheduleEntry, value: any) {
-    const data = [...(table.options.data as ScheduleEntry[])];
-    data[rowIndex] = { ...data[rowIndex], [field]: value };
-    table.options.meta?.setData?.(data);
+function updateCell(
+    table: any,
+    rowIndex: number,
+    field: keyof ScheduleEntry,
+    value: any
+) {
+    // Grab the full dataset from meta
+    const setData = table.options.meta?.setData as React.Dispatch<
+        React.SetStateAction<ScheduleEntry[]>
+    >;
+
+    // Use the updater form of setData so you always have the latest state
+    setData((prev) => {
+        const updated = [...prev];
+        // Find the global index by matching the row’s unique identifier
+        const row = table.options.data[rowIndex];
+        const globalIndex = prev.findIndex(
+            (e) => e.start === row.start && e.end === row.end
+        );
+
+        if (globalIndex !== -1) {
+            updated[globalIndex] = { ...updated[globalIndex], [field]: value };
+        }
+        return updated;
+    });
 }
+
 
 function EditableCell({ row, column, table }: any) {
     const field = column.id as keyof ScheduleEntry;
@@ -37,6 +59,7 @@ function EditableCell({ row, column, table }: any) {
 function TimeCell({ row, column, table }: any) {
     const field = column.id as keyof ScheduleEntry;
     const value = toTime(row.original[field] as string);
+
     return (
         <Input
             type="time"
@@ -44,8 +67,15 @@ function TimeCell({ row, column, table }: any) {
             onChange={(e) => {
                 const [hh, mm] = e.target.value.split(":");
                 const date = new Date(row.original[field]);
+
                 date.setHours(Number(hh), Number(mm), 0, 0);
-                updateCell(table, row.index, field, date.toISOString());
+
+                // Save as local ISO without timezone
+                const localIso = `${date.getFullYear()}-${(date.getMonth()+1)
+                    .toString().padStart(2,"0")}-${date.getDate()
+                    .toString().padStart(2,"0")}T${hh}:${mm}:00`;
+
+                updateCell(table, row.index, field, localIso);
             }}
         />
     );

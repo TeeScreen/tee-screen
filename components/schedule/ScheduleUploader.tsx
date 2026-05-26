@@ -5,6 +5,7 @@ import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ScheduleByDate from "./ScheduleByDate";
+import { toast } from "sonner";
 
 export type ScheduleEntry = {
     start: string;
@@ -98,9 +99,9 @@ export default function ScheduleUploader({ screenName }: { screenName: string })
                 body: JSON.stringify({ filename: screenName, entries }),
             });
             if (res.ok) {
-                alert("Schedule saved successfully!");
+                toast.message("Schedule saved successfully!");
             } else {
-                alert("Failed to save schedule: " + (await res.text()));
+                toast.message("Failed to save schedule: " + (await res.text()));
             }
         } catch (err) {
             console.error("Error saving schedule", err);
@@ -108,22 +109,33 @@ export default function ScheduleUploader({ screenName }: { screenName: string })
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex gap-4">
+        <div className="space-y-8">
+            {/* Import / Template */}
+            <div className="flex items-center gap-4">
                 <Input type="file" accept=".xlsx,.csv" onChange={handleUpload} />
                 <Button asChild>
                     <a href="/schedule-template.csv" download>
                         Download Template
                     </a>
                 </Button>
+            </div>
+
+            {/* Row Controls */}
+            <div className="flex items-center gap-4">
                 <Button onClick={addRow}>Add Row</Button>
+                {/* You can add a Delete Selected button here later */}
+            </div>
+
+            {/* Save Controls */}
+            <div className="flex items-center gap-4">
                 <Button onClick={saveSchedule} variant="secondary">
                     Save Schedule
                 </Button>
             </div>
 
-            {/* Date-based view */}
+            {/* Data View */}
             <ScheduleByDate entries={entries} setData={setData} />
         </div>
+
     );
 }
