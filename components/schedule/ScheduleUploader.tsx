@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ScheduleByDate from "./ScheduleByDate";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react"; // spinner icon
 
 export type ScheduleEntry = {
     start: string;
@@ -22,6 +23,7 @@ const ApiUrl = "https://teescreenapp.com/api/schedule";
 
 export default function ScheduleUploader({ screenName }: { screenName: string }) {
     const [entries, setData] = useState<ScheduleEntry[]>([]);
+    const [saving, setSaving] = useState(false); // track saving state
 
     // Load schedule from server
     useEffect(() => {
@@ -55,7 +57,6 @@ export default function ScheduleUploader({ screenName }: { screenName: string })
                 headers.forEach((h, i) => {
                     obj[h.trim()] = row[i]?.trim();
                 });
-                // normalize start/end to ISO
                 if (obj.start) obj.start = new Date(obj.start).toISOString();
                 if (obj.end) obj.end = new Date(obj.end).toISOString();
                 return obj;
@@ -92,6 +93,7 @@ export default function ScheduleUploader({ screenName }: { screenName: string })
 
     // Save schedule
     const saveSchedule = async () => {
+        setSaving(true);
         try {
             const res = await fetch(ApiUrl, {
                 method: "POST",
@@ -99,12 +101,15 @@ export default function ScheduleUploader({ screenName }: { screenName: string })
                 body: JSON.stringify({ filename: screenName, entries }),
             });
             if (res.ok) {
-                toast.message("Schedule saved successfully!");
+                toast.success("Schedule saved successfully!");
             } else {
-                toast.message("Failed to save schedule: " + (await res.text()));
+                toast.error("Failed to save schedule: " + (await res.text()));
             }
         } catch (err) {
             console.error("Error saving schedule", err);
+            toast.error("Error saving schedule");
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -123,19 +128,24 @@ export default function ScheduleUploader({ screenName }: { screenName: string })
             {/* Row Controls */}
             <div className="flex items-center gap-4">
                 <Button onClick={addRow}>Add Row</Button>
-                {/* You can add a Delete Selected button here later */}
             </div>
 
             {/* Save Controls */}
             <div className="flex items-center gap-4">
-                <Button onClick={saveSchedule} variant="secondary">
-                    Save Schedule
+                <Button onClick={saveSchedule} variant="secondary" disabled={saving}>
+                    {saving ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Saving...
+                        </>
+                    ) : (
+                        "Save Schedule"
+                    )}
                 </Button>
             </div>
 
             {/* Data View */}
             <ScheduleByDate entries={entries} setData={setData} />
         </div>
-
     );
 }

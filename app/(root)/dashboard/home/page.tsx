@@ -112,7 +112,7 @@ export default async function HomePage() {
             return;
         }
 
-        await resetScreenChange();
+        await resetScreenChange(true);
 
         const screenRes = await fetch(
             `https://teescreenapp.com/api/screen_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenName}`
@@ -162,7 +162,6 @@ export default async function HomePage() {
                 console.warn("Failed to download club images");
             }
         }
-
         revalidatePath("/");
     }
 
