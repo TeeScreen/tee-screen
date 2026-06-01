@@ -68,7 +68,7 @@ export function AddAccountDialog({
                         className="inline-flex items-center gap-2 w-auto px-2 sm:px-3"
                     >
                         <Plus className="h-4 w-4" />
-                        <span className="hidden sm:inline">Add New Screen</span>
+                        <span className="">Add New Screen</span>
                     </Button>
                 </div>
             </DialogTrigger>

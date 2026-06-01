@@ -176,8 +176,7 @@ export default async function HomePage() {
             </h1>
 
             {accounts.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch h-100">
-
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
                     {/* LEFT COLUMN */}
                     <div className="flex flex-col h-full">
                         <AccountDropdown
