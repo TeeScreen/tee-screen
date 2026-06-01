@@ -141,11 +141,11 @@ export const sidebarItems: NavGroup[] = [
         icon: Contact,
         comingSoon: true,
       },
-      {
+      /*{
         title: "Demo Camera",
         url: "/pages/demo-camera",
         icon: Camera,
-      },
+      },*/
     ],
   },
 ];

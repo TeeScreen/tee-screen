@@ -294,7 +294,7 @@ export default function PreviewScreen() {
                                                                 src={tab.icon}
                                                                 alt={`${tab.name} icon`}
                                                                 fill
-                                                                className="object-contain"
+                                                                className="object-cover"
                                                             />
                                                         </div>
                                                     </div>
