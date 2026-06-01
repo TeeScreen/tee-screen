@@ -28,15 +28,15 @@ export function ApplyDialog() {
         const result = await applyScreenChange();
 
         if (result.success) {
-            toast("Applied changes successfully.");
+            toast("Applied changes successfully. Returning to screen page");
             setDirty(false);
-            redirect("/dashboard/home");
         } else {
-            toast("Failed to apply changes.");
+            toast("Failed to apply changes. Returning to screen page");
         }
 
         setIsLoading(false);
         setOpen(false);
+        redirect("/dashboard/home");
     }
 
     return (

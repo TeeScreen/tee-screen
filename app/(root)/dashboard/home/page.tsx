@@ -33,7 +33,7 @@ export default async function HomePage() {
 
     async function handleReset() {
         "use server";
-        await resetScreenChange();
+        await resetScreenChange(true);
         revalidatePath("/");
     }
 
@@ -59,9 +59,9 @@ export default async function HomePage() {
         const password = formData.get("password") as string;
 
         const response = await fetch(
-            `https://teescreenapp.com/api/auth_accounts?user=${login}&password=${password}`
+            `https://teescreenapp.com/api/auth_accounts.php?user=${login}&password=${password}`
         );
-
+        console.log("response", response);
         const data = await response.json();
 
         await saveUserInfo({
@@ -113,7 +113,7 @@ export default async function HomePage() {
             return;
         }
 
-        await resetScreenChange();
+        await resetScreenChange(true);
 
         const screenRes = await fetch(
             `https://teescreenapp.com/api/screen_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenName}`
@@ -163,7 +163,6 @@ export default async function HomePage() {
                 console.warn("Failed to download club images");
             }
         }
-
         revalidatePath("/");
     }
 
@@ -193,8 +192,7 @@ export default async function HomePage() {
             </h1>
 
             {accounts.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch h-100">
-
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
                     {/* LEFT COLUMN */}
                     <div className="flex flex-col h-full">
                         <AccountDropdown

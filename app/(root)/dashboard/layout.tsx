@@ -21,7 +21,9 @@ import { ApplyDialog } from "@/components/ApplyDialogue";
 import { DiscardDialog } from "@/components/DiscardDialogue";
 import { UnsavedChangesGuard } from "@/components/UnsavedChangesGuard";
 
-import { GuideMenu } from "@/components/GuideMenu"; // ← your new menu
+import { GuideMenu } from "@/components/GuideMenu";
+import PreviewScreen from "@/components/demo/PreviewScreen";
+import {PreviewToggle} from "@/components/demo/PreviewToggle"; // ← your new menu
 
 export const dynamic = "force-dynamic";
 
@@ -90,6 +92,10 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
 
           <div className="h-full p-4 md:p-6">{children}</div>
 
+            {/* Floating Guide Menu */}
+            <div className="fixed top-16 right-4 z-50">
+                {loadedScreen && <PreviewToggle/>}
+            </div>
             {/* Floating Guide Menu */}
             <div className="fixed bottom-4 right-4 z-50">
                 <GuideMenu />

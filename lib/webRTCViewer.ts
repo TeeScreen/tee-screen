@@ -226,16 +226,30 @@ export class WebRTCViewer {
         this.cbs.onRemoteStream?.(this.remoteStream);
 
         this.pc.ontrack = (ev) => {
-            this.log(`ontrack ${ev.track.kind}`);
+            this.log(`ontrack ${ev.track.kind}, id=${ev.track.id}`);
             const stream = this.remoteStream;
-            if (!stream) return;
-            // Replace any existing track of the same kind, then add the new one.
+            if (!stream) {
+                console.error('Remote stream not found');
+                return;
+            }
+
+            // Replace existing track of same kind
             stream.getTracks()
                 .filter(t => t.kind === ev.track.kind)
                 .forEach(t => stream.removeTrack(t));
             stream.addTrack(ev.track);
             this.cbs.onRemoteStream?.(stream);
+
+            console.log((stream));
+            console.log((stream.getTracks()));
+
+            // Debug when track ends/drops
+            ev.track.onended = () => {
+                this.log(`[WebRTC] Remote track ended/dropped: ${ev.track.kind}, id=${ev.track.id}`);
+                this.setStatus('error', `Track dropped: ${ev.track.kind}`);
+            };
         };
+
 
         this.pc.onicecandidate = (ev) => {
             if (!ev.candidate) return;

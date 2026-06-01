@@ -3,7 +3,7 @@ import {
   Bug, Contact,
   Eye,
   Flag,
-  Home, ImageUp,
+  Home, ImageUp, Camera,
   type LucideIcon, NotebookTabs,
   PanelsTopLeft, PanelTopBottomDashed, Trophy,
   Wallpaper, FileQuestionMark, NotebookPen, ChartNoAxesCombined,
@@ -141,6 +141,11 @@ export const sidebarItems: NavGroup[] = [
         icon: Contact,
         comingSoon: true,
       },
+      /*{
+        title: "Demo Camera",
+        url: "/pages/demo-camera",
+        icon: Camera,
+      },*/
     ],
   },
 ];

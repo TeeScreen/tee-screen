@@ -14,7 +14,7 @@ export default async function Page() {
                 <Wallpaper/> Background
             </h1>
             <div className="@container/main flex flex-col gap-4 md:gap-6">
-                <UploadSection folderName={folderName} fileName="Background.png" label="Background"/>
+                <UploadSection folderName={folderName} fileName="Background.png" label="Background" recommendedSize="1080 x 1920"/>
             </div>
         </div>
     );
