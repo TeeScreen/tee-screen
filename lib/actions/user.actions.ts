@@ -121,7 +121,7 @@ export async function saveUserInfo(data: {
         await UserInfoModel.findOneAndUpdate(
             { userId },
             { userId, ...data },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         revalidatePath("/");
@@ -196,7 +196,7 @@ export async function addAccountData(account: AccountData) {
     const updated = await UserInfoModel.findOneAndUpdate(
         { userId },
         { $push: { accountDetails: account } },
-        { new: true }
+        { returnDocument: 'after' }
     );
 
 
@@ -217,7 +217,7 @@ export async function removeAccountData(accountLogin: string) {
     const updated = await UserInfoModel.findOneAndUpdate(
         { userId },
         { $pull: { accountDetails: { accountLogin } } },
-        { new: true }
+        { returnDocument: 'after' }
     );
 
     return JSON.parse(JSON.stringify(updated));

@@ -58,9 +58,9 @@ export default async function HomePage() {
         const password = formData.get("password") as string;
 
         const response = await fetch(
-            `https://teescreenapp.com/api/auth_accounts?user=${login}&password=${password}`
+            `https://teescreenapp.com/api/auth_accounts.php?user=${login}&password=${password}`
         );
-
+        console.log("response", response);
         const data = await response.json();
 
         await saveUserInfo({
