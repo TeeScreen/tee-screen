@@ -216,7 +216,7 @@ export default function PreviewScreen() {
                                     </Button>
                                 </div>
                                 {!hideHolesOnScreen && (
-                                    <div className="absolute top-[50%] w-full px-4 z-20 flex flex-col gap-3">
+                                    <div className="absolute top-[52.5%] w-full px-4 z-20 flex flex-col gap-3">
 
                                         <div className="flex flex-col gap-2">
                                             <div className="grid grid-cols-9 gap-2">
@@ -259,7 +259,7 @@ export default function PreviewScreen() {
                                 {tabs.map((tab, i) => (
                                     <Button
                                         key={i}
-                                        className="relative h-16 flex-1 max-w-[25%] rounded-sm overflow-hidden flex flex-col items-center justify-center"
+                                        className="relative h-16 flex-1 max-w-[25%] rounded-sm flex flex-col items-center justify-center"
                                         style={{ backgroundColor: uiColor }}
                                         onClick={() => {
                                             if (tab.urlActive && tab.url) {
@@ -288,13 +288,13 @@ export default function PreviewScreen() {
                                         ) : (
                                             <>
                                                 {tab.icon ? (
-                                                    <div className="flex-[5] max-h-[85%] flex items-center justify-center w-full">
+                                                    <div className="flex-1 w-full h-full flex">
                                                         <div className="relative w-full h-full">
                                                             <Image
                                                                 src={tab.icon}
                                                                 alt={`${tab.name} icon`}
                                                                 fill
-                                                                className="object-cover"
+                                                                className="object-contain"
                                                             />
                                                         </div>
                                                     </div>
@@ -304,11 +304,12 @@ export default function PreviewScreen() {
                                                 <span
                                                     className={`${textColor} font-semibold text-center break-words
                                                     ${tab.icon
-                                                        ? "flex-[1] max-h-[15%] text-[clamp(0.4rem,1.2vw,0.6rem)] leading-tight"
+                                                        ? "flex-[0] max-h-[15%] text-[clamp(0.4rem,1.2vw,0.6rem)] leading-tight"
                                                         : "flex items-center justify-center h-full w-full text-[clamp(0.8rem,2vw,1.2rem)] whitespace-normal"}`}
                                                 >
                                                     {tab.name}
                                                 </span>
+
                                             </>
                                         )}
                                     </Button>

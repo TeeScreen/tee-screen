@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import PreviewScreen from '@/components/demo/PreviewScreen'
 import {getUserInfo} from "@/lib/actions/user.actions";
+import { Smartphone } from "lucide-react";
 
 export function PreviewToggle() {
     const [open, setOpen] = useState(false)
@@ -11,7 +12,7 @@ export function PreviewToggle() {
     return (
         <div className="flex items-center gap-6">
             <Button onClick={() => setOpen((prev) => !prev)} className="z-50">
-                {open ? 'Hide Preview' : 'Show Preview'}
+                <Smartphone/><span className="hidden md:inline">{open ? 'Hide Preview' : 'Show Preview'}</span>
             </Button>
 
             {/* Keep mounted, just toggle visibility */}
