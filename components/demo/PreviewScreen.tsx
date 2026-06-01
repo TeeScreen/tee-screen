@@ -282,8 +282,8 @@ export default function PreviewScreen() {
                                                 <span
                                                     className={`relative z-10 ${textColor} font-semibold text-center w-full px-1 text-[clamp(0.6rem,1.5vw,0.9rem)]`}
                                                 >
-              {tab.name}
-            </span>
+                                                    {tab.name}
+                                                </span>
                                             </>
                                         ) : (
                                             <>
@@ -303,12 +303,12 @@ export default function PreviewScreen() {
                                                 {/* Text: vertically centered if no icon */}
                                                 <span
                                                     className={`${textColor} font-semibold text-center break-words
-                ${tab.icon
+                                                    ${tab.icon
                                                         ? "flex-[1] max-h-[15%] text-[clamp(0.4rem,1.2vw,0.6rem)] leading-tight"
                                                         : "flex items-center justify-center h-full w-full text-[clamp(0.8rem,2vw,1.2rem)] whitespace-normal"}`}
                                                 >
-              {tab.name}
-            </span>
+                                                    {tab.name}
+                                                </span>
                                             </>
                                         )}
                                     </Button>
@@ -363,7 +363,7 @@ export default function PreviewScreen() {
                                         {/* HOME */}
                                         <div className="relative overflow-hidden">
                                             {homeBG ? (
-                                                <Image src={homeBG} alt="Home Background" fill className="object-cover opacity-30" />
+                                                <Image src={homeBG} alt="Home Background" fill className="object-cover" />
                                             ) : logoImage ? (
                                                 <div className="absolute inset-0 right flex items-center justify-end">
                                                     <div className="relative w-70 h-70">
@@ -385,7 +385,7 @@ export default function PreviewScreen() {
                                         {/* AWAY */}
                                         <div className="relative overflow-hidden">
                                             {awayBG ? (
-                                                <Image src={awayBG} alt="Away Background" fill className="object-cover opacity-30" />
+                                                <Image src={awayBG} alt="Away Background" fill className="object-cover" />
                                             ) : logoImage ? (
                                                 <div className="absolute inset-0 flex items-center justify-start">
                                                     <div className="relative w-70 h-70">
