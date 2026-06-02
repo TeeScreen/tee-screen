@@ -45,7 +45,7 @@ const FilePreview = async ({
         { method: "HEAD" }
     );
 
-    const fileExists = headRes.ok;
+    const fileExists = headRes.ok && resolvedFileName[0] != "d";
 
     if (!fileExists) {
         return (
@@ -70,9 +70,9 @@ const FilePreview = async ({
                     <p className="text-sm font-medium truncate">
                         {resolvedFileName.substring(resolvedFileName.indexOf("-") + 1)}
                     </p>
-                    <p className="text-xs">
+                    {/*<p className="text-xs">
                         {new Date(parseInt(resolvedFileName.split("-")[0])).toLocaleDateString()}
-                    </p>
+                    </p>*/}
                 </div>
 
                 <ConfirmDeleteButton action={handleDelete} />

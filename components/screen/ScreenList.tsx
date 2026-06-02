@@ -5,42 +5,57 @@ import { ScreenItem } from "./ScreenItem";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { CopyScreensDialog } from "./CopyScreensDialog";
+import {CopyConfirmDialog, PreviewResult} from "./CopyConfirmDialog";
+import { toast } from "sonner";
+import {confirmScreenChanges, PreviewResponse, previewScreenChanges} from "@/lib/actions/file.actions";
+
+type DiffEntry = {
+    path: string;
+    oldValue: any;
+    newValue: any;
+};
 
 export function ScreenList({
                                screens,
                                loadedScreen,
                                onLoadScreen,
-                               onCopyChanges,
                            }: {
     screens: string[];
     loadedScreen: string | null;
-    onLoadScreen: (screenName: string) => void;          // server action
-    onCopyChanges: (formData: FormData) => Promise<any>; // server action
+    onLoadScreen: (screenName: string) => void;
 }) {
     const [compact, setCompact] = useState(true);
+    const [pendingPreviews, setPendingPreviews] = useState<PreviewResult[] | null>(null);
+    const [sourceFolder, setSourceFolder] = useState<string>();
+
+    async function handleCopy(selected: string[]) {
+        const res = await previewScreenChanges(selected);
+        if (res.success && res.previews) {
+            setPendingPreviews(res.previews);
+            setSourceFolder(res.sourceFolder);
+        } else {
+            toast.error(res.message || "Preview failed");
+        }
+        return res; // <-- return the PreviewResponse so types match
+    }
+
+    const extraScreens = screens.filter(item => item !== loadedScreen);
+
 
     return (
         <div className="w-full flex flex-col gap-4">
-            {/* Toggle */}
             <div className="flex items-center justify-between gap-2 pr-1">
                 <div className="flex items-center gap-2">
                     <Label htmlFor="compact-toggle" className="text-sm">
                         {compact ? "Compact View" : "Normal View"}
                     </Label>
-                    <Switch
-                        id="compact-toggle"
-                        checked={compact}
-                        onCheckedChange={setCompact}
-                    />
+                    <Switch id="compact-toggle" checked={compact} onCheckedChange={setCompact} />
                 </div>
-
-                {/* Copy Changes Button */}
                 {loadedScreen && (
-                    <CopyScreensDialog screens={screens} copyAction={onCopyChanges} />
+                    <CopyScreensDialog screens={extraScreens} copyAction={handleCopy} />
                 )}
             </div>
 
-            {/* Grid */}
             <div
                 className={`grid gap-3 w-full ${
                     compact
@@ -48,7 +63,7 @@ export function ScreenList({
                         : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
                 }`}
             >
-                {screens.map((screen) => (
+                {screens.map((screen: string) => (
                     <ScreenItem
                         key={screen}
                         screenName={screen}
@@ -58,6 +73,20 @@ export function ScreenList({
                     />
                 ))}
             </div>
+
+            {pendingPreviews && sourceFolder && (
+                <CopyConfirmDialog
+                    sourceFolder={sourceFolder}
+                    previews={pendingPreviews}
+                    onConfirm={async () => {
+                        const res = await confirmScreenChanges(pendingPreviews);
+                        if (res.success) toast.success(res.message);
+                        else toast.error(res.message);
+                        setPendingPreviews(null);
+                    }}
+                    onCancel={() => setPendingPreviews(null)}
+                />
+            )}
         </div>
     );
 }

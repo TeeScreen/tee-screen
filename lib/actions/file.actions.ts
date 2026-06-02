@@ -68,6 +68,7 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
         phpForm.append("folderName", folderName);
         phpForm.append("file", file, newFileName);
 
+        await deleteFile(folderName, newFileName);
         const res = await fetch(`${process.env.SERVER_URL}/upload_tmp_file.php`, {
             method: "POST",
             body: phpForm,
@@ -176,54 +177,136 @@ const getScreenPreview = async (screenName: string): Promise<string | null> => {
     }
 }
 
-export async function copyScreenChanges(targetScreens: string[]): Promise<{ success: boolean; message: string }> {
-    try {
-        if (!targetScreens || targetScreens.length === 0) {
-            return { success: false, message: "No target screens provided" };
+export async function previewScreenChanges(targetScreens: string[]) {
+    const userInfo = await getUserInfo();
+    const sourceData = userInfo?.screenJson;
+    if (!sourceData) return { success: false, message: "No source data" };
+    const sourceFolder = sourceData.FolderNameOnServer;
+    const previews = [];
+
+    const accounts = userInfo?.accountDetails || [];
+    const loadedAccount = userInfo?.loadedAccount || null;
+    const account = accounts.find(
+        (a: any) => a.accountLogin === loadedAccount
+    );
+
+    // Fetch uploaded files (those starting with U)
+    const filesRes = await fetch(
+        `${process.env.SERVER_URL}/get_tmp_changes?screen=${sourceFolder}`
+    );
+    const files = filesRes.ok ? await filesRes.json() : [];
+
+    for (const targetScreen of targetScreens) {
+
+        const res = await fetch(
+            `https://teescreenapp.com/api/screen_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${targetScreen}`,
+        );
+        if (!res.ok) continue;
+        const originalJson = await res.json();
+
+        const { merged, diffs } = deepDiffMerge(originalJson, sourceData);
+        previews.push({ targetScreen, diffs, merged, files });
+    }
+
+    return { success: true, previews, sourceFolder};
+}
+
+
+export async function confirmScreenChanges(
+    previews: { targetScreen: string; merged: any }[], sourceFolder?: string
+) {
+    for (const { targetScreen, merged } of previews) {
+        merged.lastEdited = new Date().toISOString();
+
+        const blob = new Blob([JSON.stringify(merged)], { type: "application/json" });
+        const form = new FormData();
+        form.append("file", blob, `${targetScreen}.json`);
+
+        const uploadRes = await fetch(
+            `${process.env.SERVER_URL}/upload_golf_course.php`,
+            {
+                method: "POST",
+                body: form,
+            }
+        );
+
+        if (!uploadRes.ok) {
+            return { success: false, message: `Failed to copy to ${targetScreen}` };
         }
 
-        const userInfo = await getUserInfo();
-        const sourceData = userInfo?.screenJson;
+        // Optionally trigger your PHP script that processes tmp folder
+        const processRes = await fetch(
+            `${process.env.SERVER_URL}/upload_changes_tmp?source=${sourceFolder}&target=${merged.FolderNameOnServer}`
+        );
 
-        if (!sourceData || !userInfo.loadedScreen) {
-            return { success: false, message: "No loaded screen data to copy from" };
+        if (!processRes.ok) {
+            return { success: false, message: `Failed to process files for ${targetScreen}` };
+        }
+    }
+
+    revalidatePath("/");
+    return { success: true, message: "Changes copied successfully" };
+}
+
+
+export type PreviewResponse = {
+    success: boolean;
+    previews?: any[];
+    message?: string;
+    sourceFolder: string;
+};
+
+
+export type DiffEntry = {
+    path: string;       // e.g. "holesData[0].yardsToHole"
+    oldValue: any;
+    newValue: any;
+};
+
+function deepDiffMerge(
+    original: Record<string, any>,
+    modified: Record<string, any>,
+    skipKeys: string[] = ["name", "FolderNameOnServer", "GolfCourseLatLon" , "CourseLogoURL",
+        "CourseOverviewURL", "AccountsThatHaveAccess", "CourseName", "lastEdited"],
+    path: string = ""
+): { merged: Record<string, any>; diffs: DiffEntry[] } {
+    const result: Record<string, any> = { ...original };
+    const diffs: DiffEntry[] = [];
+
+    for (const key of Object.keys(modified)) {
+        const currentPath = path ? `${path}.${key}` : key;
+
+        if (skipKeys.includes(key)) {
+            result[key] = original[key]; // preserve
+            continue;
         }
 
-        for (const targetScreen of targetScreens) {
-            try {
-                const cloned = {
-                    ...sourceData,
-                    name: targetScreen,
-                    lastEdited: new Date().toISOString(),
-                };
-
-                const json = JSON.stringify(cloned);
-                const jsonBlob = new Blob([json], { type: "application/json" });
-
-                const form = new FormData();
-                form.append("file", jsonBlob, `${targetScreen}.json`);
-
-                const res = await fetch(`${process.env.SERVER_URL}/upload_golf_course.php`, {
-                    method: "POST",
-                    body: form,
-                });
-
-                if (!res.ok) {
-                    console.error(`Failed to copy to ${targetScreen}:`, res.statusText);
-                    return { success: false, message: `Failed to copy to ${targetScreen}` };
-                }
-            } catch (err) {
-                console.error(`Error copying to ${targetScreen}:`, err);
-                return { success: false, message: `Error copying to ${targetScreen}` };
+        const origVal = original[key];
+        const modVal = modified[key];
+        console.log(currentPath, origVal, modVal);
+        if (typeof modVal === "object" && modVal !== null && !Array.isArray(modVal)) {
+            const { merged, diffs: childDiffs } = deepDiffMerge(
+                origVal || {},
+                modVal,
+                skipKeys,
+                currentPath
+            );
+            result[key] = merged;
+            diffs.push(...childDiffs);
+        } else if (Array.isArray(modVal)) {
+            if (JSON.stringify(origVal) !== JSON.stringify(modVal)) {
+                result[key] = modVal;
+                diffs.push({ path: currentPath, oldValue: origVal, newValue: modVal });
+            }
+        } else {
+            if (origVal !== modVal) {
+                result[key] = modVal;
+                diffs.push({ path: currentPath, oldValue: origVal, newValue: modVal });
             }
         }
-
-        revalidatePath("/");
-        return { success: true, message: "Changes copied successfully" };
-    } catch (e) {
-        console.error("copyScreenChanges error:", e);
-        return { success: false, message: e instanceof Error ? e.message : "Unknown error" };
     }
+
+    return { merged: result, diffs };
 }
 
 

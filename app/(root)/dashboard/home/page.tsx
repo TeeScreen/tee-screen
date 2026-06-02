@@ -11,7 +11,11 @@ import {
 import { revalidatePath } from "next/cache";
 import { AddAccountDialog } from "@/components/screen/AddAccountDialog";
 import { ScreenList } from "@/components/screen/ScreenList";
-import {copyScreenChanges, downloadClubImages} from "@/lib/actions/file.actions";
+import {
+    confirmScreenChanges,
+    downloadClubImages,
+    previewScreenChanges
+} from "@/lib/actions/file.actions";
 import { ResetLoadedDataDialog } from "@/components/ResetData";
 import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 import { AccountDropdown } from "@/components/screen/AccountDropdown";
@@ -166,21 +170,6 @@ export default async function HomePage() {
         revalidatePath("/");
     }
 
-// -----------------------------
-    async function handleCopy(formData: FormData) {
-        "use server";
-
-        const selected = formData.getAll("selectedScreens") as string[];
-
-        const res = await copyScreenChanges(selected);
-        if (res?.success) {
-            // toast cannot be called here (server side), but we can return a flag
-            return { success: true };
-        } else {
-            return { success: false };
-        }
-    }
-
     // -----------------------------
     // RENDER
     // -----------------------------
@@ -243,12 +232,12 @@ export default async function HomePage() {
                         <ScreenList
                             screens={screenNames}
                             loadedScreen={loadedScreen}
-                            onLoadScreen={handleLoadScreen}
-                            onCopyChanges={handleCopy}
+                            onLoadScreen={handleLoadScreen} // <-- commit after confirm
                         />
                     </div>
                 </div>
             )}
+
 
             {accounts.length === 0 && (
                 <div className="p-4 sm:p-6 border rounded-lg bg-muted/30 flex flex-col gap-4">

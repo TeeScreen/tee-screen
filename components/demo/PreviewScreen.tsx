@@ -259,7 +259,7 @@ export default function PreviewScreen() {
                                 {tabs.map((tab, i) => (
                                     <Button
                                         key={i}
-                                        className="relative h-16 flex-1 max-w-[25%] rounded-sm flex flex-col items-center justify-center"
+                                        className="relative p-0 h-16 flex-1 max-w-[25%] rounded-sm flex flex-col items-center justify-center"
                                         style={{ backgroundColor: uiColor }}
                                         onClick={() => {
                                             if (tab.urlActive && tab.url) {
@@ -280,32 +280,31 @@ export default function PreviewScreen() {
                                                     />
                                                 )}
                                                 <span
-                                                    className={`relative z-10 ${textColor} font-semibold text-center w-full px-1 text-[clamp(0.6rem,1.5vw,0.9rem)]`}
+                                                    className={`relative z-10 ${textColor} font-semibold text-center max-w-full px-1 text-[clamp(0.6rem,1.5vw,0.9rem)]`}
                                                 >
                                                     {tab.name}
                                                 </span>
                                             </>
                                         ) : (
-                                            <>
-                                                {tab.icon ? (
-                                                    <div className="flex-1 w-full h-full flex">
-                                                        <div className="relative w-full h-full">
-                                                            <Image
-                                                                src={tab.icon}
-                                                                alt={`${tab.name} icon`}
-                                                                fill
-                                                                className="object-contain"
-                                                            />
-                                                        </div>
+                                            <>{tab.icon ? (
+                                                <div className="flex-1 w-full h-full flex top-0">
+                                                    <div className="relative w-full h-full">
+                                                        <Image
+                                                            src={tab.icon}
+                                                            alt={`${tab.name} icon`}
+                                                            fill
+                                                            className="object-contain"
+                                                        />
                                                     </div>
-                                                ) : null}
+                                                </div>
+                                            ) : null}
 
                                                 {/* Text: vertically centered if no icon */}
                                                 <span
-                                                    className={`${textColor} font-semibold text-center break-words
+                                                    className={`${textColor} font-semibold text-center break-words whitespace-normal w-full
                                                     ${tab.icon
-                                                        ? "flex-[0] max-h-[15%] text-[clamp(0.4rem,1.2vw,0.6rem)] leading-tight"
-                                                        : "flex items-center justify-center h-full w-full text-[clamp(0.8rem,2vw,1.2rem)] whitespace-normal"}`}
+                                                        ? "flex-[0] bottom-0 text-[0.5vw] leading-tight"
+                                                        : "flex items-center justify-center h-full text-[1vw]"}`}
                                                 >
                                                     {tab.name}
                                                 </span>
@@ -413,24 +412,27 @@ export default function PreviewScreen() {
                                     {notices.map((notice, i) => (
                                         <Button
                                             key={i}
-                                            className="flex-1 text-xl font-semibold rounded-none"
+                                            className="p-0 w-full flex-1 rounded-none flex items-center justify-center"
                                             style={{
                                                 backgroundColor: `rgba(${notice.color.r},${notice.color.g},${notice.color.b},${notice.color.a / 255})`,
                                             }}
                                             onClick={() => {
                                                 if (notice.active) {
                                                     if (notice.urlActive && notice.url) {
-                                                        setOverlayContent({ type: 'url', src: notice.url })
+                                                        setOverlayContent({ type: "url", src: notice.url });
                                                     } else if (notice.image) {
-                                                        setOverlayContent({ type: 'image', src: notice.image })
+                                                        setOverlayContent({ type: "image", src: notice.image });
                                                     }
                                                 }
                                             }}
                                         >
-                                            {notice.text}
+                                            <span className="drop-shadow-[2px_2px_3px_rgba(0,0,0,0.9)] text-2xl uppercase font-semibold text-center w-[85%] whitespace-normal break-words">
+                                                {notice.text}
+                                            </span>
                                         </Button>
                                     ))}
                                 </div>
+
                             )}
                         </div>
                     </div>

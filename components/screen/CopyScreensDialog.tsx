@@ -10,15 +10,19 @@ import {
     DialogDescription,
     DialogFooter,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
 
-export function CopyScreensDialog({
-                                      screens,
-                                      copyAction,
-                                  }: {
+type PreviewResponse = {
+    success: boolean;
+    previews?: any[];
+    message?: string;
+};
+
+type CopyScreensDialogProps = {
     screens: string[];
-    copyAction: (formData: FormData) => Promise<any>;
-}) {
+    copyAction: (selected: string[]) => Promise<PreviewResponse>;
+};
+
+export function CopyScreensDialog({ screens, copyAction }: CopyScreensDialogProps) {
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -29,23 +33,25 @@ export function CopyScreensDialog({
         );
     }
 
-    async function handleSubmit(formData: FormData) {
+    async function handleSubmit() {
         setIsLoading(true);
-        const res = await copyAction(formData);
+        const res = await copyAction(selected); // <-- pass array, not FormData
+
         if (res?.success) {
-            toast.success("Changes copied successfully");
+            // Preview succeeded — ScreenList will show confirmation dialog
             setOpen(false);
             setSelected([]);
         } else {
-            toast.error("Failed to copy changes");
+            console.error(res?.message || "Preview failed");
         }
+
         setIsLoading(false);
     }
 
     return (
         <>
             <Button variant="default" onClick={() => setOpen(true)}>
-                Copy Changes
+                Copy Current Screen to...
             </Button>
 
             <Dialog open={open} onOpenChange={setOpen}>
@@ -53,44 +59,42 @@ export function CopyScreensDialog({
                     <DialogHeader>
                         <DialogTitle>Copy Changes</DialogTitle>
                         <DialogDescription>
-                            Select screens to apply the current changes.
+                            Select screens to preview the changes before confirming.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <form action={handleSubmit}>
-                        <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
-                            {screens.map((screen) => (
-                                <label key={screen} className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        name="selectedScreens"
-                                        value={screen}
-                                        checked={selected.includes(screen)}
-                                        onChange={() => toggleScreen(screen)}
-                                    />
-                                    <span>{screen}</span>
-                                </label>
-                            ))}
-                        </div>
+                    <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+                        {screens.map((screen: string) => (
+                            <label key={screen} className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    value={screen}
+                                    checked={selected.includes(screen)}
+                                    onChange={() => toggleScreen(screen)}
+                                />
+                                <span>{screen}</span>
+                            </label>
+                        ))}
+                    </div>
 
-                        <DialogFooter>
-                            <Button
-                                variant="outline"
-                                type="button"
-                                onClick={() => setOpen(false)}
-                                disabled={isLoading}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                variant="default"
-                                type="submit"
-                                disabled={isLoading || selected.length === 0}
-                            >
-                                {isLoading ? "Copying..." : "Copy"}
-                            </Button>
-                        </DialogFooter>
-                    </form>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() => setOpen(false)}
+                            disabled={isLoading}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="default"
+                            type="button"
+                            onClick={handleSubmit}
+                            disabled={isLoading || selected.length === 0}
+                        >
+                            {isLoading ? "Loading..." : "Preview"}
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </>
