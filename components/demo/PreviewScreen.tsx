@@ -6,13 +6,13 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { getUserInfo } from '@/lib/actions/user.actions'
-import { findFileSafeName } from '@/lib/actions/file.actions'
-import path from 'path'
-import {useDirtyState} from "@/stores/user-store";
+import {DiffEntry, findFileSafeName, previewScreenChanges} from '@/lib/actions/file.actions'
+import { useDirtyState } from "@/stores/user-store"
+import type { PreviewResult } from "@/components/screen/CopyConfirmDialog"
 
 async function resolvePreviewFile(folderName: string, fileName: string) {
-    let safeFileName = await findFileSafeName(folderName, fileName)
-    if (safeFileName === fileName) return null
+    const safeFileName = await findFileSafeName(folderName, fileName)
+    if (safeFileName === fileName || safeFileName[0] === 'd') return null
     return `/api/downloads/${folderName}/${safeFileName}`
 }
 
@@ -20,12 +20,9 @@ export default function PreviewScreen() {
     const [userInfo, setUserInfo] = useState<any>(null)
     const [overlayContent, setOverlayContent] = useState<{ type: 'image' | 'url' | 'full' | 'fbUrl' | 'fbImg'; src: string } | null>(null)
     const [loading, setLoading] = useState(false)
-    const { version, dirty } = useDirtyState()
-    useEffect(() => {
-            console.log('version', version);
-            fetchData()
-    }, [version, dirty])
+    const [previews, setPreviews] = useState<PreviewResult[]>([])
 
+    // image states
     const [backgroundImage, setBackgroundImage] = useState<string | null>(null)
     const [overviewImage, setOverviewImage] = useState<string | null>(null)
     const [logoImage, setLogoImage] = useState<string | null>(null)
@@ -35,96 +32,258 @@ export default function PreviewScreen() {
     const [tabs, setTabs] = useState<any[]>([])
     const [notices, setNotices] = useState<any[]>([])
 
+    const { version, dirty } = useDirtyState()
+
+    // Initial load
+    useEffect(() => {
+        fetchData()
+    }, [])
+
+    // On version updates, call preview changes
+    useEffect(() => {
+        if (version > 0) {
+            handlePreview()
+        }
+        // else if(version == 0)
+        // {
+        //     fetchData()
+        // }
+    }, [version, dirty])
+
     const fetchData = async () => {
         setLoading(true)
         const info = await getUserInfo()
         setUserInfo(info)
-        if (!info?.screenJson)
-        {
+        if (!info?.screenJson) {
             setLoading(false)
             return
         }
 
         const folderName = info.screenJson.FolderNameOnServer
+        await resolveImages(folderName)
+        await resolveTabsAndNotices(folderName, info.screenJson)
+        setLoading(false)
+    }
 
+    const handlePreview = async () => {
+        setLoading(true)
+        const userinfo = await getUserInfo()
+        const res = await previewScreenChanges([`${userinfo?.loadedScreen}`])
+        setLoading(false)
+
+        if (res.success && res.previews) {
+            setPreviews(res.previews);
+            await applyFileChanges(res.sourceFolder, res.previews);
+            res.previews.forEach(p => applyJsonDiffs(p.diffs || []));
+        } else {
+            console.error(res.message || "Preview failed")
+        }
+    }
+
+    // Resolve base images
+    const resolveImages = async (folderName: string) => {
         setBackgroundImage(await resolvePreviewFile(folderName, 'Background'))
         setOverviewImage(await resolvePreviewFile(folderName, 'Overview'))
         setLogoImage(await resolvePreviewFile(folderName, 'Logo'))
         setHomeBG(await resolvePreviewFile(folderName, 'HomeBG'))
         setAwayBG(await resolvePreviewFile(folderName, 'AwayBG'))
         setLineUpBG(await resolvePreviewFile(folderName, 'LineUpBG'))
+    }
 
+    // Resolve tabs and notices initially
+    const resolveTabsAndNotices = async (folderName: string, data: any) => {
         const tabDefs = [
             {
-                active: info.screenJson.CustomTab01Active,
-                name: info.screenJson.CustomTab01Name,
+                active: data.CustomTab01Active,
+                name: data.CustomTab01Name,
                 icon: await resolvePreviewFile(folderName, 'CustomTabIcon01.png'),
                 overlayImage: await resolvePreviewFile(folderName, 'CustomTabImage01'),
-                urlActive: info.screenJson.CustomTab01UrlActive,
-                url: info.screenJson.CustomTab01Url,
+                urlActive: data.CustomTab01UrlActive,
+                url: data.CustomTab01Url,
             },
             {
-                active: info.screenJson.CustomTab02Active,
-                name: info.screenJson.CustomTab02Name,
+                active: data.CustomTab02Active,
+                name: data.CustomTab02Name,
                 icon: await resolvePreviewFile(folderName, 'CustomTabIcon02.png'),
                 overlayImage: await resolvePreviewFile(folderName, 'CustomTabImage02'),
-                urlActive: info.screenJson.CustomTab02UrlActive,
-                url: info.screenJson.CustomTab02Url,
+                urlActive: data.CustomTab02UrlActive,
+                url: data.CustomTab02Url,
             },
             {
-                active: info.screenJson.CustomTab03Active,
-                name: info.screenJson.CustomTab03Name,
+                active: data.CustomTab03Active,
+                name: data.CustomTab03Name,
                 icon: await resolvePreviewFile(folderName, 'CustomTabIcon03.png'),
                 overlayImage: await resolvePreviewFile(folderName, 'CustomTabImage03'),
-                urlActive: info.screenJson.CustomTab03UrlActive,
-                url: info.screenJson.CustomTab03Url,
+                urlActive: data.CustomTab03UrlActive,
+                url: data.CustomTab03Url,
             },
             {
-                active: info.screenJson.CustomTab04Active,
-                name: info.screenJson.CustomTab04Name,
+                active: data.CustomTab04Active,
+                name: data.CustomTab04Name,
                 icon: await resolvePreviewFile(folderName, 'CustomTabIcon04.png'),
                 overlayImage: await resolvePreviewFile(folderName, 'CustomTabImage04'),
-                urlActive: info.screenJson.CustomTab04UrlActive,
-                url: info.screenJson.CustomTab04Url,
+                urlActive: data.CustomTab04UrlActive,
+                url: data.CustomTab04Url,
             },
         ].filter(t => t.active)
-
         setTabs(tabDefs)
 
         const noticeDefs = [
             {
-                text: info.screenJson.TopNoticeText,
-                color: info.screenJson.TopNoticeBoardColour,
-                active: info.screenJson.TopNoticeButtonActive,
-                urlActive: info.screenJson.showUrlNoticeButtonTop,
-                url: info.screenJson.urlNoticeButtonTop,
+                text: data.TopNoticeText,
+                color: data.TopNoticeBoardColour,
+                active: data.TopNoticeButtonActive,
+                urlActive: data.showUrlNoticeButtonTop,
+                url: data.urlNoticeButtonTop,
                 image: await resolvePreviewFile(folderName, 'NoticeImage01'),
             },
             {
-                text: info.screenJson.MiddleNoticeText,
-                color: info.screenJson.MiddleNoticeBoardColour,
-                active: info.screenJson.MiddleNoticeButtonActive,
-                urlActive: info.screenJson.showUrlNoticeButtonMiddle,
-                url: info.screenJson.urlNoticeButtonMiddle,
+                text: data.MiddleNoticeText,
+                color: data.MiddleNoticeBoardColour,
+                active: data.MiddleNoticeButtonActive,
+                urlActive: data.showUrlNoticeButtonMiddle,
+                url: data.urlNoticeButtonMiddle,
                 image: await resolvePreviewFile(folderName, 'NoticeImage02'),
             },
             {
-                text: info.screenJson.BottomNoticeText,
-                color: info.screenJson.BottomNoticeBoardColour,
-                active: info.screenJson.BottomNoticeButtonActive,
-                urlActive: info.screenJson.showUrlNoticeButtonBottom,
-                url: info.screenJson.urlNoticeButtonBottom,
+                text: data.BottomNoticeText,
+                color: data.BottomNoticeBoardColour,
+                active: data.BottomNoticeButtonActive,
+                urlActive: data.showUrlNoticeButtonBottom,
+                url: data.urlNoticeButtonBottom,
                 image: await resolvePreviewFile(folderName, 'NoticeImage03'),
             },
         ]
         setNotices(noticeDefs)
-        setLoading(false)
     }
 
+    function applyJsonDiffs(diffs: DiffEntry[]) {
+        diffs.forEach(diff => {
+            const { path, newValue } = diff;
 
-    useEffect(() => {
-        fetchData()
-    }, [])
+            // --- Notices text/flags/urls ---
+            if (path.endsWith("TopNoticeText")) {
+                setNotices(prev => prev.map((n, i) => i === 0 ? { ...n, text: newValue } : n));
+            }
+            if (path.endsWith("MiddleNoticeText")) {
+                setNotices(prev => prev.map((n, i) => i === 1 ? { ...n, text: newValue } : n));
+            }
+            if (path.endsWith("BottomNoticeText")) {
+                setNotices(prev => prev.map((n, i) => i === 2 ? { ...n, text: newValue } : n));
+            }
+
+            // --- Notices colour channels ---
+            const noticeColorMatch = path.match(/(Top|Middle|Bottom)NoticeBoardColour\.(r|g|b|a)$/);
+            if (noticeColorMatch) {
+                const [ , which, channel ] = noticeColorMatch;
+                const idx = which === "Top" ? 0 : which === "Middle" ? 1 : 2;
+                setNotices(prev => prev.map((n, i) => {
+                    if (i !== idx) return n;
+                    const prevColor = typeof n.color === "object" ? n.color : { r:0,g:0,b:0,a:255 };
+                    const updatedColor = { ...prevColor, [channel]: newValue };
+                    return { ...n, color: updatedColor };
+                }));
+            }
+
+            // --- Notices active/url flags ---
+            if (path.endsWith("TopNoticeButtonActive")) {
+                setNotices(prev => prev.map((n, i) => i === 0 ? { ...n, active: newValue } : n));
+            }
+            if (path.endsWith("MiddleNoticeButtonActive")) {
+                setNotices(prev => prev.map((n, i) => i === 1 ? { ...n, active: newValue } : n));
+            }
+            if (path.endsWith("BottomNoticeButtonActive")) {
+                setNotices(prev => prev.map((n, i) => i === 2 ? { ...n, active: newValue } : n));
+            }
+
+            if (path.endsWith("showUrlNoticeButtonTop")) {
+                setNotices(prev => prev.map((n, i) => i === 0 ? { ...n, urlActive: newValue } : n));
+            }
+            if (path.endsWith("showUrlNoticeButtonMiddle")) {
+                setNotices(prev => prev.map((n, i) => i === 1 ? { ...n, urlActive: newValue } : n));
+            }
+            if (path.endsWith("showUrlNoticeButtonBottom")) {
+                setNotices(prev => prev.map((n, i) => i === 2 ? { ...n, urlActive: newValue } : n));
+            }
+
+            if (path.endsWith("urlNoticeButtonTop")) {
+                setNotices(prev => prev.map((n, i) => i === 0 ? { ...n, url: newValue } : n));
+            }
+            if (path.endsWith("urlNoticeButtonMiddle")) {
+                setNotices(prev => prev.map((n, i) => i === 1 ? { ...n, url: newValue } : n));
+            }
+            if (path.endsWith("urlNoticeButtonBottom")) {
+                setNotices(prev => prev.map((n, i) => i === 2 ? { ...n, url: newValue } : n));
+            }
+
+            // --- Tabs ---
+            const tabIdxMatch = path.match(/CustomTab(\d+)(Active|Name|UrlActive|Url)$/);
+            if (tabIdxMatch) {
+                const idx = parseInt(tabIdxMatch[1], 10) - 1;
+                const field = tabIdxMatch[2];
+                setTabs(prev =>
+                    prev.map((t, i) =>
+                        i === idx
+                            ? {
+                                ...t,
+                                [field === "Active" ? "active" :
+                                    field === "Name" ? "name" :
+                                        field === "UrlActive" ? "urlActive" :
+                                            "url"]: newValue
+                            }
+                            : t
+                    )
+                );
+            }
+        });
+    }
+
+    // Apply preview file changes dynamically
+    async function applyFileChanges(folderName: string, previews: PreviewResult[]) {
+        previews.forEach((p) => {
+            (p.files || []).forEach((file) => {
+                const isAdding = file.toLowerCase().startsWith("u")
+                const isRemoving = file.toLowerCase().startsWith("d")
+                const baseName = file.substring(file.indexOf("-") + 1, file.lastIndexOf("."))
+                const fileUrl = `/api/downloads/${folderName}/${file}`
+
+                // Backgrounds
+                if (baseName === "Background") setBackgroundImage(isAdding ? fileUrl : "")
+                if (baseName === "Overview") setOverviewImage(isAdding ? fileUrl : "")
+                if (baseName === "Logo") setLogoImage(isAdding ? fileUrl : "")
+                if (baseName === "HomeBG") setHomeBG(isAdding ? fileUrl : "")
+                if (baseName === "AwayBG") setAwayBG(isAdding ? fileUrl : "")
+                if (baseName === "LineUpBG") setLineUpBG(isAdding ? fileUrl : "")
+
+                // Tabs (detect index from name)
+                const tabMatch = baseName.match(/CustomTab(?:Icon|Image)(\d+)/)
+                if (tabMatch) {
+                    const idx = parseInt(tabMatch[1], 10) - 1
+                    const field = baseName.includes("Icon") ? "icon" : "overlayImage"
+                    updateTabImage(idx, field, isAdding ? fileUrl : "")
+                }
+
+                // Notices (detect index from name)
+                const noticeMatch = baseName.match(/NoticeImage(\d+)/)
+                if (noticeMatch) {
+                    const idx = parseInt(noticeMatch[1], 10) - 1
+                    updateNoticeImage(idx, isAdding ? fileUrl : "")
+                }
+            })
+        })
+    }
+
+    function updateTabImage(index: number, field: "icon" | "overlayImage", value: string) {
+        setTabs((prev) =>
+            prev.map((tab, i) => (i === index ? { ...tab, [field]: value } : tab))
+        )
+    }
+
+    function updateNoticeImage(index: number, value: string) {
+        setNotices((prev) =>
+            prev.map((notice, i) => (i === index ? { ...notice, image: value } : notice))
+        )
+    }
 
     if (!userInfo || !userInfo.screenJson) return <div>Loading preview…</div>
 
@@ -133,9 +292,8 @@ export default function PreviewScreen() {
         ? `rgba(${data.UIColor.r},${data.UIColor.g},${data.UIColor.b},${data.UIColor.a / 255})`
         : '#ffffff'
 
-    const showTopSection = data.showTopSection ? data.showTopSection : true;
-    const setTabIconsToFill = data.setTabIconsToFill ? data.setTabIconsToFill : false;
-
+    const showTopSection = data.showTopSection ?? true
+    const setTabIconsToFill = data.setTabIconsToFill ?? false
     const isFootballClub = data.isFootballClub ? data.isFootballClub : false;
     const isGolfClub = data.isGolfClub ? data.isGolfClub : false;
     const hideHolesOnScreen = data.hideHolesOnScreen ? data.hideHolesOnScreen : false;
@@ -259,7 +417,7 @@ export default function PreviewScreen() {
                                 {tabs.map((tab, i) => (
                                     <Button
                                         key={i}
-                                        className="relative p-0 h-16 flex-1 max-w-[25%] rounded-sm flex flex-col items-center justify-center"
+                                        className="relative p-0 h-14 flex-1 max-w-[25%] rounded-sm flex flex-col items-center justify-center"
                                         style={{ backgroundColor: uiColor }}
                                         onClick={() => {
                                             if (tab.urlActive && tab.url) {
@@ -303,8 +461,8 @@ export default function PreviewScreen() {
                                                 <span
                                                     className={`${textColor} font-semibold text-center break-words whitespace-normal w-full
                                                     ${tab.icon
-                                                        ? "flex-[0] bottom-0 text-[0.5vw] leading-tight"
-                                                        : "flex items-center justify-center h-full text-[1vw]"}`}
+                                                        ? "flex-[0] bottom-0 text-xs leading-tight"
+                                                        : "flex items-center justify-center h-full text-xl"}`}
                                                 >
                                                     {tab.name}
                                                 </span>

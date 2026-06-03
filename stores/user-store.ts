@@ -32,4 +32,21 @@ export const useDirtyState = create<DirtyState>()(
             })),
             bumpVersion: () => set((s) => ({ version: s.version + 1 })),
         }),
-        { name: 'dirty-storage' }))
+        { name: 'dirty-storage' })
+)
+
+interface PreviewState {
+    preview: boolean,
+    setPreview: (isChanged: boolean) => void
+
+}
+
+export const usePreviewState = create<PreviewState>()(
+    persist((set) => ({
+            preview: false,
+            setPreview: (isChanged: boolean) => set((s) => ({
+                preview: isChanged
+            })),
+        }),
+        { name: 'preview-storage' })
+)

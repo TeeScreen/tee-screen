@@ -283,7 +283,6 @@ function deepDiffMerge(
 
         const origVal = original[key];
         const modVal = modified[key];
-        console.log(currentPath, origVal, modVal);
         if (typeof modVal === "object" && modVal !== null && !Array.isArray(modVal)) {
             const { merged, diffs: childDiffs } = deepDiffMerge(
                 origVal || {},
