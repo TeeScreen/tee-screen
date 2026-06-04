@@ -22,7 +22,7 @@ export default async function Page() {
                 {screenJson && (
                     <>
                         {/* ---------------- TOP ---------------- */}
-                        <div className="space-y-4 border rounded-lg p-4">
+                        <div id="top" className="space-y-4 border rounded-lg p-4">
                             <h2 className="text-lg font-semibold">Top Notice</h2>
                             <JsonFieldEditor
                                 json={screenJson}
@@ -39,7 +39,7 @@ export default async function Page() {
                         </div>
 
                         {/* ---------------- MIDDLE ---------------- */}
-                        <div className="space-y-4 border rounded-lg p-4">
+                        <div id="middle" className="space-y-4 border rounded-lg p-4">
                             <h2 className="text-lg font-semibold">Middle Notice</h2>
                             <JsonFieldEditor
                                 json={screenJson}
@@ -56,7 +56,7 @@ export default async function Page() {
                         </div>
 
                         {/* ---------------- BOTTOM ---------------- */}
-                        <div className="space-y-4 border rounded-lg p-4">
+                        <div id="bottom" className="space-y-4 border rounded-lg p-4">
                             <h2 className="text-lg font-semibold">Bottom Notice</h2>
                             <JsonFieldEditor
                                 json={screenJson}

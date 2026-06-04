@@ -197,24 +197,25 @@ export default function GlobalCourseMap({
                 </Button>
 
                 <div className="border-t my-1" />
-
-                {holes.map((h) => (
-                    <Button
-                        key={h.holeNumber}
-                        size="sm"
-                        variant={visibleHoles.includes(h.holeNumber) ? "default" : "outline"}
-                        onClick={() =>
-                            setVisibleHoles(prev =>
-                                prev.includes(h.holeNumber)
-                                    ? prev.filter(n => n !== h.holeNumber)
-                                    : [...prev, h.holeNumber]
-                            )
-                        }
-                        className="w-full"
-                    >
-                        {h.holeNumber}
-                    </Button>
-                ))}
+                <div className="flex flex-col gap-2 overflow-y-auto max-h-[60vh] scrollbar-hide">
+                    {holes.map((h) => (
+                        <Button
+                            key={h.holeNumber}
+                            size="sm"
+                            variant={visibleHoles.includes(h.holeNumber) ? "default" : "outline"}
+                            onClick={() =>
+                                setVisibleHoles(prev =>
+                                    prev.includes(h.holeNumber)
+                                        ? prev.filter(n => n !== h.holeNumber)
+                                        : [...prev, h.holeNumber]
+                                )
+                            }
+                            className="w-full"
+                        >
+                            {h.holeNumber}
+                        </Button>
+                    ))}
+                </div>
             </div>
 
             {/* Reset All */}

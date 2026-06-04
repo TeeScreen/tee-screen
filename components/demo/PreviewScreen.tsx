@@ -9,6 +9,7 @@ import { getUserInfo } from '@/lib/actions/user.actions'
 import {DiffEntry, findFileSafeName, previewScreenChanges} from '@/lib/actions/file.actions'
 import { useDirtyState } from "@/stores/user-store"
 import type { PreviewResult } from "@/components/screen/CopyConfirmDialog"
+import {info} from "next/dist/build/output/log";
 
 async function resolvePreviewFile(folderName: string, fileName: string) {
     const safeFileName = await findFileSafeName(folderName, fileName)
@@ -32,6 +33,18 @@ export default function PreviewScreen() {
     const [tabs, setTabs] = useState<any[]>([])
     const [notices, setNotices] = useState<any[]>([])
 
+    //json states
+    // UI and config states
+    const [uiColor, setUiColor] = useState<string>('#ffffff')
+    const [showTopSection, setShowTopSection] = useState<boolean>(true)
+    const [setTabIconsToFill, setSetTabIconsToFill] = useState<boolean>(false)
+    const [isFootballClub, setIsFootballClub] = useState<boolean>(false)
+    const [isGolfClub, setIsGolfClub] = useState<boolean>(false)
+    const [hideHolesOnScreen, setHideHolesOnScreen] = useState<boolean>(false)
+    const [footballNews, setFootballNews] = useState<string>("https://www.teescreen.co.uk/")
+    const [backupBG, setBackupBG] = useState<string>("/assets/demo/backups/GolfBackground.png")
+    const [brightness, setBrightness] = useState<number>(1)
+
     const { version, dirty } = useDirtyState()
 
     // Initial load
@@ -41,13 +54,13 @@ export default function PreviewScreen() {
 
     // On version updates, call preview changes
     useEffect(() => {
-        if (version > 0) {
+        if (version > 0 && !loading) {
             handlePreview()
         }
-        // else if(version == 0)
-        // {
-        //     fetchData()
-        // }
+        else if(version == 0 && !loading && userInfo)
+        {
+            fetchData()
+        }
     }, [version, dirty])
 
     const fetchData = async () => {
@@ -59,6 +72,8 @@ export default function PreviewScreen() {
             return
         }
 
+        updateOtherFields(info.screenJson);
+
         const folderName = info.screenJson.FolderNameOnServer
         await resolveImages(folderName)
         await resolveTabsAndNotices(folderName, info.screenJson)
@@ -68,8 +83,8 @@ export default function PreviewScreen() {
     const handlePreview = async () => {
         setLoading(true)
         const userinfo = await getUserInfo()
+        setUserInfo(userInfo);
         const res = await previewScreenChanges([`${userinfo?.loadedScreen}`])
-        setLoading(false)
 
         if (res.success && res.previews) {
             setPreviews(res.previews);
@@ -78,6 +93,11 @@ export default function PreviewScreen() {
         } else {
             console.error(res.message || "Preview failed")
         }
+
+        updateOtherFields(userinfo.screenJson);
+
+        setLoading(false)
+
     }
 
     // Resolve base images
@@ -288,23 +308,25 @@ export default function PreviewScreen() {
     if (!userInfo || !userInfo.screenJson) return <div>Loading preview…</div>
 
     const data = userInfo.screenJson
-    const uiColor = data.UIColor
-        ? `rgba(${data.UIColor.r},${data.UIColor.g},${data.UIColor.b},${data.UIColor.a / 255})`
-        : '#ffffff'
 
-    const showTopSection = data.showTopSection ?? true
-    const setTabIconsToFill = data.setTabIconsToFill ?? false
-    const isFootballClub = data.isFootballClub ? data.isFootballClub : false;
-    const isGolfClub = data.isGolfClub ? data.isGolfClub : false;
-    const hideHolesOnScreen = data.hideHolesOnScreen ? data.hideHolesOnScreen : false;
-    const footballNews = data.twitterURL ? data.twitterURL : "https://www.teescreen.co.uk/";
+    function updateOtherFields(data: any)
+    {
+        setUiColor(data.UIColor
+            ? `rgba(${data.UIColor.r},${data.UIColor.g},${data.UIColor.b},${data.UIColor.a / 255})`
+            : '#ffffff');
 
-    const backupBG = `/assets/demo/backups/${isFootballClub ? "FootballBackground.png" : "GolfBackground.png"}`;
+        setShowTopSection(data.showTopSection ?? true)
+        setSetTabIconsToFill(data.setTabIconsToFill ?? false)
+        setIsFootballClub(data.isFootballClub ?? false)
+        setIsGolfClub(data.isGolfClub ?? false)
+        setHideHolesOnScreen(data.hideHolesOnScreen ?? false)
+        setFootballNews(data.twitterURL ?? "https://www.teescreen.co.uk/")
+        setBackupBG(`/assets/demo/backups/${data.isFootballClub ? "FootballBackground.png" : "GolfBackground.png"}`)
 
-    let brightness = 1; // default to light
-    if (data?.UIColor) {
-        const { r, g, b } = data.UIColor;
-        brightness = (r + g + b) / (3 * 255);
+        if (data.UIColor) {
+            const { r, g, b } = data.UIColor;
+            setBrightness ((r + g + b) / (3 * 255));
+        }
     }
 
     const textColor = brightness < 0.5 ? "text-white" : "text-black"

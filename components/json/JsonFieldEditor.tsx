@@ -118,7 +118,6 @@ export function JsonFieldEditor({
 
     return (
         <div className="space-y-6">
-            {/* Optional: Saving indicator */}
             {isSaving && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -126,105 +125,89 @@ export function JsonFieldEditor({
                 </div>
             )}
 
-            <Accordion type="multiple" className="w-full space-y-4 border rounded-lg p-2">
-                {Object.entries(groups).map(([tag, fields]) => (
-                    <AccordionItem key={tag} value={tag}>
-                        <AccordionTrigger className="text-lg capitalize">
-                            {tag}
-                        </AccordionTrigger>
+            {Object.entries(groups).map(([tag, fields]) => (
+                <div key={tag} className="space-y-4 border rounded-lg p-4">
+                    <h3 className="text-lg font-semibold capitalize">{tag}</h3>
+                    <div className="grid gap-6">
+                        {(fields as any[]).map((field: any) => {
+                            const currentValue = getValue(localJson, field.path);
+                            if (currentValue === undefined) return null;
 
-                        <AccordionContent>
-                            <div className="grid gap-6 mt-4 border rounded-lg p-2">
-                                {(fields as any[]).map((field: any) => {
-                                    const currentValue = getValue(localJson, field.path);
-                                    if (currentValue === undefined) return null;
-
-                                    // BOOL
-                                    if (field.type === "bool") {
-                                        return (
-                                            <div key={field.path} className="flex items-center gap-3">
-                                                <label className="font-medium">{field.label}</label>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={Boolean(currentValue)}
-                                                    onChange={(e) => handleChange(field.path, e.target.checked)}
-                                                    className="h-5 w-5 accent-primary"
-                                                />
-                                            </div>
-                                        );
-                                    }
-
-                                    // COLOR
-                                    if (field.type === "color") {
-                                        const rgba = currentValue || { r: 0, g: 0, b: 0, a: 1 };
-
-                                        const toHex = (c: any) => {
-                                            const r = c.r.toString(16).padStart(2, "0");
-                                            const g = c.g.toString(16).padStart(2, "0");
-                                            const b = c.b.toString(16).padStart(2, "0");
-                                            return `#${r}${g}${b}`;
-                                        };
-
-                                        const hexToRgba = (hex: string, alpha: number) => {
-                                            const r = parseInt(hex.slice(1, 3), 16);
-                                            const g = parseInt(hex.slice(3, 5), 16);
-                                            const b = parseInt(hex.slice(5, 7), 16);
-                                            return { r, g, b, a: alpha };
-                                        };
-
-                                        return (
-                                            <div key={field.path} className="flex flex-col gap-2">
-                                                <label className="font-medium">{field.label}</label>
-
-                                                <input
-                                                    type="color"
-                                                    value={toHex(rgba)}
-                                                    onChange={(e) => {
-                                                        const updated = hexToRgba(e.target.value, rgba.a);
-                                                        handleChange(field.path, updated);
-                                                    }}
-                                                    className="h-10 w-20 rounded border"
-                                                />
-                                            </div>
-                                        );
-                                    }
-
-                                    // NUMBER → SelectField
-                                    if (field.type === "number") {
-                                        return (
-                                            <SelectField
-                                                key={field.path}
-                                                name={field.path}
-                                                label={field.label}
-                                                placeholder={field.placeholder}
-                                                options={field.options || []}
-                                                control={form.control}
-                                                error={null}
-                                                required={false}
-                                            />
-                                        );
-                                    }
-
-                                    // TEXT
-                                    return (
-                                        <InputField
-                                            key={field.path}
-                                            name={field.path}
-                                            label={field.label}
-                                            placeholder={field.placeholder}
-                                            value={currentValue}
-                                            register={() => ({
-                                                onChange: (e: any) => handleChange(field.path, e.target.value),
-                                            })}
-                                            error={null}
+                            if (field.type === "bool") {
+                                return (
+                                    <div key={field.path} className="flex items-center gap-3">
+                                        <label className="font-medium">{field.label}</label>
+                                        <input
+                                            type="checkbox"
+                                            checked={Boolean(currentValue)}
+                                            onChange={(e) => handleChange(field.path, e.target.checked)}
+                                            className="h-5 w-5 accent-primary"
                                         />
-                                    );
-                                })}
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                ))}
-            </Accordion>
+                                    </div>
+                                );
+                            }
+
+                            if (field.type === "color") {
+                                const rgba = currentValue || { r: 0, g: 0, b: 0, a: 1 };
+                                const toHex = (c: any) =>
+                                    `#${c.r.toString(16).padStart(2, "0")}${c.g
+                                        .toString(16)
+                                        .padStart(2, "0")}${c.b.toString(16).padStart(2, "0")}`;
+                                const hexToRgba = (hex: string, alpha: number) => {
+                                    const r = parseInt(hex.slice(1, 3), 16);
+                                    const g = parseInt(hex.slice(3, 5), 16);
+                                    const b = parseInt(hex.slice(5, 7), 16);
+                                    return { r, g, b, a: alpha };
+                                };
+
+                                return (
+                                    <div key={field.path} className="flex flex-col gap-2">
+                                        <label className="font-medium">{field.label}</label>
+                                        <input
+                                            type="color"
+                                            value={toHex(rgba)}
+                                            onChange={(e) => {
+                                                const updated = hexToRgba(e.target.value, rgba.a);
+                                                handleChange(field.path, updated);
+                                            }}
+                                            className="h-10 w-20 rounded border"
+                                        />
+                                    </div>
+                                );
+                            }
+
+                            if (field.type === "number") {
+                                return (
+                                    <SelectField
+                                        key={field.path}
+                                        name={field.path}
+                                        label={field.label}
+                                        placeholder={field.placeholder}
+                                        options={field.options || []}
+                                        control={form.control}
+                                        error={null}
+                                        required={false}
+                                    />
+                                );
+                            }
+
+                            return (
+                                <InputField
+                                    key={field.path}
+                                    name={field.path}
+                                    label={field.label}
+                                    placeholder={field.placeholder}
+                                    value={currentValue}
+                                    register={() => ({
+                                        onChange: (e: any) => handleChange(field.path, e.target.value),
+                                    })}
+                                    error={null}
+                                />
+                            );
+                        })}
+                    </div>
+                </div>
+            ))}
 
             <input
                 ref={hiddenInputRef}
@@ -234,4 +217,5 @@ export function JsonFieldEditor({
             />
         </div>
     );
+
 }

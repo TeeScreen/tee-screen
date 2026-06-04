@@ -34,7 +34,7 @@ export default function ScheduleUploader({ screenName }: { screenName: string })
                     const data = await res.json();
                     setData(data.entries || []);
                 } else {
-                    console.error("Failed to load schedule", await res.text());
+                    console.log("no schedule available", await res.text());
                 }
             } catch (err) {
                 console.error("Failed to load schedule", err);

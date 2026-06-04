@@ -21,7 +21,7 @@ export default async function Page() {
                 {screenJson && (
                     <>
                         {/* ---------------- TAB 01 ---------------- */}
-                        <div className="space-y-4 border rounded-lg p-4">
+                        <div id="tab01" className="space-y-4 border rounded-lg p-4">
                             <h2 className="text-lg font-semibold">Custom Tab 01</h2>
                             <JsonFieldEditor
                                 json={screenJson}
@@ -40,7 +40,7 @@ export default async function Page() {
                         </div>
 
                         {/* ---------------- TAB 02 ---------------- */}
-                        <div className="space-y-4 border rounded-lg p-4">
+                        <div id="tab02" className="space-y-4 border rounded-lg p-4">
                             <h2 className="text-lg font-semibold">Custom Tab 02</h2>
                             <JsonFieldEditor
                                 json={screenJson}
@@ -59,7 +59,7 @@ export default async function Page() {
                         </div>
 
                         {/* ---------------- TAB 03 ---------------- */}
-                        <div className="space-y-4 border rounded-lg p-4">
+                        <div id="tab03" className="space-y-4 border rounded-lg p-4">
                             <h2 className="text-lg font-semibold">Custom Tab 03</h2>
                             <JsonFieldEditor
                                 json={screenJson}
@@ -78,7 +78,7 @@ export default async function Page() {
                         </div>
 
                         {/* ---------------- TAB 04 ---------------- */}
-                        <div className="space-y-4 border rounded-lg p-4">
+                        <div id="tab04" className="space-y-4 border rounded-lg p-4">
                             <h2 className="text-lg font-semibold">Custom Tab 04</h2>
                             <JsonFieldEditor
                                 json={screenJson}

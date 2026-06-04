@@ -156,7 +156,7 @@ export function ApplyDialog() {
                 </DialogContent>
             </Dialog>
 
-            {pendingPreviews && sourceFolder && (
+            {pendingPreviews && sourceFolder && !isLoading && (
                 <CopyConfirmDialog
                     sourceFolder={sourceFolder}
                     previews={pendingPreviews}

@@ -155,6 +155,7 @@ export default function HolesEditor({
             {activeHoleIndex !== null && (
                 <div className="border rounded p-4">
                     <HoleEditor
+                        key={activeHoleIndex}
                         value={`hole-${activeHoleIndex}`}
                         courseName={courseName}
                         hole={holesData[activeHoleIndex]}

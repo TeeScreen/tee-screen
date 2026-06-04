@@ -49,6 +49,7 @@ export function UploadCard({folderName, newFileName}: {folderName: string, newFi
         if (!result.success) {
             setErrorMessage(result.message);
         } else {
+
             setDirty(true);
         }
 

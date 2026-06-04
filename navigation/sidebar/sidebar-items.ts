@@ -78,12 +78,23 @@ export const sidebarItems: NavGroup[] = [
         icon: Flag,
         needsLoad: true,
         isFootball: false,
+        subItems: [
+          { title: "Top Notice", url: "/dashboard/notice-board#top", newTab: false },
+          { title: "Middle Notice", url: "/dashboard/notice-board#middle", newTab: false },
+          { title: "Bottom Notice", url: "/dashboard/notice-board#bottom", newTab: false },
+        ],
       },
       {
         title: "Custom Tabs",
         url: "/dashboard/custom-tabs",
         icon: NotebookTabs,
         needsLoad: true,
+        subItems: [
+          { title: "CustomTab 1", url: "/dashboard/custom-tabs#tab01", newTab: false },
+          { title: "CustomTab 2", url: "/dashboard/custom-tabs#tab02", newTab: false },
+          { title: "CustomTab 3", url: "/dashboard/custom-tabs#tab03", newTab: false },
+          { title: "CustomTab 4", url: "/dashboard/custom-tabs#tab04", newTab: false },
+        ],
       },
       {
         title: "Screensavers",

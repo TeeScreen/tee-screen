@@ -1,67 +1,74 @@
+"use client"
+
 import { deleteFile, findFileSafeName } from "@/lib/actions/file.actions";
 import { getFileType } from "@/lib/utils";
 import Image from "next/image";
 import path from "path";
 import { ConfirmDeleteButton } from "@/components/ConfirmDelete";
-import { SERVER_URL, UPLOAD_DIR } from "@/lib/constants";
+import { useEffect, useState } from "react";
+import { useDirtyState } from "@/stores/user-store";
 
-const FilePreview = async ({
-                               folderName,
-                               fileName,
-                           }: {
-    folderName: string;
-    fileName: string;
-}) => {
-    let safeFileName = await findFileSafeName(folderName, fileName);
+const FilePreview = ({ folderName, fileName }: { folderName: string; fileName: string }) => {
+    const [resolvedFileName, setResolvedFileName] = useState<string>(fileName);
+    const [fileType, setFileType] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
 
-    // Detect if filename has an extension
-    const hasExt = path.extname(safeFileName).length > 0;
+    const { version, dirty, setDirty } = useDirtyState();
+    const [initial, setInitial] = useState<boolean>(false);
 
-    // Possible extensions to try if missing
-    const fallbackExts = [".png", ".mp4"];
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-    let resolvedFileName = safeFileName;
+    const resolveFile = async () => {
+        setLoading(true);
+        await delay(3000);
+        const safeFileName = await findFileSafeName(folderName, fileName);
 
-    if (!hasExt) {
-        // Try each extension until one exists
-        for (const ext of fallbackExts) {
-            const testName = safeFileName + ext;
-
-            const headRes = await fetch(
-                `${SERVER_URL}/${UPLOAD_DIR}/${folderName}/${testName}`,
-                { method: "HEAD" }
-            );
-
-            if (headRes.ok) {
-                resolvedFileName = testName;
-                break;
-            }
+        if (!safeFileName || safeFileName[0] === "d") {
+            setResolvedFileName(fileName);
+            setFileType(null);
+            setLoading(false);
+            return;
         }
+
+        const ext = path.extname(safeFileName).toLowerCase();
+        setResolvedFileName(safeFileName);
+        setFileType(getFileType(ext));
+        setInitial(true);
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        resolveFile();
+    }, [folderName, fileName]);
+
+    useEffect(() => {
+        if (version > 0 && initial) {
+            resolveFile();
+        }
+    }, [version, dirty]);
+
+    const handleDelete = async () => {
+        await deleteFile(folderName, resolvedFileName!);
+        setResolvedFileName(fileName); // force refresh
+        setDirty(true);
+    };
+
+    if (loading) {
+        return (
+            <div className="text-center py-12 rounded-lg border">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-500 mx-auto"></div>
+                <p className="mt-2 text-sm">Loading preview...</p>
+            </div>
+        );
     }
 
-    // Final HEAD check for resolved filename
-    const headRes = await fetch(
-        `${SERVER_URL}/${UPLOAD_DIR}/${folderName}/${resolvedFileName}`,
-        { method: "HEAD" }
-    );
-
-    const fileExists = headRes.ok && resolvedFileName[0] != "d";
-
-    if (!fileExists) {
+    if (resolvedFileName === fileName) {
         return (
             <div className="text-center py-12 rounded-lg border">
                 <p>No file uploaded</p>
             </div>
         );
     }
-
-    const ext = path.extname(resolvedFileName).toLowerCase();
-    const type = getFileType(ext);
-
-    const handleDelete = async () => {
-        "use server";
-        await deleteFile(folderName, resolvedFileName);
-    };
 
     return (
         <div className="p-4 rounded-lg border">
@@ -70,15 +77,11 @@ const FilePreview = async ({
                     <p className="text-sm font-medium truncate">
                         {resolvedFileName.substring(resolvedFileName.indexOf("-") + 1)}
                     </p>
-                    {/*<p className="text-xs">
-                        {new Date(parseInt(resolvedFileName.split("-")[0])).toLocaleDateString()}
-                    </p>*/}
                 </div>
-
                 <ConfirmDeleteButton action={handleDelete} />
             </div>
 
-            {type === "image" && (
+            {fileType === "image" && (
                 <div className="relative aspect-video rounded-md">
                     <Image
                         src={`/api/downloads/${folderName}/${resolvedFileName}`}
@@ -90,7 +93,7 @@ const FilePreview = async ({
                 </div>
             )}
 
-            {type === "video" && (
+            {fileType === "video" && (
                 <video
                     controls
                     src={`/api/downloads/${folderName}/${resolvedFileName}`}
@@ -98,7 +101,7 @@ const FilePreview = async ({
                 />
             )}
 
-            {type === "audio" && (
+            {fileType === "audio" && (
                 <audio
                     className="w-full mt-3"
                     controls
@@ -107,7 +110,7 @@ const FilePreview = async ({
                 />
             )}
 
-            {(type === "document" || type === "other") && (
+            {(fileType === "document" || fileType === "other") && (
                 <div className="mt-2">
                     <a
                         href={`/api/downloads/${folderName}/${resolvedFileName}`}
