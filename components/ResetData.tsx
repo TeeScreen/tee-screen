@@ -11,28 +11,38 @@ import {
     DialogFooter,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useDirtyState } from "@/stores/user-store";
 
 type Props = {
     action: () => Promise<void>;
+    hasMultipleScreens: boolean;
 };
 
-export function ResetLoadedDataDialog({ action }: Props) {
+export function ResetLoadedDataDialog({ action, hasMultipleScreens }: Props) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { dirty, setDirty } = useDirtyState();
+
+    const labelText = hasMultipleScreens ? "Reset Loaded Screen Data" : "Refresh Screen Data";
+    const titleText = hasMultipleScreens ? "Reset Loaded Screen Data?" : "Refresh Screen Data?";
+    const descriptionText = hasMultipleScreens
+        ? "This will unload the screen and discard any unsaved changes. You will need to select a screen again."
+        : "This will discard any unsaved changes and refresh the screen configuration from the server.";
+    const loadingText = hasMultipleScreens ? "Resetting..." : "Refreshing...";
+    const successMessage = hasMultipleScreens ? "Reset successful." : "Refresh successful.";
+    const failureMessage = hasMultipleScreens ? "Failed to reset data." : "Failed to refresh data.";
 
     async function handleConfirm() {
         setIsLoading(true);
 
         try {
             await action();
-            toast("Reset successful.");
+            toast(successMessage);
             setDirty(false);
         } catch {
-            toast("Failed to reset data.");
+            toast(failureMessage);
         }
 
         setIsLoading(false);
@@ -44,16 +54,17 @@ export function ResetLoadedDataDialog({ action }: Props) {
             {dirty && (
                 <Dialog open={open} onOpenChange={(v) => !isLoading && setOpen(v)}>
                     <DialogTrigger asChild>
-                        <Button variant="outline">
-                            Reset Loaded Data
+                        <Button variant="outline" className="w-full sm:w-auto inline-flex items-center gap-2">
+                            {!hasMultipleScreens && <RefreshCw className="h-4 w-4" />}
+                            {labelText}
                         </Button>
                     </DialogTrigger>
 
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Reset Loaded Data?</DialogTitle>
+                            <DialogTitle>{titleText}</DialogTitle>
                             <DialogDescription>
-                                This will clear all loaded account and screen data.
+                                {descriptionText}
                             </DialogDescription>
                         </DialogHeader>
 
@@ -74,7 +85,7 @@ export function ResetLoadedDataDialog({ action }: Props) {
                                 {isLoading && (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 )}
-                                {isLoading ? "Resetting..." : "Reset"}
+                                {loadingText}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -86,11 +97,13 @@ export function ResetLoadedDataDialog({ action }: Props) {
                     variant="outline"
                     onClick={handleConfirm}
                     disabled={isLoading}
+                    className="w-full sm:w-auto inline-flex items-center gap-2"
                 >
                     {isLoading && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    {isLoading ? "Resetting..." : "Reset Loaded Data"}
+                    {!isLoading && !hasMultipleScreens && <RefreshCw className="h-4 w-4" />}
+                    {!isLoading && labelText}
                 </Button>
             )}
         </>

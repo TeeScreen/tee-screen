@@ -363,6 +363,70 @@ export async function resetScreenChange(resetLoaded: boolean = false) {
     }
 }
 
+export async function addAccountAction(account: AccountData) {
+    const res = await addAccountData(account);
+    revalidatePath("/");
+    revalidatePath("/pages/settings");
+    return res;
+}
+
+export async function deleteAccountAction(accountLogin: string) {
+    const userInfo = await getUserInfo();
+    if (userInfo?.loadedAccount === accountLogin) {
+        await resetScreenChange(true);
+    }
+    const res = await removeAccountData(accountLogin);
+    revalidatePath("/");
+    revalidatePath("/pages/settings");
+    return res;
+}
+
+export async function loadAccountAction(login: string, password?: string) {
+    let pw = password;
+    if (!pw) {
+        const userInfo = await getUserInfo();
+        const acc = userInfo?.accountDetails?.find((a: any) => a.accountLogin === login);
+        if (!acc) throw new Error("No password found for account " + login);
+        pw = acc.accountPW;
+    }
+
+    await resetScreenChange(true);
+
+    const response = await fetch(
+        `https://teescreenapp.com/api/auth_accounts.php?user=${login}&password=${pw}`
+    );
+    const data = await response.json();
+
+    await saveUserInfo({
+        loadedAccount: login,
+        screenNames: data,
+    });
+
+    revalidatePath("/");
+    revalidatePath("/pages/settings");
+}
+
+export async function reloadAccountAction(login: string) {
+    const userInfo = await getUserInfo();
+    const acc = userInfo?.accountDetails?.find((a: any) => a.accountLogin === login);
+    if (!acc) throw new Error("No matching account found for " + login);
+
+    const response = await fetch(
+        `https://teescreenapp.com/api/auth_accounts.php?user=${acc.accountLogin}&password=${acc.accountPW}`
+    );
+    const data = await response.json();
+
+    await saveUserInfo({
+        loadedAccount: login,
+        screenNames: data,
+    });
+
+    revalidatePath("/");
+    revalidatePath("/pages/settings");
+}
+
+
+
 
 
 

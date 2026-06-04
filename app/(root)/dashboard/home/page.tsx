@@ -2,26 +2,46 @@
 
 import {
     getUserInfo,
-    addAccountData,
-    removeAccountData,
     saveUserInfo,
     resetScreenChange,
 } from "@/lib/actions/user.actions";
 
 import { revalidatePath } from "next/cache";
-import { AddAccountDialog } from "@/components/screen/AddAccountDialog";
-import { ScreenList } from "@/components/screen/ScreenList";
-import {
-    confirmScreenChanges,
-    downloadClubImages,
-    previewScreenChanges
-} from "@/lib/actions/file.actions";
-import { ResetLoadedDataDialog } from "@/components/ResetData";
-import { LeadCaptureForm } from "@/components/LeadCaptureForm";
-import { AccountDropdown } from "@/components/screen/AccountDropdown";
+import { ScreenSelector } from "@/components/screen/ScreenSelector";
 import { LoadedScreen } from "@/components/screen/LoadedScreen";
+import { downloadClubImages } from "@/lib/actions/file.actions";
+import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 import { Button } from "@/components/ui/button";
-import {toast} from "sonner";
+import Link from "next/link";
+import { Monitor, Mail, CircleHelp } from "lucide-react";
+
+// Fetch updates from the TeeScreen server
+async function getUpdates(): Promise<{ title: string; date: string }[]> {
+    try {
+        const res = await fetch("https://teescreenapp.com/Server/updates.json", {
+            next: { revalidate: 3600 }, // cache for 1 hour
+        });
+        if (!res.ok) return [];
+        const data = await res.json();
+
+        // The API returns { desc: "<html string>" } — parse it into structured items
+        const raw: string = data?.desc ?? "";
+        if (!raw.trim()) return [];
+
+        // Parse list items from the HTML string
+        const liMatches = raw.match(/<li[^>]*>([\s\S]*?)<\/li>/gi) ?? [];
+        return liMatches.map((li) => {
+            const text = li.replace(/<[^>]+>/g, "").trim();
+            // Try to extract a date at the end like "• DD Mon" or "· DD Mon"
+            const dateMatch = text.match(/[•·]\s*(\d{1,2}\s+\w+)\s*$/);
+            const date = dateMatch ? dateMatch[1] : "";
+            const title = text.replace(/[•·]\s*\d{1,2}\s+\w+\s*$/, "").trim();
+            return { title: title || text, date };
+        });
+    } catch {
+        return [];
+    }
+}
 
 export default async function HomePage() {
     let user = await getUserInfo();
@@ -31,81 +51,19 @@ export default async function HomePage() {
     const screenNames = user?.screenNames || [];
     const loadedScreen = user?.loadedScreen || null;
 
+    const updates = await getUpdates();
+
     // -----------------------------
     // SERVER ACTIONS
     // -----------------------------
 
-    async function handleReset() {
+    async function handleResetAction() {
         "use server";
-        await resetScreenChange(true);
+        // If there's more than one screen, we unload the screen. Otherwise, we refresh it.
+        await resetScreenChange(screenNames.length > 1);
         revalidatePath("/");
     }
 
-    async function handleAddAccount(formData: FormData) {
-        "use server";
-        const accountLogin = formData.get("accountLogin") as string;
-        const accountPW = formData.get("accountPW") as string;
-        await addAccountData({ accountLogin, accountPW });
-        revalidatePath("/");
-    }
-
-    async function handleDeleteAccount(formData: FormData) {
-        "use server";
-        const login = formData.get("login") as string;
-        await handleReset();
-        await removeAccountData(login);
-        revalidatePath("/");
-    }
-
-    async function handleLoadAccountDetails(formData: FormData) {
-        "use server";
-        const login = formData.get("login") as string;
-        const password = formData.get("password") as string;
-
-        const response = await fetch(
-            `https://teescreenapp.com/api/auth_accounts.php?user=${login}&password=${password}`
-        );
-        console.log("response", response);
-        const data = await response.json();
-
-        await saveUserInfo({
-            loadedAccount: login,
-            screenNames: data,
-        });
-
-        revalidatePath("/");
-    }
-
-    // -----------------------------
-    // NEW: RELOAD ACCOUNT
-    // -----------------------------
-    async function handleReloadAccount() {
-        "use server";
-
-        if (!loadedAccount) return;
-
-        const account = accounts.find(
-            (a: any) => a.accountLogin === loadedAccount
-        );
-        if (!account) return;
-
-        const response = await fetch(
-            `https://teescreenapp.com/api/auth_accounts?user=${account.accountLogin}&password=${account.accountPW}`
-        );
-
-        const data = await response.json();
-
-        await saveUserInfo({
-            loadedAccount: loadedAccount,
-            screenNames: data,
-        });
-
-        revalidatePath("/");
-    }
-
-    // -----------------------------
-    // LOAD SCREEN
-    // -----------------------------
     async function handleLoadScreen(screenName: string) {
         "use server";
 
@@ -174,84 +132,144 @@ export default async function HomePage() {
     // RENDER
     // -----------------------------
     return (
-        <div className="@container/main flex flex-col gap-4 md:gap-6 px-4 sm:px-6">
+        <div className="@container/main flex flex-col gap-6 px-4 sm:px-6 pb-8">
 
-            <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
-                Your Screens
-            </h1>
+            {/* Header Greeting */}
+            <div className="flex flex-col gap-1 text-left mt-2">
+                <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                    {user?.clubName || "TEE SCREEN"}
+                </p>
+                <h1 className="text-3xl font-extrabold tracking-tight">
+                    Welcome back
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                    Open your screen to update what golfers see, then hit Save.
+                </p>
+            </div>
 
-            {accounts.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-                    {/* LEFT COLUMN */}
-                    <div className="flex flex-col h-full">
-                        <AccountDropdown
-                            accounts={accounts}
-                            loadedAccount={loadedAccount}
-                            loadAction={handleLoadAccountDetails}
-                            deleteAction={handleDeleteAccount}
-                        />
+            {/* Main Content: 2/3 left + 1/3 right on desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
-                        <AddAccountDialog action={handleAddAccount} />
+                {/* Left / Main Column */}
+                <div className="lg:col-span-2 flex flex-col gap-6">
 
-                        {/* NEW: Reload Account Button */}
-                        {loadedAccount && (
-                            <form action={handleReloadAccount}>
-                                <Button
-                                    type="submit"
-                                    variant="outline"
-                                    className="mt-2"
-                                >
-                                    Reload Account
-                                </Button>
-                            </form>
-                        )}
-
-                        {loadedScreen && (
-                            <div className="mt-4 sm:mt-2">
-                                <ResetLoadedDataDialog action={handleReset} />
-                            </div>
-                        )}
-                    </div>
-
-                    {/* RIGHT COLUMN */}
-                    {loadedScreen && (
-                        <div className="flex flex-col h-full">
-                            <LoadedScreen screenName={loadedScreen} />
+                    {/* Screen Selector / No Account States */}
+                    {accounts.length > 0 && (
+                        <div className="flex flex-col gap-6">
+                            {loadedAccount ? (
+                                <ScreenSelector
+                                    screens={screenNames}
+                                    loadedScreen={loadedScreen}
+                                    onLoadScreen={handleLoadScreen}
+                                    onResetScreen={handleResetAction}
+                                />
+                            ) : (
+                                <div className="p-6 border border-dashed rounded-2xl bg-muted/20 flex flex-col items-center justify-center text-center gap-4">
+                                    <Monitor className="h-8 w-8 text-muted-foreground" />
+                                    <h3 className="text-lg font-semibold">No Active Screen Account</h3>
+                                    <p className="text-sm text-muted-foreground">
+                                        To start managing your screen displays, please select which connected account you would like to make active.
+                                    </p>
+                                    <Button asChild>
+                                        <Link href="/pages/settings">
+                                            Select Active Account
+                                        </Link>
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     )}
-                </div>
-            )}
 
-            {screenNames.length > 0 && (
-                <div className="mt-4 sm:mt-6">
-                    <h2 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-3">
-                        Screens for {loadedAccount}
-                    </h2>
+                    {accounts.length === 0 && (
+                        <div className="p-6 sm:p-8 border border-dashed rounded-2xl bg-muted/20 flex flex-col items-center justify-center text-center gap-4">
+                            <div className="p-3 rounded-full bg-primary/10 text-primary">
+                                <Monitor className="h-8 w-8" />
+                            </div>
+                            <h2 className="text-xl font-bold">Connect Your Screen Account</h2>
+                            <p className="text-sm text-muted-foreground">
+                                It looks like you don&apos;t have any screen accounts connected yet.
+                                To start managing and editing your TeeScreen displays, connect your credentials in Settings.
+                            </p>
 
-                    <div className="overflow-x-auto">
-                        <ScreenList
-                            screens={screenNames}
-                            loadedScreen={loadedScreen}
-                            onLoadScreen={handleLoadScreen} // <-- commit after confirm
-                        />
+                            <Button asChild className="mt-2">
+                                <Link href="/pages/settings">
+                                    Go to Account Settings
+                                </Link>
+                            </Button>
+
+                            <div className="w-full border-t border-muted/60 my-4 pt-6 text-left">
+                                <p className="text-xs text-muted-foreground text-center mb-4">
+                                    Don&apos;t have a TeeScreen account? Contact our team.
+                                </p>
+                                <LeadCaptureForm user={user} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Quick Links */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Link href="/pages/contact" className="p-5 border border-muted rounded-2xl bg-card hover:border-primary/20 transition-all duration-300 flex items-center gap-4 group">
+                            <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20 transition-all duration-300 flex-shrink-0">
+                                <Mail className="h-6 w-6" />
+                            </div>
+                            <div className="text-left min-w-0">
+                                <h4 className="text-sm font-semibold">Contact us</h4>
+                                <p className="text-xs text-muted-foreground mt-0.5">Get help from the Tee Screen team</p>
+                            </div>
+                        </Link>
+
+                        <Link href="/pages/contact" className="p-5 border border-muted rounded-2xl bg-card hover:border-primary/20 transition-all duration-300 flex items-center gap-4 group">
+                            <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20 transition-all duration-300 flex-shrink-0">
+                                <CircleHelp className="h-6 w-6" />
+                            </div>
+                            <div className="text-left min-w-0">
+                                <h4 className="text-sm font-semibold">Frequently asked questions</h4>
+                                <p className="text-xs text-muted-foreground mt-0.5">Quick answers to common things</p>
+                            </div>
+                        </Link>
+                    </div>
+
+                    {/* Updates Section */}
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-2 text-left">
+                            <h3 className="text-base font-bold">Updates</h3>
+                            {updates.length > 0 && (
+                                <span className="text-[10px] font-bold uppercase tracking-wider bg-green-500/10 text-green-500 px-2 py-0.5 rounded-full">
+                                    {updates.length} new
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="p-6 border border-muted bg-card rounded-2xl flex flex-col gap-5">
+                            {updates.length > 0 ? (
+                                updates.map((update, i) => (
+                                    <div key={i} className="flex gap-3 items-start">
+                                        <span className="h-2 w-2 rounded-full bg-green-500 mt-1.5 flex-shrink-0" />
+                                        <div className="text-left">
+                                            <h4 className="text-sm font-semibold">{update.title}</h4>
+                                            {update.date && (
+                                                <p className="text-xs text-muted-foreground mt-0.5">{update.date}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-sm text-muted-foreground text-center py-2">No updates available.</p>
+                            )}
+                        </div>
                     </div>
                 </div>
-            )}
 
-
-            {accounts.length === 0 && (
-                <div className="p-4 sm:p-6 border rounded-lg bg-muted/30 flex flex-col gap-4">
-                    <AddAccountDialog action={handleAddAccount} />
-
-                    <h2 className="text-lg sm:text-xl font-semibold">No Accounts Found</h2>
-                    <p className="text-sm text-muted-foreground">
-                        It looks like you don’t have any accounts connected yet.
-                        If you’d like to get started with TeeScreen, our sales team can help you set up an account and provide a quote.
-                    </p>
-
-                    <LeadCaptureForm user={user} />
-                </div>
-            )}
+                {/* Right Column: Screen Preview (only when a screen is loaded) */}
+                {loadedScreen && (
+                    <div className="lg:col-span-1 flex flex-col gap-4 lg:sticky lg:top-6">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                            Screen Preview
+                        </h3>
+                        <LoadedScreen screenName={loadedScreen} />
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
