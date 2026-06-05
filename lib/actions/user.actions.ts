@@ -147,26 +147,28 @@ export async function getUserInfo() {
     const userId: string = session.user.id;
 
     // Try to find existing user info
-    let user = await UserInfoModel.findOne({ userId });
-
-    // If none exists, create a new one
-    if (!user) {
-        user = new UserInfoModel({
-            userId,
-            fullName: session.user.name,
-            phoneNumber: "",
-            clubName: "",
-            clubType: "",
-            role: "",
-            accountDetails: [],
-            loadedAccount: "",
-            loadedScreen: "",
-            screenJson: null,
-        });
-
-        await user.save();
+    let user: any = null;
+    try {
+        user = await UserInfoModel.findOne({ userId });
+        if (!user) {
+            user = new UserInfoModel({
+                userId,
+                fullName: session.user.name,
+                phoneNumber: "",
+                clubName: "",
+                clubType: "",
+                role: "",
+                accountDetails: [],
+                loadedAccount: "",
+                loadedScreen: "",
+                screenJson: null,
+            });
+            await user.save();
+        }
+    } catch (e) {
+        console.warn('Failed to fetch or create user info', e);
+        return null;
     }
-
     return JSON.parse(JSON.stringify(user));
 }
 

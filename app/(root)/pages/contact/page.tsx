@@ -1,6 +1,6 @@
 import React from "react";
 import { Contact} from "lucide-react";
-import ContactForm from "@/components/forms/ContactForm";
+import {ContactForm} from "@/components/forms/ContactForm";
 
 export const dynamic = "force-dynamic";
 

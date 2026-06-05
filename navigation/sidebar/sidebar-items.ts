@@ -141,15 +141,14 @@ export const sidebarItems: NavGroup[] = [
         icon: BadgeCheck,
       },
       {
-        title: "Report Bug",
-        url: "/pages/bug-report",
-        icon: Bug,
-        comingSoon: true,
-      },
-      {
         title: "Contact Us",
         url: "/pages/contact",
         icon: Contact,
+      },
+      {
+        title: "Report Bug",
+        url: "/pages/bug-report",
+        icon: Bug,
         comingSoon: true,
       },
       /*{

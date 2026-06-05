@@ -1,18 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp, Monitor, Edit, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronUp, Monitor, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScreenList } from "./ScreenList";
 import { ResetLoadedDataDialog } from "@/components/ResetData";
 import Link from "next/link";
 
 export function ScreenSelector({
-    screens,
-    loadedScreen,
-    onLoadScreen,
-    onResetScreen,
-}: {
+                                   screens,
+                                   loadedScreen,
+                                   onLoadScreen,
+                                   onResetScreen,
+                               }: {
     screens: string[];
     loadedScreen: string | null;
     onLoadScreen: (screenName: string) => void;
@@ -20,7 +20,6 @@ export function ScreenSelector({
 }) {
     const [isExpanded, setIsExpanded] = useState(!loadedScreen);
 
-    // If there are no screens, show nothing or a small message
     if (screens.length === 0) {
         return (
             <div className="p-4 border border-dashed rounded-xl text-center text-muted-foreground text-sm bg-card">
@@ -35,27 +34,35 @@ export function ScreenSelector({
     if (!hasMultipleScreens) {
         const singleScreen = screens[0];
 
-        // If the single screen is already loaded, render the card without change options
         if (loadedScreen === singleScreen) {
+            // Loaded single screen
             return (
                 <div className="flex flex-col gap-4">
-                    <div className="p-5 border rounded-2xl bg-card shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3.5 rounded-xl bg-primary/10 text-primary">
+                    <div className="p-5 border rounded-2xl bg-card shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        {/* Left side info */}
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <div className="p-3.5 rounded-xl bg-primary/10 text-primary flex-shrink-0">
                                 <Monitor className="h-6 w-6" />
                             </div>
-                            <div className="text-left">
-                                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Your screen</p>
-                                <h4 className="text-lg font-bold mt-0.5">{loadedScreen}</h4>
+                            <div className="text-left flex-1 min-w-0">
+                                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
+                                    Your screen
+                                </p>
+                                <h4 className="text-lg font-bold mt-0.5 truncate">{loadedScreen}</h4>
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
                                     <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                                     <span>Showing now • updated recently</span>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
+
+                        {/* Right side buttons */}
+                        <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
                             <ResetLoadedDataDialog action={onResetScreen} hasMultipleScreens={false} />
-                            <Button asChild className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90">
+                            <Button
+                                asChild
+                                className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 w-full md:w-auto"
+                            >
                                 <Link href="/dashboard/golf-course">
                                     <Edit className="h-4 w-4" /> Open &amp; edit
                                 </Link>
@@ -66,26 +73,29 @@ export function ScreenSelector({
             );
         }
 
-        // Otherwise, show a button to load the screen
+        // Single screen not loaded
         return (
-            <div className="p-5 border rounded-2xl bg-card shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <div className="p-3 rounded-xl bg-primary/10 text-primary">
+            <div className="p-5 border rounded-2xl bg-card shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="p-3 rounded-xl bg-primary/10 text-primary flex-shrink-0">
                         <Monitor className="h-6 w-6" />
                     </div>
-                    <div>
+                    <div className="text-left min-w-0">
                         <h4 className="text-sm font-semibold">TeeScreen Display Ready</h4>
                         <p className="text-xs text-muted-foreground mt-0.5">
                             Connect to screen &quot;{singleScreen}&quot; to manage content and layouts.
                         </p>
                     </div>
                 </div>
-                <Button
-                    onClick={() => onLoadScreen(singleScreen)}
-                    className="w-full sm:w-auto inline-flex items-center gap-2"
-                >
-                    Load Screen <Edit className="h-4 w-4" />
-                </Button>
+
+                <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                    <Button
+                        onClick={() => onLoadScreen(singleScreen)}
+                        className="inline-flex items-center gap-2 w-full md:w-auto"
+                    >
+                        Load Screen <Edit className="h-4 w-4" />
+                    </Button>
+                </div>
             </div>
         );
     }
@@ -102,10 +112,10 @@ export function ScreenSelector({
                                 <Monitor className="h-6 w-6" />
                             </div>
                             <div className="text-left flex-1 min-w-0">
-                                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Your screen</p>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                    <h4 className="text-lg font-bold truncate">{loadedScreen}</h4>
-                                </div>
+                                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
+                                    Your screen
+                                </p>
+                                <h4 className="text-lg font-bold truncate">{loadedScreen}</h4>
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
                                     <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                                     <span>Showing now • updated recently</span>
@@ -113,13 +123,12 @@ export function ScreenSelector({
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2 flex-shrink-0">
+                        {/* Right side buttons */}
+                        <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
                             <ResetLoadedDataDialog action={onResetScreen} hasMultipleScreens={true} />
-
-                            {/* "Open & edit" toggles the screen list dropdown */}
                             <Button
                                 onClick={() => setIsExpanded(!isExpanded)}
-                                className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90"
+                                className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 w-full md:w-auto"
                             >
                                 <Edit className="h-4 w-4" />
                                 Open &amp; edit
@@ -152,14 +161,14 @@ export function ScreenSelector({
                                 loadedScreen={loadedScreen}
                                 onLoadScreen={(name) => {
                                     onLoadScreen(name);
-                                    setIsExpanded(false); // Collapse after load
+                                    setIsExpanded(false);
                                 }}
                             />
                         </div>
                     )}
                 </div>
             ) : (
-                // If no screen is loaded, force showing the selection list
+                // No screen loaded
                 <div className="p-5 border rounded-2xl bg-card shadow-sm flex flex-col gap-5">
                     <div className="flex items-center gap-3">
                         <div className="p-3 rounded-xl bg-primary/10 text-primary">

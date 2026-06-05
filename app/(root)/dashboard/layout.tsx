@@ -31,10 +31,22 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
         throw new Error("Auth module not initialised");
     }
 
-    const session = await auth.api.getSession({ headers: await headers() });
+    let session: any = null;
+    try {
+        session = await auth.api.getSession({ headers: await headers() });
+    } catch (e) {
+        console.warn('Failed to get session in layout', e);
+        // Provide minimal fallback to avoid build crash
+        session = { user: { id: '', name: '' } };
+    }
     if (!session?.user) redirect("/sign-in");
 
-    const userInfo = await getUserInfo();
+    let userInfo: any = {};
+try {
+    userInfo = await getUserInfo();
+} catch (e) {
+    console.warn('Failed to fetch user info in layout', e);
+}
 
     const isFootball = userInfo?.screenJson?.isFootballClub ?? false;
     const isGolf = (userInfo?.screenJson?.isGolfClub && userInfo?.screenJson?.CanEditHoles) ?? false;

@@ -10,7 +10,12 @@ import UploadSection from "@/components/UploadSection";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-    const user = await getUserInfo();
+let user: any = {};
+try {
+    user = await getUserInfo();
+} catch (e) {
+    console.warn('Failed to fetch user info', e);
+}
     const screenJson = user?.screenJson;
     const folderName = user?.screenJson?.["FolderNameOnServer"] || null;
     return (
