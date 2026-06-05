@@ -198,7 +198,7 @@ export default async function HomePage() {
                                 <p className="text-xs text-muted-foreground text-center mb-4">
                                     Don&apos;t have a TeeScreen account? Contact our team.
                                 </p>
-                                <LeadCaptureForm user={user} />
+                                <LeadCaptureForm/>
                             </div>
                         </div>
                     )}
