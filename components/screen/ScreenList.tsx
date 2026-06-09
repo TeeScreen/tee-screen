@@ -2,18 +2,14 @@
 
 import { useState } from "react";
 import { ScreenItem } from "./ScreenItem";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { CopyScreensDialog } from "./CopyScreensDialog";
-import {CopyConfirmDialog, PreviewResult} from "./CopyConfirmDialog";
+import { CopyConfirmDialog, PreviewResult } from "./CopyConfirmDialog";
 import { toast } from "sonner";
-import {confirmScreenChanges, PreviewResponse, previewScreenChanges} from "@/lib/actions/file.actions";
+import { confirmScreenChanges, previewScreenChanges } from "@/lib/actions/file.actions";
 
-type DiffEntry = {
-    path: string;
-    oldValue: any;
-    newValue: any;
-};
+type ViewMode =  "text" | "compact" | "normal";
 
 export function ScreenList({
                                screens,
@@ -24,9 +20,10 @@ export function ScreenList({
     loadedScreen: string | null;
     onLoadScreen: (screenName: string) => void;
 }) {
-    const [compact, setCompact] = useState(true);
+    const [viewMode, setViewMode] = useState<ViewMode>("text");
     const [pendingPreviews, setPendingPreviews] = useState<PreviewResult[] | null>(null);
     const [sourceFolder, setSourceFolder] = useState<string>();
+    const [selectedTextScreen, setSelectedTextScreen] = useState<string>("");
 
     async function handleCopy(selected: string[]) {
         const res = await previewScreenChanges(selected);
@@ -36,43 +33,77 @@ export function ScreenList({
         } else {
             toast.error(res.message || "Preview failed");
         }
-        return res; // <-- return the PreviewResponse so types match
+        return res;
     }
 
-    const extraScreens = screens.filter(item => item !== loadedScreen);
-
+    const extraScreens = screens.filter((item) => item !== loadedScreen);
 
     return (
         <div className="w-full flex flex-col gap-4">
-            <div className="flex items-center justify-between gap-2 pr-1">
+            {viewMode === "text" ? (
                 <div className="flex items-center gap-2">
-                    <Label htmlFor="compact-toggle" className="text-sm">
-                        {compact ? "Compact View" : "Normal View"}
-                    </Label>
-                    <Switch id="compact-toggle" checked={compact} onCheckedChange={setCompact} />
+                    <select
+                        className="border rounded px-2 py-1 text-sm flex-1"
+                        value={selectedTextScreen}
+                        onChange={(e) => setSelectedTextScreen(e.target.value)}
+                    >
+                        <option value="" disabled>Select a screen</option>
+                        {screens.map((screen) => (
+                            <option key={screen} value={screen}>{screen}</option>
+                        ))}
+                    </select>
+                    <Button
+                        onClick={() => {
+                            if (selectedTextScreen) {
+                                onLoadScreen(selectedTextScreen);
+                            } else {
+                                toast.error("Please select a screen first");
+                            }
+                        }}
+                        disabled={!selectedTextScreen}
+                    >
+                        Load
+                    </Button>
+                    <div className="flex items-center justify-between gap-2 pr-1">
+                        {/* <div className="flex items-center gap-2">
+                    <Label htmlFor="view-mode" className="text-sm">View Mode</Label>
+                    <select
+                        id="view-mode"
+                        value={viewMode}
+                        onChange={(e) => setViewMode(e.target.value as ViewMode)}
+                        className="border rounded px-2 py-1 text-sm"
+                    >
+                        <option value="compact">Compact</option>
+                        <option value="normal">Normal</option>
+                        <option value="text">Text</option>
+                    </select>
+                </div>*/}
+                        {loadedScreen && (
+                            <CopyScreensDialog screens={extraScreens} copyAction={handleCopy} />
+                        )}
+                    </div>
                 </div>
-                {loadedScreen && (
-                    <CopyScreensDialog screens={extraScreens} copyAction={handleCopy} />
-                )}
-            </div>
 
-            <div
-                className={`grid gap-3 w-full ${
-                    compact
-                        ? "grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8"
-                        : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                }`}
-            >
-                {screens.map((screen: string) => (
-                    <ScreenItem
-                        key={screen}
-                        screenName={screen}
-                        loadedScreen={loadedScreen}
-                        onLoadScreen={onLoadScreen}
-                        compact={compact}
-                    />
-                ))}
-            </div>
+
+            ) : (
+                <div
+                    className={`grid gap-3 w-full ${
+                        viewMode === "compact"
+                            ? "grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8"
+                            : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                    }`}
+                >
+                    {screens.map((screen) => (
+                        <ScreenItem
+                            key={screen}
+                            screenName={screen}
+                            loadedScreen={loadedScreen}
+                            onLoadScreen={onLoadScreen}
+                            compact={viewMode === "compact"}
+                        />
+                    ))}
+                </div>
+            )}
 
             {pendingPreviews && sourceFolder && (
                 <CopyConfirmDialog

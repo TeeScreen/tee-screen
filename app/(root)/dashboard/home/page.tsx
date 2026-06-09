@@ -20,20 +20,13 @@ import { Monitor, Mail, CircleHelp } from "lucide-react";
 // Fetch updates from the TeeScreen server
 async function getUpdates(): Promise<{ title: string; date: string }[]> {
     try {
-        const res = await fetch("https://teescreenapp.com/Server/updates.json", {
-            next: { revalidate: 3600 }, // cache for 1 hour
-        });
+        const res = await fetch("https://teescreenapp.com/Server/updates.json");
         if (!res.ok) return [];
         const data = await res.json();
+        const rawUpdates: string[] = data?.updates ?? [];
+        if (!Array.isArray(rawUpdates) || rawUpdates.length === 0) return [];
 
-        // The API returns { desc: "<html string>" } — parse it into structured items
-        const raw: string = data?.desc ?? "";
-        if (!raw.trim()) return [];
-
-        // Parse list items from the HTML string
-        const liMatches = raw.match(/<li[^>]*>([\s\S]*?)<\/li>/gi) ?? [];
-        return liMatches.map((li) => {
-            const text = li.replace(/<[^>]+>/g, "").trim();
+        return rawUpdates.map((text) => {
             // Try to extract a date at the end like "• DD Mon" or "· DD Mon"
             const dateMatch = text.match(/[•·]\s*(\d{1,2}\s+\w+)\s*$/);
             const date = dateMatch ? dateMatch[1] : "";
@@ -215,7 +208,7 @@ export default async function HomePage() {
                             </div>
                         </Link>
 
-                        <Link href="/pages/contact" className="p-5 border rounded-2xl bg-card flex items-center gap-4 group">
+                        {/*<Link href="/pages/contact" className="p-5 border rounded-2xl bg-card flex items-center gap-4 group">
                             <div className="p-3 rounded-xl bg-primary/10 text-primary flex-shrink-0">
                                 <CircleHelp className="h-6 w-6" />
                             </div>
@@ -223,7 +216,7 @@ export default async function HomePage() {
                                 <h4 className="text-sm font-semibold">Frequently asked questions</h4>
                                 <p className="text-xs text-muted-foreground mt-0.5">Quick answers to common things</p>
                             </div>
-                        </Link>
+                        </Link>*/}
                     </div>
 
                     {/* Updates */}
@@ -257,7 +250,7 @@ export default async function HomePage() {
                 </div>
             </div>
 
-            {/* Loaded Screen always at bottom */}
+            {/* Loaded Screen always at bottom
             {loadedScreen && (
                 <div className="flex flex-col gap-4 min-w-0 max-h-screen overflow-y-auto">
                     <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
@@ -265,7 +258,7 @@ export default async function HomePage() {
                     </h3>
                     <LoadedScreen screenName={loadedScreen} />
                 </div>
-            )}
+            )}*/}
         </div>
     );
 

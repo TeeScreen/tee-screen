@@ -144,7 +144,7 @@ export function ScreenSelector({
                                 <h3 className="text-sm font-semibold text-muted-foreground">
                                     Choose a screen to open &amp; edit
                                 </h3>
-                                <Button
+                                {/*<Button
                                     asChild
                                     size="sm"
                                     variant="ghost"
@@ -154,7 +154,7 @@ export function ScreenSelector({
                                         <Edit className="h-3.5 w-3.5" />
                                         Edit current
                                     </Link>
-                                </Button>
+                                </Button>*/}
                             </div>
                             <ScreenList
                                 screens={screens}
