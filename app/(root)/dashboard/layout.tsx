@@ -108,10 +108,10 @@ try {
                     <PreviewPanel loadedScreen={loadedScreen} /> {/* 👈 preview beside children */}
                 </div>
 
-                {/* Floating Guide Menu
+                {/* Floating Guide Menu*/}
                 <div className="fixed bottom-4 right-4 z-50">
                     <GuideMenu />
-                </div>*/}
+                </div>
             </SidebarInset>
         </SidebarProvider>
     );

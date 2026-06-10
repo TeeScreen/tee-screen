@@ -95,11 +95,11 @@ export function GuideMenu() {
 
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Guides</DialogTitle>
+            <DialogTitle>Exmaple for adding a screen login and making changes</DialogTitle>
           </DialogHeader>
 
           <div className="flex flex-col gap-6 mt-4">
-            {categories.map((cat, i) => {
+            {/*}  {categories.map((cat, i) => {
               const Icon = cat.icon;
               return (
                   <div key={i} className="flex flex-col gap-3">
@@ -121,7 +121,21 @@ export function GuideMenu() {
                     </div>
                   </div>
               );
-            })}
+            })}*/}
+
+             <div className="w-full h-64 lg:h-[400px] flex items-center justify-center bg-black">
+                    <video
+                        src="/assets/video/VideoGuide.mp4"
+                        className="max-w-full max-h-full object-contain"
+                        controls
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                    />
+                </div>
+
+
           </div>
         </DialogContent>
       </Dialog>
