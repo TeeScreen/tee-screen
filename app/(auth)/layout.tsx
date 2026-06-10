@@ -48,17 +48,15 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
                     </blockquote>
                 </div>
 
-                {/* <div className="w-full h-64 lg:h-[400px] flex items-center justify-center bg-black">
-                    <video
-                        src="/assets/video/CreateAccountGuide.mp4"
-                        className="max-w-full max-h-full object-contain"
-                        controls
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                    />
-                </div>*/}
+                {/* BUTTON TO OLD PORTAL */}
+                <div className="p-6">
+                    <Link
+                        href="https://teescreen.co.uk/old-portal"
+                        className="inline-block px-4 py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition"
+                    >
+                        Go to Old Portal
+                    </Link>
+                </div>
             </section>
         </main>
     );

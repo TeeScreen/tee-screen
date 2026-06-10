@@ -8,6 +8,7 @@ import { CopyScreensDialog } from "./CopyScreensDialog";
 import { CopyConfirmDialog, PreviewResult } from "./CopyConfirmDialog";
 import { toast } from "sonner";
 import { confirmScreenChanges, previewScreenChanges } from "@/lib/actions/file.actions";
+import {Loader2} from "lucide-react";
 
 type ViewMode =  "text" | "compact" | "normal";
 
@@ -24,6 +25,7 @@ export function ScreenList({
     const [pendingPreviews, setPendingPreviews] = useState<PreviewResult[] | null>(null);
     const [sourceFolder, setSourceFolder] = useState<string>();
     const [selectedTextScreen, setSelectedTextScreen] = useState<string>("");
+    const [loading, setLoading] = useState(false);
 
     async function handleCopy(selected: string[]) {
         const res = await previewScreenChanges(selected);
@@ -53,16 +55,28 @@ export function ScreenList({
                         ))}
                     </select>
                     <Button
-                        onClick={() => {
+                        onClick={async () => {
                             if (selectedTextScreen) {
-                                onLoadScreen(selectedTextScreen);
+                                try {
+                                    setLoading(true);
+                                    await onLoadScreen(selectedTextScreen);
+                                } finally {
+                                    setLoading(false);
+                                }
                             } else {
                                 toast.error("Please select a screen first");
                             }
                         }}
-                        disabled={!selectedTextScreen}
+                        disabled={!selectedTextScreen || loading}
                     >
-                        Load
+                        {loading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Loading...
+                            </>
+                        ) : (
+                            "Load"
+                        )}
                     </Button>
                     <div className="flex items-center justify-between gap-2 pr-1">
                         {/* <div className="flex items-center gap-2">

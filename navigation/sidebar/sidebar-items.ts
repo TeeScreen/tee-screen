@@ -6,7 +6,7 @@ import {
   Home, ImageUp, Camera,
   type LucideIcon, NotebookTabs,
   PanelsTopLeft, PanelTopBottomDashed, Trophy,
-  Wallpaper, FileQuestionMark, NotebookPen, ChartNoAxesCombined,
+  Wallpaper, FileQuestionMark, NotebookPen, ChartNoAxesCombined, Hourglass,
 } from "lucide-react";
 
 export interface NavSubItem {
@@ -144,6 +144,12 @@ export const sidebarItems: NavGroup[] = [
         title: "Contact Us",
         url: "/pages/contact",
         icon: Contact,
+      },
+      {
+        title: "Old Portal",
+        url: "https://www.teescreen.co.uk/old-portal/",
+        icon: Hourglass,
+        newTab: true,
       },
       {
         title: "Report Bug",

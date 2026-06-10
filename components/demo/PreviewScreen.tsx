@@ -49,17 +49,26 @@ export default function PreviewScreen() {
 
     // Initial load
     useEffect(() => {
-        fetchData()
+        if(!loading)
+        {
+            fetchData()
+            console.log("TEST 2")
+        }
     }, [])
 
     // On version updates, call preview changes
     useEffect(() => {
-        if (version > 0 && !loading) {
+        console.log("version:", version)
+        console.log("dirty:", dirty)
+        console.log("loading:", loading)
+
+        if (version > 0 && !loading && dirty) {
             handlePreview()
         }
-        else if(version == 0 && !loading && userInfo)
+        else if ((version === 0 || version === 1) && !dirty && !loading)
         {
             fetchData()
+            console.log("TEST 1")
         }
     }, [version, dirty])
 
@@ -71,7 +80,7 @@ export default function PreviewScreen() {
             setLoading(false)
             return
         }
-
+        console.log("User info: " , info.loadedScreen);
         updateOtherFields(info.screenJson);
 
         const folderName = info.screenJson.FolderNameOnServer
@@ -483,8 +492,8 @@ export default function PreviewScreen() {
                                                 <span
                                                     className={`${textColor} font-semibold text-center break-words whitespace-normal w-full
                                                     ${tab.icon
-                                                        ? "flex-[0] bottom-0 text-xs leading-tight"
-                                                        : "flex items-center justify-center h-full text-xl"}`}
+                                                        ? "flex-[0] bottom-0 text-[1vh] leading-tight"
+                                                        : "flex items-center justify-center h-full text-[2vh]"}`}
                                                 >
                                                     {tab.name}
                                                 </span>
@@ -606,7 +615,7 @@ export default function PreviewScreen() {
                                                 }
                                             }}
                                         >
-                                            <span className="drop-shadow-[2px_2px_3px_rgba(0,0,0,0.9)] text-2xl uppercase font-semibold text-center w-[85%] whitespace-normal break-words">
+                                            <span className="drop-shadow-[2px_2px_3px_rgba(0,0,0,0.9)] text-[3vh] uppercase font-semibold text-center w-[85%] whitespace-normal break-words">
                                                 {notice.text}
                                             </span>
                                         </Button>

@@ -62,12 +62,9 @@ function normalizeUrl(url: string): string {
         const hashIndex = url.indexOf("#");
         if (hashIndex !== -1) {
             // Return everything from the first hash onwards
-            console.log("adjusted url", url.substring(hashIndex));
             return url.substring(hashIndex);
         }
     }
-    console.log("original url", url);
-
     // Otherwise return the original url untouched
     return url;
 }
