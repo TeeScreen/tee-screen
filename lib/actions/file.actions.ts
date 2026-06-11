@@ -7,6 +7,7 @@ import path from "path";
 import JSZip from "jszip";
 import { revalidatePath } from "next/cache";
 import { getUserInfo } from "./user.actions";
+import {toUnityIsoString} from "@/lib/helper";
 
 type UploadResult = {
     success: boolean;
@@ -216,7 +217,7 @@ export async function confirmScreenChanges(
     previews: { targetScreen: string; merged: any }[], sourceFolder?: string
 ) {
     for (const { targetScreen, merged } of previews) {
-        merged.lastEdited = new Date().toISOString();
+        merged.lastEdited = toUnityIsoString(new Date());
 
         const blob = new Blob([JSON.stringify(merged)], { type: "application/json" });
         const form = new FormData();
@@ -307,8 +308,6 @@ function deepDiffMerge(
 
     return { merged: result, diffs };
 }
-
-
 
 
 export {

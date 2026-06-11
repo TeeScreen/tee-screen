@@ -8,6 +8,7 @@ import {AccountData, UserInfoModel} from "@/database/models/user.model";
 import {deleteFolder, downloadClubImages, uploadFolder} from "@/lib/actions/file.actions";
 import {UPLOAD_DIR} from "@/lib/constants";
 import fs from "fs/promises";
+import {toUnityIsoString} from "@/lib/helper";
 
 export async function addUserInfo(data: {
     userId: string;
@@ -242,7 +243,7 @@ export async function applyScreenChange() {
         const data = userInfo.screenJson;
 
         // 1. Update timestamp
-        data.lastEdited = new Date().toISOString();
+        data.lastEdited = toUnityIsoString(new Date());
 
         // 2. Serialize JSON
         const json = JSON.stringify(data);
