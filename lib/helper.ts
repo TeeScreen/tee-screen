@@ -17,23 +17,16 @@ export function toUnityIsoString(date: Date): string {
         return val && /^\d+$/.test(val) ? val : "00";
     };
 
-    // London-local date for offset only
-    const londonDate = new Date(
-        date.toLocaleString("en-GB", { timeZone: "Europe/London" })
-    );
-
-    const tzOffset = londonDate.getTimezoneOffset();
-    const sign = tzOffset <= 0 ? "+" : "-"; // offset is minutes behind UTC
-    const absOffset = Math.abs(tzOffset);
-    const hhOffset = String(Math.floor(absOffset / 60)).padStart(2, "0");
-    const mmOffset = String(absOffset % 60).padStart(2, "0");
-
-    // Milliseconds hard-coded to 000
+    // Hard‑coded milliseconds
     const ms = "000";
+
+    // Hard‑coded offset (choose one)
+    const offset = "+00:00"; // GMT
+    // const offset = "+01:00"; // BST
 
     return (
         `${get("year")}-${get("month")}-${get("day")}T` +
         `${get("hour")}:${get("minute")}:${get("second")}.` +
-        `${ms}${sign}${hhOffset}:${mmOffset}`
+        `${ms}${offset}`
     );
 }
