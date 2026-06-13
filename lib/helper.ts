@@ -21,8 +21,8 @@ export function toUnityIsoString(date: Date): string {
     const ms = "000";
 
     // Hard‑coded offset (choose one)
-    const offset = "+00:00"; // GMT
-    // const offset = "+01:00"; // BST
+    //const offset = "+00:00"; // GMT
+     const offset = "+01:00"; // BST
 
     return (
         `${get("year")}-${get("month")}-${get("day")}T` +
