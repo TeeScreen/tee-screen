@@ -17,15 +17,19 @@ export function toUnityIsoString(date: Date): string {
         return val && /^\d+$/.test(val) ? val : "00";
     };
 
-    // London-local date for ms + offset
-    const londonDate = new Date(date.toLocaleString("en-GB", { timeZone: "Europe/London" }));
-    const ms = String(londonDate.getMilliseconds()).padStart(3, "0");
+    // London-local date for offset only
+    const londonDate = new Date(
+        date.toLocaleString("en-GB", { timeZone: "Europe/London" })
+    );
 
-    const tzOffset = -londonDate.getTimezoneOffset();
-    const sign = tzOffset >= 0 ? "+" : "-";
+    const tzOffset = londonDate.getTimezoneOffset();
+    const sign = tzOffset <= 0 ? "+" : "-"; // offset is minutes behind UTC
     const absOffset = Math.abs(tzOffset);
     const hhOffset = String(Math.floor(absOffset / 60)).padStart(2, "0");
     const mmOffset = String(absOffset % 60).padStart(2, "0");
+
+    // Milliseconds hard-coded to 000
+    const ms = "000";
 
     return (
         `${get("year")}-${get("month")}-${get("day")}T` +
