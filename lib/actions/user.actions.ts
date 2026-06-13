@@ -243,7 +243,7 @@ export async function applyScreenChange() {
         const data = userInfo.screenJson;
 
         // 1. Update timestamp
-        data.lastEdited = toUnityIsoString(new Date());
+        data.lastEdited = toUnityIsoString();
 
         // 2. Serialize JSON
         const json = JSON.stringify(data);

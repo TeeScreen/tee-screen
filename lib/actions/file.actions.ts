@@ -217,7 +217,7 @@ export async function confirmScreenChanges(
     previews: { targetScreen: string; merged: any }[], sourceFolder?: string
 ) {
     for (const { targetScreen, merged } of previews) {
-        merged.lastEdited = toUnityIsoString(new Date());
+        merged.lastEdited = toUnityIsoString();
 
         const blob = new Blob([JSON.stringify(merged)], { type: "application/json" });
         const form = new FormData();
