@@ -126,7 +126,7 @@ export function ScreenList({
                     sourceFolder={sourceFolder}
                     previews={pendingPreviews}
                     onConfirm={async () => {
-                        const res = await confirmScreenChanges(pendingPreviews);
+                        const res = await confirmScreenChanges(pendingPreviews, sourceFolder);
                         if (res.success) toast.success(res.message);
                         else toast.error(res.message);
                         setPendingPreviews(null);

@@ -235,14 +235,16 @@ export async function confirmScreenChanges(
             return { success: false, message: `Failed to copy to ${targetScreen}` };
         }
 
-        // Optionally trigger your PHP script that processes tmp folder
-        const processRes = await fetch(
-            `${process.env.SERVER_URL}/upload_changes_tmp?source=${sourceFolder}&target=${merged.FolderNameOnServer}`
-        );
+        if(sourceFolder) {
+            // Optionally trigger your PHP script that processes tmp folder
+            const processRes = await fetch(
+                `${process.env.SERVER_URL}/upload_changes_tmp?source=${sourceFolder}&target=${merged.FolderNameOnServer}`
+            );
+            console.log(processRes);
+            if (!processRes.ok) {
+                return { success: false, message: `Failed to process files for ${targetScreen}: ${processRes.body}` };
+            }}
 
-        if (!processRes.ok) {
-            return { success: false, message: `Failed to process files for ${targetScreen}` };
-        }
     }
 
     revalidatePath("/");
