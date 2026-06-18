@@ -52,23 +52,6 @@ const IsComingSoon = () => (
   </span>
 );
 
-function normalizeUrl(url: string): string {
-    if (typeof window === "undefined") return url;
-
-    const currentPath = window.location.pathname; // e.g. /dashboard/notice-board
-
-    // If the url starts with the current path, drop it
-    if (url.startsWith(currentPath)) {
-        const hashIndex = url.indexOf("#");
-        if (hashIndex !== -1) {
-            // Return everything from the first hash onwards
-            return url.substring(hashIndex);
-        }
-    }
-    // Otherwise return the original url untouched
-    return url;
-}
-
 
 
 const NavItemExpanded = ({
@@ -140,7 +123,7 @@ const NavItemExpanded = ({
                         >
                           <Link
                               prefetch={false}
-                              href={normalizeUrl(subItem.url)}
+                              href={(subItem.url)}
                               target={subItem.newTab ? "_blank" : undefined}
                               onClick={onItemSelect}
                           >
@@ -198,7 +181,7 @@ const NavItemCollapsed = ({
                   >
                     <Link
                         prefetch={false}
-                        href={normalizeUrl(subItem.url)}
+                        href={(subItem.url)}
                         target={subItem.newTab ? "_blank" : undefined}
                     >
                       {subItem.icon && <subItem.icon className="[&>svg]:text-sidebar-foreground" />}
