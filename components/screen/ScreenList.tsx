@@ -43,60 +43,62 @@ export function ScreenList({
     return (
         <div className="w-full flex flex-col gap-4">
             {viewMode === "text" ? (
-                <div className="flex items-center gap-2">
-                    <select
-                        className="border rounded px-2 py-1 text-sm flex-1"
-                        value={selectedTextScreen}
-                        onChange={(e) => setSelectedTextScreen(e.target.value)}
-                    >
-                        <option value="" disabled>Select a screen</option>
-                        {screens.map((screen) => (
-                            <option key={screen} value={screen}>{screen}</option>
-                        ))}
-                    </select>
-                    <Button
-                        onClick={async () => {
-                            if (selectedTextScreen) {
-                                try {
-                                    setLoading(true);
-                                    await onLoadScreen(selectedTextScreen);
-                                } finally {
-                                    setLoading(false);
-                                }
-                            } else {
-                                toast.error("Please select a screen first");
-                            }
-                        }}
-                        disabled={!selectedTextScreen || loading}
-                    >
-                        {loading ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Loading...
-                            </>
-                        ) : (
-                            "Load"
-                        )}
-                    </Button>
-                    <div className="flex items-center justify-between gap-2 pr-1">
-                        {/* <div className="flex items-center gap-2">
-                    <Label htmlFor="view-mode" className="text-sm">View Mode</Label>
-                    <select
-                        id="view-mode"
-                        value={viewMode}
-                        onChange={(e) => setViewMode(e.target.value as ViewMode)}
-                        className="border rounded px-2 py-1 text-sm"
-                    >
-                        <option value="compact">Compact</option>
-                        <option value="normal">Normal</option>
-                        <option value="text">Text</option>
-                    </select>
-                </div>*/}
-                        {loadedScreen && (
-                            <CopyScreensDialog screens={extraScreens} copyAction={handleCopy} />
-                        )}
-                    </div>
+                <div className="w-full flex flex-col gap-4">
+                    {viewMode === "text" && (
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full">
+
+                            {/* Dropdown */}
+                            <select
+                                className="border rounded px-2 py-1 text-sm w-full sm:flex-1 max-w-full"
+                                value={selectedTextScreen}
+                                onChange={(e) => setSelectedTextScreen(e.target.value)}
+                            >
+                                <option value="" disabled>Select a screen</option>
+                                {screens.map((screen) => (
+                                    <option key={screen} value={screen}>{screen}</option>
+                                ))}
+                            </select>
+
+                            {/* Load button */}
+                            <Button
+                                className="w-full sm:w-auto"
+                                onClick={async () => {
+                                    if (selectedTextScreen) {
+                                        try {
+                                            setLoading(true);
+                                            await onLoadScreen(selectedTextScreen);
+                                        } finally {
+                                            setLoading(false);
+                                        }
+                                    } else {
+                                        toast.error("Please select a screen first");
+                                    }
+                                }}
+                                disabled={!selectedTextScreen || loading}
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Loading...
+                                    </>
+                                ) : (
+                                    "Load"
+                                )}
+                            </Button>
+
+                            {/* Copy dialog */}
+                            <div className="sm:ml-auto">
+                                {loadedScreen && (
+                                    <CopyScreensDialog
+                                        screens={extraScreens}
+                                        copyAction={handleCopy}
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
+
 
 
             ) : (

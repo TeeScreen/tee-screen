@@ -161,6 +161,7 @@ export default function ScreenAccountsCard({
                         <p className="text-xs text-muted-foreground max-w-xs mt-1">
                             Click "Add New Screen" to connect your TeeScreen account credentials.
                         </p>
+                        <AddAccountDialog action={handleAddAccount} />
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

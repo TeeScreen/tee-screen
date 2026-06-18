@@ -20,8 +20,8 @@ export default async function Page() {
           <div className="@container/main flex flex-col gap-4 md:gap-6">
             <ProfileCard/>
             <ScreenAccountsCard accounts={accounts} loadedAccount={userInfo?.loadedAccount || null} />
-            <SecurityCard/>
-            <DeleteUserDialog/>
+              {/*<SecurityCard/>
+            <DeleteUserDialog/>*/}
         </div>
       </div>
   );
