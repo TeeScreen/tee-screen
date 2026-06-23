@@ -30,6 +30,7 @@ export default function PreviewScreen() {
     const [homeBG, setHomeBG] = useState<string | null>(null)
     const [awayBG, setAwayBG] = useState<string | null>(null)
     const [lineUpBG, setLineUpBG] = useState<string | null>(null)
+    const [hideScoreBG, setHideScoreBG] = useState<string | null>(null)
     const [tabs, setTabs] = useState<any[]>([])
     const [notices, setNotices] = useState<any[]>([])
 
@@ -44,6 +45,8 @@ export default function PreviewScreen() {
     const [footballNews, setFootballNews] = useState<string>("https://www.teescreen.co.uk/")
     const [backupBG, setBackupBG] = useState<string>("/assets/demo/backups/GolfBackground.png")
     const [brightness, setBrightness] = useState<number>(1)
+    const [hideMatchCentre, setHideMatchCentre] = useState<boolean>(false)
+
 
     const { version, dirty } = useDirtyState()
 
@@ -117,6 +120,7 @@ export default function PreviewScreen() {
         setHomeBG(await resolvePreviewFile(folderName, 'HomeBG'))
         setAwayBG(await resolvePreviewFile(folderName, 'AwayBG'))
         setLineUpBG(await resolvePreviewFile(folderName, 'LineUpBG'))
+        setHideScoreBG(await resolvePreviewFile(folderName, 'HideMatchImage'))
     }
 
     // Resolve tabs and notices initially
@@ -283,6 +287,7 @@ export default function PreviewScreen() {
                 if (baseName === "HomeBG") setHomeBG(isAdding ? fileUrl : "")
                 if (baseName === "AwayBG") setAwayBG(isAdding ? fileUrl : "")
                 if (baseName === "LineUpBG") setLineUpBG(isAdding ? fileUrl : "")
+                if (baseName === "HideMatchImage") setHideScoreBG(isAdding ? fileUrl : "")
 
                 // Tabs (detect index from name)
                 const tabMatch = baseName.match(/CustomTab(?:Icon|Image)(\d+)/)
@@ -329,6 +334,7 @@ export default function PreviewScreen() {
         setIsFootballClub(data.isFootballClub ?? false)
         setIsGolfClub(data.isGolfClub ?? false)
         setHideHolesOnScreen(data.hideHolesOnScreen ?? false)
+        setHideMatchCentre(data.hideMatchCentre ?? false)
         setFootballNews(data.twitterURL ?? "https://www.teescreen.co.uk/")
         setBackupBG(`/assets/demo/backups/${data.isFootballClub ? "FootballBackground.png" : "GolfBackground.png"}`)
 
@@ -392,8 +398,8 @@ export default function PreviewScreen() {
                                     <div className="w-full aspect-square relative">
                                         <video
                                             src={overlayContent.src}
-                                            controls
-                                            className="w-full h-full object-contain"
+                                            autoPlay={true}
+                                            className="absolute inset-0 w-full h-full object-contain"
                                         />
                                         <button
                                             className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold"
@@ -563,59 +569,68 @@ export default function PreviewScreen() {
                                             </button>
                                         ))}
                                     </div>
-
-                                    {/* Overlay block */}
-                                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-1/4 h-[63%] bg-neutral-700 text-neutral-100 flex flex-col items-center justify-center text-xs font-semibold z-20 rounded-b-2xl space-y-1">
-                                        <span>Venue Name</span>
-                                        <span>010:10</span>
-                                    </div>
-
-                                    {/* HOME + AWAY side by side */}
-                                    <div className="absolute bottom-0 left-0 w-full h-[67%] grid grid-cols-2">
-                                        {/* HOME */}
-                                        <div className="relative overflow-hidden">
-                                            {homeBG ? (
-                                                <Image src={homeBG} alt="Home Background" fill className="object-cover" />
-                                            ) : logoImage ? (
-                                                <div className="absolute inset-0 right flex items-center justify-end">
-                                                    <div className="relative w-70 h-70">
-                                                        <Image src={logoImage} alt="Home Team Logo" fill className="object-cover opacity-20 bg-black/90" />
-                                                    </div>
-                                                </div>
-                                            ) : null}
-
-                                            {logoImage && (
-                                                <div className="absolute left-0 inset-0 flex items-center px-4">
-                                                    <div className="relative h-20 w-20">
-                                                        <Image src={logoImage} alt="Home Team" fill className="object-contain object-left" />
-                                                    </div>
-                                                    <span className="text-6xl font-extrabold text-neutral-100 drop-shadow-2xl">2</span>
-                                                </div>
-                                            )}
+                                    {hideMatchCentre && hideScoreBG ? (
+                                        <div className="absolute bottom-0 left-0 w-full h-[67%]">
+                                            <Image src={hideScoreBG} alt="Home Team" fill className="" />
                                         </div>
 
-                                        {/* AWAY */}
-                                        <div className="relative overflow-hidden">
-                                            {awayBG ? (
-                                                <Image src={awayBG} alt="Away Background" fill className="object-cover" />
-                                            ) : logoImage ? (
-                                                <div className="absolute inset-0 flex items-center justify-start">
-                                                    <div className="relative w-70 h-70">
-                                                        <Image src={logoImage} alt="Away Team Logo" fill className="object-cover opacity-20 bg-black/90" />
-                                                    </div>
-                                                </div>
-                                            ) : null}
+                                    ) : (
+                                        <div>
+                                            {/* Overlay block */}
+                                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-1/4 h-[63%] bg-neutral-700 text-neutral-100 flex flex-col items-center justify-center text-xs font-semibold z-20 rounded-b-2xl space-y-1">
+                                                <span>Venue Name</span>
+                                                <span>010:10</span>
+                                            </div>
 
-                                            {logoImage && (
-                                                <div className="absolute inset-0 flex items-center justify-end px-4">
-                                                    <span className="text-6xl font-extrabold text-neutral-100 drop-shadow-2xl mr-4">1</span>
-                                                    <div className="relative h-20 w-20">
-                                                        <Image src={logoImage} alt="Away Team" fill className="object-contain object-right" />
-                                                    </div>
+                                            {/* HOME + AWAY side by side */}
+                                            <div className="absolute bottom-0 left-0 w-full h-[67%] grid grid-cols-2">
+                                                {/* HOME */}
+                                                <div className="relative overflow-hidden">
+                                                    {homeBG ? (
+                                                        <Image src={homeBG} alt="Home Background" fill className="object-cover" />
+                                                    ) : logoImage ? (
+                                                        <div className="absolute inset-0 right flex items-center justify-end">
+                                                            <div className="relative w-70 h-70">
+                                                                <Image src={logoImage} alt="Home Team Logo" fill className="object-cover opacity-20 bg-black/90" />
+                                                            </div>
+                                                        </div>
+                                                    ) : null}
+
+                                                    {logoImage && (
+                                                        <div className="absolute left-0 inset-0 flex items-center px-4">
+                                                            <div className="relative h-20 w-20">
+                                                                <Image src={logoImage} alt="Home Team" fill className="object-contain object-left" />
+                                                            </div>
+                                                            <span className="text-6xl font-extrabold text-neutral-100 drop-shadow-2xl">2</span>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
+
+                                                {/* AWAY */}
+                                                <div className="relative overflow-hidden">
+                                                    {awayBG ? (
+                                                        <Image src={awayBG} alt="Away Background" fill className="object-cover" />
+                                                    ) : logoImage ? (
+                                                        <div className="absolute inset-0 flex items-center justify-start">
+                                                            <div className="relative w-70 h-70">
+                                                                <Image src={logoImage} alt="Away Team Logo" fill className="object-cover opacity-20 bg-black/90" />
+                                                            </div>
+                                                        </div>
+                                                    ) : null}
+
+                                                    {logoImage && (
+                                                        <div className="absolute inset-0 flex items-center justify-end px-4">
+                                                            <span className="text-6xl font-extrabold text-neutral-100 drop-shadow-2xl mr-4">1</span>
+                                                            <div className="relative h-20 w-20">
+                                                                <Image src={logoImage} alt="Away Team" fill className="object-contain object-right" />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
+
 
                                 </div>
                             ) : (

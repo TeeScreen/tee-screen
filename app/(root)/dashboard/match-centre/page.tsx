@@ -24,6 +24,7 @@ export default async function Page() {
                             // ---------------- TOP ----------------
                             { path: "ClubVenueName", label: "Venue Name", type: "text", tag: "Info" },
                             { path: "twitterURL", label: "News URL", type: "text", tag: "Info" },
+                            { path: "hideMatchCentre", label: "Hide Scoreboard", type: "bool", tag: "Info" },
                         ]}
                         action={updateScreenJson}
                     />
@@ -37,9 +38,11 @@ export default async function Page() {
 
                         <AccordionContent>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-                                <UploadSection folderName={folderName} fileName="NoticeImage01.png" label="Home Team" recommendedSize="642 x 400"/>
-                                <UploadSection folderName={folderName} fileName="NoticeImage02.png" label="Away Team" recommendedSize="642 x 400"/>
-                                <UploadSection folderName={folderName} fileName="NoticeImage03.png" label="Line Up Background" recommendedSize="1080 x 1350"/>
+                                <UploadSection folderName={folderName} fileName="HomeBG.png" label="Home Team" recommendedSize="642 x 400"/>
+                                <UploadSection folderName={folderName} fileName="AwayBG.png" label="Away Team" recommendedSize="642 x 400"/>
+                                <UploadSection folderName={folderName} fileName="LineUpBG.png" label="Line Up Background" recommendedSize="1080 x 1350"/>
+                                <UploadSection folderName={folderName} fileName="HideMatchImage.png" label="Hide Scoreboard Panel" recommendedSize="1282 x 400"/>
+
                             </div>
                         </AccordionContent>
                     </AccordionItem>
