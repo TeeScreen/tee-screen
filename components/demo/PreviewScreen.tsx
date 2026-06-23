@@ -19,7 +19,7 @@ async function resolvePreviewFile(folderName: string, fileName: string) {
 
 export default function PreviewScreen() {
     const [userInfo, setUserInfo] = useState<any>(null)
-    const [overlayContent, setOverlayContent] = useState<{ type: 'image' | 'url' | 'full' | 'fbUrl' | 'fbImg'; src: string } | null>(null)
+    const [overlayContent, setOverlayContent] = useState<{ type: 'image' | 'url' | 'vid' | 'full' | 'fbUrl' | 'fbImg'; src: string } | null>(null)
     const [loading, setLoading] = useState(false)
     const [previews, setPreviews] = useState<PreviewResult[]>([])
 
@@ -387,6 +387,23 @@ export default function PreviewScreen() {
                                     </div>
                                 </div>
                             )}
+                            {overlayContent?.type === 'vid' && (
+                                <div className="absolute inset-0 z-50 flex items-center justify-center px-4 -mt-[3%]">
+                                    <div className="w-full aspect-square relative">
+                                        <video
+                                            src={overlayContent.src}
+                                            controls
+                                            className="w-full h-full object-contain"
+                                        />
+                                        <button
+                                            className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold"
+                                            onClick={() => setOverlayContent(null)}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         {/* Golf Section */}
                         {isGolfClub && (
@@ -454,7 +471,13 @@ export default function PreviewScreen() {
                                             if (tab.urlActive && tab.url) {
                                                 setOverlayContent({ type: "url", src: tab.url });
                                             } else if (tab.overlayImage) {
-                                                setOverlayContent({ type: "image", src: tab.overlayImage });
+                                                const lower = tab.overlayImage.toLowerCase();
+
+                                                if (lower.endsWith(".mp4")) {
+                                                    setOverlayContent({ type: "vid", src: tab.overlayImage });
+                                                } else {
+                                                    setOverlayContent({ type: "image", src: tab.overlayImage });
+                                                }
                                             }
                                         }}
                                     >

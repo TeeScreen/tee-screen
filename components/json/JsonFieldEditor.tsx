@@ -64,14 +64,14 @@ export function JsonFieldEditor({
 }) {
     const [localJson, setLocalJson] = useState(json);
     const hiddenInputRef = useRef<HTMLInputElement>(null);
-    const { dirty, setDirty } = useDirtyState();
+    const { setDirty } = useDirtyState();
     const [isSaving, setIsSaving] = useState(false);
 
-    const form = useForm({
-        defaultValues: localJson,
-    });
+    const form = useForm({ defaultValues: localJson });
 
-    // Sync when server sends new JSON
+    /* -------------------------------------------------------
+       Sync when server sends new JSON
+    ------------------------------------------------------- */
     useEffect(() => {
         setLocalJson(json);
         if (hiddenInputRef.current) {
@@ -79,10 +79,11 @@ export function JsonFieldEditor({
         }
     }, [json]);
 
-    // Debounce timer
+    /* -------------------------------------------------------
+       Debounced auto-save
+    ------------------------------------------------------- */
     const saveTimer = useRef<NodeJS.Timeout | null>(null);
 
-    // Auto-save function
     const autoSave = (updatedJson: any) => {
         if (saveTimer.current) clearTimeout(saveTimer.current);
 
@@ -96,9 +97,12 @@ export function JsonFieldEditor({
 
             setIsSaving(false);
             setDirty(true);
-        }, 500); // 500ms debounce
+        }, 500);
     };
 
+    /* -------------------------------------------------------
+       Handle field change
+    ------------------------------------------------------- */
     function handleChange(path: string, value: any) {
         const updated = setValue(localJson, path, value);
         setLocalJson(updated);
@@ -106,16 +110,61 @@ export function JsonFieldEditor({
         if (hiddenInputRef.current) {
             hiddenInputRef.current.value = JSON.stringify(updated);
         }
+
         autoSave(updated);
     }
 
-    // Group fields by tag
+    /* -------------------------------------------------------
+       Auto-create missing paths on render
+    ------------------------------------------------------- */
+    function ensurePath(field: any) {
+        const currentValue = getValue(localJson, field.path);
+
+        if (currentValue !== undefined) return currentValue;
+
+        let defaultValue;
+
+        switch (field.type) {
+            case "text":
+                defaultValue = "";
+                break;
+            case "bool":
+                defaultValue = false;
+                break;
+            case "color":
+                defaultValue = { r: 0, g: 0, b: 0, a: 1 };
+                break;
+            case "number":
+                defaultValue = field.options?.[0]?.value ?? 0;
+                break;
+            default:
+                defaultValue = null;
+        }
+
+        const updated = setValue(localJson, field.path, defaultValue);
+        setLocalJson(updated);
+
+        if (hiddenInputRef.current) {
+            hiddenInputRef.current.value = JSON.stringify(updated);
+        }
+
+        autoSave(updated);
+
+        return defaultValue;
+    }
+
+    /* -------------------------------------------------------
+       Group fields by tag
+    ------------------------------------------------------- */
     const groups = paths.reduce((acc: any, field) => {
         if (!acc[field.tag]) acc[field.tag] = [];
         acc[field.tag].push(field);
         return acc;
     }, {});
 
+    /* -------------------------------------------------------
+       Render
+    ------------------------------------------------------- */
     return (
         <div className="space-y-6">
             {isSaving && (
@@ -128,11 +177,12 @@ export function JsonFieldEditor({
             {Object.entries(groups).map(([tag, fields]) => (
                 <div key={tag} className="space-y-4 border rounded-lg p-4">
                     <h3 className="text-lg font-semibold capitalize">{tag}</h3>
+
                     <div className="grid gap-6">
                         {(fields as any[]).map((field: any) => {
-                            const currentValue = getValue(localJson, field.path);
-                            if (currentValue === undefined) return null;
+                            const currentValue = ensurePath(field);
 
+                            /* ------------------ BOOL ------------------ */
                             if (field.type === "bool") {
                                 return (
                                     <div key={field.path} className="flex items-center gap-3">
@@ -147,12 +197,15 @@ export function JsonFieldEditor({
                                 );
                             }
 
+                            /* ------------------ COLOR ------------------ */
                             if (field.type === "color") {
                                 const rgba = currentValue || { r: 0, g: 0, b: 0, a: 1 };
+
                                 const toHex = (c: any) =>
                                     `#${c.r.toString(16).padStart(2, "0")}${c.g
                                         .toString(16)
                                         .padStart(2, "0")}${c.b.toString(16).padStart(2, "0")}`;
+
                                 const hexToRgba = (hex: string, alpha: number) => {
                                     const r = parseInt(hex.slice(1, 3), 16);
                                     const g = parseInt(hex.slice(3, 5), 16);
@@ -176,6 +229,7 @@ export function JsonFieldEditor({
                                 );
                             }
 
+                            /* ------------------ NUMBER (Select) ------------------ */
                             if (field.type === "number") {
                                 return (
                                     <SelectField
@@ -191,6 +245,7 @@ export function JsonFieldEditor({
                                 );
                             }
 
+                            /* ------------------ TEXT ------------------ */
                             return (
                                 <InputField
                                     key={field.path}
@@ -217,5 +272,4 @@ export function JsonFieldEditor({
             />
         </div>
     );
-
 }
