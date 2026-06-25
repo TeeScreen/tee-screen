@@ -471,7 +471,7 @@ export default function PreviewScreen() {
                                 {tabs.map((tab, i) => (
                                     <Button
                                         key={i}
-                                        className="relative p-0 h-14 flex-1 max-w-[25%] rounded-sm flex flex-col items-center justify-center"
+                                        className="relative p-0 h-[8vh] flex-1 max-w-[25%] rounded-sm flex flex-col items-center justify-center"
                                         style={{ backgroundColor: uiColor }}
                                         onClick={() => {
                                             if (tab.urlActive && tab.url) {
@@ -639,7 +639,7 @@ export default function PreviewScreen() {
                                     {notices.map((notice, i) => (
                                         <Button
                                             key={i}
-                                            className="p-0 w-full flex-1 rounded-none flex items-center justify-center"
+                                            className="h-[7vh] p-0 w-full flex-1 rounded-none flex items-center justify-center"
                                             style={{
                                                 backgroundColor: `rgba(${notice.color.r},${notice.color.g},${notice.color.b},${notice.color.a / 255})`,
                                             }}
