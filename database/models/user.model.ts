@@ -13,6 +13,7 @@ export interface UserInfo extends Document {
     accountDetails?: AccountData[];
     screenJson?: any;
     analyticsJson?: any;
+    lastActive?: Date;
 }
 
 export interface AccountData {
@@ -37,8 +38,7 @@ const UserSchema = new Schema<UserInfo>(
         loadedScreen: { type: String},
         screenNames: { type: [String], default: [] },
         accountDetails: { type: [AccountDataSchema], default:[]},
-        screenJson: { type: Schema.Types.Mixed, default: null },
-        analyticsJson: { type: Schema.Types.Mixed, default: null },
+        lastActive: { type: Date, default: null },
     },
     { timestamps: false }
 );

@@ -17,6 +17,7 @@ import { headers } from "next/dist/server/request/headers";
 import { getUserInfo } from "@/lib/actions/user.actions";
 import { ApplyDialog } from "@/components/ApplyDialogue";
 import { DiscardDialog } from "@/components/DiscardDialogue";
+import { ScreenCollaborators } from "@/components/screen/ScreenCollaborators";
 
 import { GuideMenu } from "@/components/GuideMenu";
 import PreviewScreen from "@/components/demo/PreviewScreen";
@@ -91,6 +92,13 @@ try {
 
                             {loadedScreen && <ApplyDialog />}
                             {loadedScreen && <DiscardDialog />}
+                            {loadedScreen && <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />}
+                            {loadedScreen && (
+                                <ScreenCollaborators
+                                    screenName={loadedScreen}
+                                    accountLogin={userInfo.loadedAccount}
+                                />
+                            )}
                         </div>
 
                         <div className="flex items-center gap-2">

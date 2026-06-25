@@ -48,7 +48,7 @@ export default function PreviewScreen() {
     const [hideMatchCentre, setHideMatchCentre] = useState<boolean>(false)
 
 
-    const { version, dirty } = useDirtyState()
+    const { version, dirty, externalEditVersion } = useDirtyState()
 
     // Initial load
     useEffect(() => {
@@ -74,6 +74,13 @@ export default function PreviewScreen() {
             console.log("TEST 1")
         }
     }, [version, dirty])
+
+    // Reload preview when another user makes an edit
+    useEffect(() => {
+        if (externalEditVersion > 0 && !loading) {
+            fetchData()
+        }
+    }, [externalEditVersion])
 
     const fetchData = async () => {
         setLoading(true)
