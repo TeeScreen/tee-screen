@@ -360,19 +360,53 @@ export default function PreviewScreen() {
 
                         {/* TOP BAR */}
                         <div
-                            className={`w-full h-[10%] px-4 flex items-center justify-between border-b rounded-b-md relative z-30 -mb-[1.3%] ${
+                            className={`w-full h-[10%] px-4 grid grid-cols-3 items-center border-b rounded-b-md relative z-30 -mb-[1.3%] ${
                                 showTopSection ? '' : 'opacity-0'
                             }`}
                             style={{ backgroundColor: uiColor }}
                         >
-                            <div className={`${textColor} text-xl font-semibold`}>10:55</div>
-                            {logoImage && (
-                                <div className="relative h-full aspect-square">
-                                    <Image src={logoImage} alt="Club Logo" fill className="object-contain p-1" />
+                            {/* LEFT — TIME + DATE */}
+                            <div className="flex flex-col justify-center h-full items-center left-0">
+                                <div className={`${textColor} text-[4vh] font-semibold leading-none py-1`}>
+                                    {new Date().toLocaleTimeString("en-GB", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: false
+                                    })}
                                 </div>
-                            )}
-                            <div className={`text-sm text-muted-foreground ${textColor}`}>Mon, 30 Mar</div>
+
+                                <div className={`${textColor} text-[1vh] font-medium leading-none`}>
+                                    {new Date().toLocaleDateString("en-GB", {
+                                        weekday: "long",
+                                        day: "numeric",
+                                        month: "long"
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* CENTER — LOGO */}
+                            <div className="flex justify-center items-center h-[90%]">
+                                {logoImage && (
+                                    <div className="relative h-full aspect-square">
+                                        <Image
+                                            src={logoImage}
+                                            alt="Club Logo"
+                                            fill
+                                            className="object-contain p-1"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* RIGHT — WEATHER */}
+                            <div className="flex justify-end items-center">
+                                <div className={`text-[2vh] text-muted-foreground ${textColor}`}>
+                                    Weather info
+                                </div>
+                            </div>
                         </div>
+
+
 
                         {/* OVERVIEW */}
                         <div className="relative w-full aspect-square flex-shrink-0 ">
@@ -562,10 +596,10 @@ export default function PreviewScreen() {
                                                         setOverlayContent({type: btn.type, src: btn.src})
                                                     }}}
                                             >
-                                                <div className="relative w-5 h-5 mb-1">
+                                                <div className="relative w-[60%]  h-[60%] mb-1">
                                                     <Image src={btn.icon} alt={btn.name} fill className="object-contain" />
                                                 </div>
-                                                <span className="leading-tight text-[9px] max-w-[90%]">{btn.name}</span>
+                                                <span className="leading-tight text-[1vh] max-w-[90%]">{btn.name}</span>
                                             </button>
                                         ))}
                                     </div>
