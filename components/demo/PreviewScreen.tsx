@@ -433,6 +433,7 @@ export default function PreviewScreen() {
                                         <video
                                             src={overlayContent.src}
                                             autoPlay={true}
+                                            muted={true}
                                             className="absolute inset-0 w-full h-full object-contain"
                                         />
                                         <button
