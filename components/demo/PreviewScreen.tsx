@@ -451,7 +451,7 @@ export default function PreviewScreen() {
                             <div>
                                 <div className="absolute top-[9.5%] right-3 z-20">
                                     <Button
-                                    className="h-12 w-12 text-sm font-semibold bg-white/50 text-black rounded-lg flex items-center justify-center"
+                                    className="h-[7vh] w-[7vh] font-semibold bg-white/50 text-black rounded-lg flex items-center justify-center"
                                     onClick={() => setOverlayContent({ type: 'image', src: '/assets/demo/golf/HandicapFake.png' })}
                                     >
                                         <Image
@@ -463,16 +463,16 @@ export default function PreviewScreen() {
                                     </Button>
                                 </div>
                                 {!hideHolesOnScreen && (
-                                    <div className="absolute top-[52.5%] w-full px-4 z-20 flex flex-col gap-3">
+                                    <div className="absolute top-[52.5%] w-full px-4 z-20 flex flex-col gap-3 items-center">
 
-                                        <div className="flex flex-col gap-2">
-                                            <div className="grid grid-cols-9 gap-2">
+                                        <div className="flex flex-col gap-[1vh]">
+                                            <div className="grid grid-cols-9 gap-[2vh]">
                                                 {Array.from({ length: 9 }, (_, i) => {
                                                     const hole = i + 1
                                                     return (
                                                         <Button
                                                             key={hole}
-                                                            className="h-6 w-6 rounded-full bg-white border border-black text-black text-xs font-semibold p-0 flex items-center justify-center"
+                                                            className="h-[3vh] w-[3vh] rounded-full bg-white border border-black text-black text-[1.5vh] font-semibold p-0 flex items-center justify-center"
                                                             onClick={() => setOverlayContent({ type: 'full', src: `/assets/demo/golf/CourseOverlay.png` })}
                                                         >
                                                             {hole}
@@ -480,13 +480,13 @@ export default function PreviewScreen() {
                                                     )
                                                 })}
                                             </div>
-                                            <div className="grid grid-cols-9 gap-2">
+                                            <div className="grid grid-cols-9 gap-[2vh]">
                                                 {Array.from({ length: 9 }, (_, i) => {
                                                     const hole = i + 10
                                                     return (
                                                         <Button
                                                             key={hole}
-                                                            className="h-6 w-6 rounded-full bg-white border border-black text-black text-xs font-semibold p-0 flex items-center justify-center"
+                                                            className="h-[3vh] w-[3vh] rounded-full bg-white border border-black text-black text-[1.5vh] font-semibold p-0 flex items-center justify-center"
                                                             onClick={() => setOverlayContent({ type: 'full', src: `/assets/demo/golf/CourseOverlay.png`})}
                                                         >
                                                             {hole}
@@ -670,7 +670,7 @@ export default function PreviewScreen() {
                                 </div>
                             ) : (
                                 // Notices Section
-                                <div className="w-full h-full flex flex-col gap-0.5">
+                                <div className="w-full h-full flex flex-col gap-[0.1vh]">
                                     {notices.map((notice, i) => (
                                         <Button
                                             key={i}
@@ -688,7 +688,7 @@ export default function PreviewScreen() {
                                                 }
                                             }}
                                         >
-                                            <span className="drop-shadow-[2px_2px_3px_rgba(0,0,0,0.9)] text-[3vh] uppercase font-semibold text-center w-[85%] whitespace-normal break-words">
+                                            <span className="drop-shadow-[2px_2px_3px_rgba(0,0,0,0.9)] text-[3vh] uppercase font-semibold text-center w-[85%] whitespace-normal break-words leading-[3vh]">
                                                 {notice.text}
                                             </span>
                                         </Button>
