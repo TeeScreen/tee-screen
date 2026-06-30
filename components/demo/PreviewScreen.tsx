@@ -50,14 +50,6 @@ export default function PreviewScreen() {
 
     const { version, dirty, externalEditVersion } = useDirtyState()
 
-    // Initial load
-    useEffect(() => {
-        if(!loading)
-        {
-            fetchData()
-            console.log("TEST 2")
-        }
-    }, [])
 
     // On version updates, call preview changes
     useEffect(() => {
@@ -75,18 +67,30 @@ export default function PreviewScreen() {
         }
     }, [version, dirty])
 
-    // Reload preview when another user makes an edit
     useEffect(() => {
-        if (externalEditVersion > 0 && !loading) {
-            fetchData()
-        }
-    }, [externalEditVersion])
+        const handler = () => {
+            if (version > 0 && !loading && dirty) {
+                handlePreview()
+            }
+            else if ((version === 0 || version === 1) && !dirty && !loading)
+            {
+                fetchData()
+                console.log("TEST 1")
+            }
+        };
+
+        window.addEventListener("screen-updated", handler);
+        return () => window.removeEventListener("screen-updated", handler);
+    }, [loading]);
 
     const fetchData = async () => {
         setLoading(true)
+        console.log("Loading true");
         const info = await getUserInfo()
         setUserInfo(info)
         if (!info?.screenJson) {
+            console.log("Loading false");
+
             setLoading(false)
             return
         }
@@ -97,6 +101,8 @@ export default function PreviewScreen() {
         await resolveImages(folderName)
         await resolveTabsAndNotices(folderName, info.screenJson)
         setLoading(false)
+        console.log("Loading false");
+
     }
 
     const handlePreview = async () => {
@@ -330,28 +336,40 @@ export default function PreviewScreen() {
 
     const data = userInfo.screenJson
 
-    function updateOtherFields(data: any)
-    {
-        setUiColor(data.UIColor
-            ? `rgba(${data.UIColor.r},${data.UIColor.g},${data.UIColor.b},${data.UIColor.a / 255})`
-            : '#ffffff');
+    function updateOtherFields(data: any) {
 
-        setShowTopSection(data.showTopSection ?? true)
-        setSetTabIconsToFill(data.setTabIconsToFill ?? false)
-        setIsFootballClub(data.isFootballClub ?? false)
-        setIsGolfClub(data.isGolfClub ?? false)
-        setHideHolesOnScreen(data.hideHolesOnScreen ?? false)
-        setHideMatchCentre(data.hideMatchCentre ?? false)
-        setFootballNews(data.twitterURL ?? "https://www.teescreen.co.uk/")
-        setBackupBG(`/assets/demo/backups/${data.isFootballClub ? "FootballBackground.png" : "GolfBackground.png"}`)
+        if(!data)
+        {
+            return;
+        }
 
-        if (data.UIColor) {
+        setUiColor(
+            data?.UIColor
+                ? `rgba(${data.UIColor.r},${data.UIColor.g},${data.UIColor.b},${data.UIColor.a / 255})`
+                : "#ffffff"
+        );
+
+        setShowTopSection(data?.showTopSection ?? true);
+        setSetTabIconsToFill(data?.setTabIconsToFill ?? false);
+        setIsFootballClub(data?.isFootballClub ?? false);
+        setIsGolfClub(data?.isGolfClub ?? false);
+        setHideHolesOnScreen(data?.hideHolesOnScreen ?? false);
+        setHideMatchCentre(data?.hideMatchCentre ?? false);
+        setFootballNews(data?.twitterURL ?? "https://www.teescreen.co.uk/");
+        setBackupBG(
+            `/assets/demo/backups/${
+                data.isFootballClub ? "FootballBackground.png" : "GolfBackground.png"
+            }`
+        );
+
+        if (data?.UIColor) {
             const { r, g, b } = data.UIColor;
-            setBrightness ((r + g + b) / (3 * 255));
+            setBrightness((r + g + b) / (3 * 255));
         }
     }
 
-    const textColor = brightness < 0.5 ? "text-white" : "text-black"
+    const textColor = brightness < 0.5 ? "text-white" : "text-black";
+
     return (
         <div className="flex items-center justify-center h-screen bg-black">
             <div className="aspect-[9/16] h-full max-h-screen bg-black shadow-[0_0_40px_rgba(0,0,0,0.5)] relative">

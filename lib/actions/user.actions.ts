@@ -10,6 +10,7 @@ import {deleteFolder, downloadClubImages, uploadFolder} from "@/lib/actions/file
 import {UPLOAD_DIR} from "@/lib/constants";
 import fs from "fs/promises";
 import {toUnityIsoString} from "@/lib/helper";
+import {broadcastScreenUpdate} from "@/lib/sse";
 
 export async function addUserInfo(data: {
     userId: string;
@@ -139,6 +140,13 @@ export async function saveUserInfo(data: {
                 updateFields,
                 { upsert: true }
             );
+
+            // 🔥 Notify all clients editing this screen
+            broadcastScreenUpdate(screenName, {
+                screen: screenName,
+                editedBy: lastEditedByName ?? "Unknown",
+                version: Date.now()
+            });
         }
 
         revalidatePath("/");
@@ -363,6 +371,12 @@ export async function resetScreenChange(resetLoaded: boolean = false) {
                 { userId: userInfo.userId },
                 { loadedScreen: "" }
             );
+
+            broadcastScreenUpdate(userInfo.loadedScreen, {
+                screen: userInfo.loadedScreen,
+                editedBy: userInfo.fullName,
+                version: Date.now()
+            });
             revalidatePath("/");
             return { success: true };
         }
@@ -425,6 +439,13 @@ export async function resetScreenChange(resetLoaded: boolean = false) {
                 console.warn("Failed to download club images");
             }
         }
+
+        broadcastScreenUpdate(userInfo.loadedScreen, {
+            screen: userInfo.loadedScreen,
+            editedBy: userInfo.fullName,
+            version: Date.now()
+        });
+
 
         revalidatePath("/");
         return { success: true, message: "Reset and refreshed screen" };
@@ -533,6 +554,13 @@ export async function loadScreenAction(screenName: string) {
         { screenName: screenInfo.screenName},
         { $push: { activeUsers: { userId, fullName: userInfo.fullName, role: userInfo.role || 'Editor' } } }
     );
+
+    broadcastScreenUpdate(screenInfo.screenName, {
+        screen: screenInfo.screenName,
+        editedBy: userInfo.fullName,
+        version: Date.now(),
+        type: "presence"
+    });
 
     revalidatePath("/");
     return { success: true };

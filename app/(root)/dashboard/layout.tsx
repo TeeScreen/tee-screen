@@ -24,6 +24,7 @@ import PreviewScreen from "@/components/demo/PreviewScreen";
 import { PreviewToggle } from "@/components/demo/PreviewToggle";
 import {PreviewTrigger} from "@/components/demo/PreviewTrigger";
 import {PreviewPanel} from "@/components/demo/PreviewPanel";
+import {GlobalSSEListener} from "@/components/sse/GlobalSSEListener";
 
 export const dynamic = "force-dynamic";
 
@@ -99,6 +100,8 @@ try {
                                     accountLogin={userInfo.loadedAccount}
                                 />
                             )}
+                            {loadedScreen && <GlobalSSEListener screenName={loadedScreen} />}
+
                         </div>
 
                         <div className="flex items-center gap-2">

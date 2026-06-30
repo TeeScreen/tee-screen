@@ -8,6 +8,7 @@ import JSZip from "jszip";
 import { revalidatePath } from "next/cache";
 import { getUserInfo } from "./user.actions";
 import {toUnityIsoString} from "@/lib/helper";
+import {broadcastScreenUpdate} from "@/lib/sse";
 
 type UploadResult = {
     success: boolean;
@@ -243,9 +244,16 @@ export async function confirmScreenChanges(
             console.log(processRes);
             if (!processRes.ok) {
                 return { success: false, message: `Failed to process files for ${targetScreen}: ${processRes.body}` };
-            }}
+            }
+        }
+        broadcastScreenUpdate(targetScreen, {
+            screen: targetScreen,
+            editedBy: merged.lastEditedByName ?? "Unknown",
+            version: Date.now()
+        });
 
     }
+
 
     revalidatePath("/");
     return { success: true, message: "Changes copied successfully" };

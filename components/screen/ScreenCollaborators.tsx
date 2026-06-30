@@ -44,43 +44,41 @@ export function ScreenCollaborators({
         useShallow((s) => ({ bumpExternalVersion: s.bumpExternalVersion }))
     );
 
-    // Poll for active users and last edited info
     useEffect(() => {
+        if (!screenName) return;
+
         let isMounted = true;
 
-        async function fetchStatus() {
-            try {
-                const res = await getScreenStatus(screenName);
-                if (res && isMounted) {
-                    // Detect external edits: lastEdited changed AND it was by a different user
-                    const newEdited = res.lastEdited;
-                    const newByName = res.lastEditedByName;
-                    const prevEdited = prevLastEdited.current;
+        async function refreshStatus() {
+            const res = await getScreenStatus(screenName);
+            if (!res || !isMounted) return;
 
-                    if (
-                        newEdited &&
-                        newEdited !== prevEdited &&
-                        newByName &&
-                        !res.activeUsers.find((u) => u.isCurrent && u.fullName === newByName)
-                    ) {
-                        bumpExternalVersion();
-                    }
+            const newEdited = res.lastEdited;
+            const newByName = res.lastEditedByName;
+            const prevEdited = prevLastEdited.current;
 
-                    prevLastEdited.current = newEdited;
-                    prevLastEditedBy.current = newByName;
-                    setStatus(res);
-                }
-            } catch (err) {
-                console.error("Failed to fetch screen status:", err);
-            }
+            const isExternalEdit =
+                newEdited &&
+                newEdited !== prevEdited &&
+                newByName &&
+                !res.activeUsers.find((u) => u.isCurrent && u.fullName === newByName);
+
+            if (isExternalEdit) bumpExternalVersion();
+
+            prevLastEdited.current = newEdited;
+            prevLastEditedBy.current = newByName;
+
+            setStatus(res);
         }
 
-        fetchStatus();
-        const interval = setInterval(fetchStatus, 15000); // Poll every 15s
+        const handler = () => refreshStatus();
+        window.addEventListener("screen-updated", handler);
+
+        refreshStatus();
 
         return () => {
             isMounted = false;
-            clearInterval(interval);
+            window.removeEventListener("screen-updated", handler);
         };
     }, [screenName, accountLogin, bumpExternalVersion]);
 
