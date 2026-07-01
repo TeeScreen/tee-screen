@@ -9,6 +9,8 @@ import { revalidatePath } from "next/cache";
 import { getUserInfo } from "./user.actions";
 import {toUnityIsoString} from "@/lib/helper";
 import {broadcastScreenUpdate} from "@/lib/sse";
+import {ScreenInfoModel} from "@/database/models/screen.model";
+import {UserInfoModel} from "@/database/models/user.model";
 
 type UploadResult = {
     success: boolean;
@@ -81,6 +83,8 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
         }
 
         const safeFileName = (await res.text()).trim();
+        await triggerUpdateEvent();
+
         revalidatePath("/");
 
         return {
@@ -110,7 +114,7 @@ const deleteFile = async (folderName: string, fileName: string) => {
         )}&fileName=${encodeURIComponent(safe)}`;
 
         await fetch(url, { method: "GET" });
-
+        await triggerUpdateEvent();
         revalidatePath("/");
     } catch (error) {
         console.error("Delete error:", error);
@@ -317,6 +321,18 @@ function deepDiffMerge(
     }
 
     return { merged: result, diffs };
+}
+
+async function triggerUpdateEvent()
+{
+    const userInfo = await getUserInfo();
+    if (!userInfo) return;
+
+    broadcastScreenUpdate(userInfo.loadedScreen, {
+        screen: userInfo.loadedScreen,
+        editedBy: userInfo.fullName,
+        version: Date.now()
+    });
 }
 
 
