@@ -11,13 +11,23 @@ export function GlobalSSEListener({ screenName }: { screenName: string }) {
 
         es.addEventListener("screenUpdated", (event) => {
             const data = JSON.parse(event.data);
-
+            console.log(data);
             // Toast notification
             if (data.editedBy) {
-                toast.info(`${data.editedBy} updated ${data.screen}`, {
-                    description: "Your preview has been refreshed.",
-                    duration: 4000,
-                });
+                if(data.message)
+                {
+                    toast.info(`${data.editedBy} ${data.message}`, {
+                        description: "Your preview has been refreshed.",
+                        duration: 4000,
+                    });
+                }
+                else {
+                    toast.info(`${data.editedBy} updated ${data.screen}`, {
+                        description: "Your preview has been refreshed.",
+                        duration: 4000,
+                    });
+                }
+
             }
 
             // Dispatch global event for other components

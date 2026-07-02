@@ -83,7 +83,7 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
         }
 
         const safeFileName = (await res.text()).trim();
-        await triggerUpdateEvent();
+        await triggerUpdateEvent(newFileName, true);
 
         revalidatePath("/");
 
@@ -114,7 +114,7 @@ const deleteFile = async (folderName: string, fileName: string) => {
         )}&fileName=${encodeURIComponent(safe)}`;
 
         await fetch(url, { method: "GET" });
-        await triggerUpdateEvent();
+        await triggerUpdateEvent(fileName, false);
         revalidatePath("/");
     } catch (error) {
         console.error("Delete error:", error);
@@ -253,7 +253,8 @@ export async function confirmScreenChanges(
         broadcastScreenUpdate(targetScreen, {
             screen: targetScreen,
             editedBy: merged.lastEditedByName ?? "Unknown",
-            version: Date.now()
+            version: Date.now(),
+            message: "applied changes to " + targetScreen,
         });
 
     }
@@ -323,15 +324,27 @@ function deepDiffMerge(
     return { merged: result, diffs };
 }
 
-async function triggerUpdateEvent()
+async function triggerUpdateEvent(fileName: string, upload: boolean)
 {
     const userInfo = await getUserInfo();
     if (!userInfo) return;
+    let message;
+    if(fileName)
+    {
+        if(upload)
+        {
+            message = `has uploaded a new ${fileName}`;
+        }
+        else {
+            message = `has deleted ${fileName}`;
+        }
+    }
 
     broadcastScreenUpdate(userInfo.loadedScreen, {
         screen: userInfo.loadedScreen,
         editedBy: userInfo.fullName,
-        version: Date.now()
+        version: Date.now(),
+        message: message,
     });
 }
 

@@ -375,7 +375,8 @@ export async function resetScreenChange(resetLoaded: boolean = false) {
             broadcastScreenUpdate(userInfo.loadedScreen, {
                 screen: userInfo.loadedScreen,
                 editedBy: userInfo.fullName,
-                version: Date.now()
+                version: Date.now(),
+                message: "has left editing session",
             });
             revalidatePath("/");
             return { success: true };
@@ -443,7 +444,8 @@ export async function resetScreenChange(resetLoaded: boolean = false) {
         broadcastScreenUpdate(userInfo.loadedScreen, {
             screen: userInfo.loadedScreen,
             editedBy: userInfo.fullName,
-            version: Date.now()
+            version: Date.now(),
+            message: "reset screen changes",
         });
 
 
@@ -559,7 +561,8 @@ export async function loadScreenAction(screenName: string) {
         screen: screenInfo.screenName,
         editedBy: userInfo.fullName,
         version: Date.now(),
-        type: "presence"
+        type: "presence",
+        message: "has joined editing session",
     });
 
     revalidatePath("/");
