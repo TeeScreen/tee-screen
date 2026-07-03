@@ -252,7 +252,8 @@ export async function confirmScreenChanges(
         }
         broadcastScreenUpdate(targetScreen, {
             screen: targetScreen,
-            editedBy: merged.lastEditedByName ?? "Unknown",
+            editedBy: merged.lastEditedBy ?? "0",
+            editedByName: merged.lastEditedByName ?? "Unknown",
             version: Date.now(),
             message: "applied changes to " + targetScreen,
         });
@@ -342,7 +343,8 @@ async function triggerUpdateEvent(fileName: string, upload: boolean)
 
     broadcastScreenUpdate(userInfo.loadedScreen, {
         screen: userInfo.loadedScreen,
-        editedBy: userInfo.fullName,
+        editedBy: userInfo.userId ?? "0",
+        editedByName: userInfo.fullName ?? "Unknown",
         version: Date.now(),
         message: message,
     });

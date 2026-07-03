@@ -67,21 +67,21 @@ export default function PreviewScreen() {
         }
     }, [version, dirty])
 
-    useEffect(() => {
-        const handler = () => {
-            if (version > 0 && !loading && dirty) {
-                handlePreview()
-            }
-            else if ((version === 0 || version === 1) && !dirty && !loading)
-            {
-                fetchData()
-                console.log("TEST 1")
-            }
-        };
-
-        window.addEventListener("screen-updated", handler);
-        return () => window.removeEventListener("screen-updated", handler);
-    }, [loading]);
+    // useEffect(() => {
+    //     const handler = () => {
+    //         if (version > 0 && !loading && dirty) {
+    //             handlePreview()
+    //         }
+    //         else if ((version === 0 || version === 1) && !dirty && !loading)
+    //         {
+    //             fetchData()
+    //             console.log("TEST 1")
+    //         }
+    //     };
+    //
+    //     window.addEventListener("screen-updated", handler);
+    //     return () => window.removeEventListener("screen-updated", handler);
+    // }, [loading]);
 
     const fetchData = async () => {
         setLoading(true)

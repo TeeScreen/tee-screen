@@ -48,7 +48,7 @@ const FilePreview = ({ folderName, fileName }: { folderName: string; fileName: s
     }, [version, dirty]);
 
     const handleDelete = async () => {
-        await deleteFile(folderName, resolvedFileName!);
+        await deleteFile(folderName, fileName);
         setResolvedFileName(fileName); // force refresh
         setDirty(true);
     };

@@ -144,7 +144,8 @@ export async function saveUserInfo(data: {
             // 🔥 Notify all clients editing this screen
             broadcastScreenUpdate(screenName, {
                 screen: screenName,
-                editedBy: lastEditedByName ?? "Unknown",
+                editedBy: lastEditedBy ?? "0",
+                editedByName: lastEditedByName ?? "Unknown",
                 version: Date.now()
             });
         }
@@ -374,7 +375,8 @@ export async function resetScreenChange(resetLoaded: boolean = false) {
 
             broadcastScreenUpdate(userInfo.loadedScreen, {
                 screen: userInfo.loadedScreen,
-                editedBy: userInfo.fullName,
+                editedBy: userInfo.userId ?? "0",
+                editedByName: userInfo.fullName ?? "Unknown",
                 version: Date.now(),
                 message: "has left editing session",
             });
@@ -443,8 +445,10 @@ export async function resetScreenChange(resetLoaded: boolean = false) {
 
         broadcastScreenUpdate(userInfo.loadedScreen, {
             screen: userInfo.loadedScreen,
-            editedBy: userInfo.fullName,
+            editedBy: userInfo.userId ?? "0",
+            editedByName: userInfo.fullName ?? "Unknown",
             version: Date.now(),
+            type: "reset",
             message: "reset screen changes",
         });
 
@@ -559,7 +563,8 @@ export async function loadScreenAction(screenName: string) {
 
     broadcastScreenUpdate(screenInfo.screenName, {
         screen: screenInfo.screenName,
-        editedBy: userInfo.fullName,
+        editedBy: userInfo.userId ?? "0",
+        editedByName: userInfo.fullName ?? "Unknown",
         version: Date.now(),
         type: "presence",
         message: "has joined editing session",
