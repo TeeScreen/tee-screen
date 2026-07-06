@@ -5,10 +5,12 @@ import {headers} from "next/headers";
 import {redirect} from "next/navigation";
 import {revalidatePath} from "next/cache";
 import {AccountData, UserInfoModel} from "@/database/models/user.model";
+import {ScreenInfoModel} from "@/database/models/screen.model";
 import {deleteFolder, downloadClubImages, uploadFolder} from "@/lib/actions/file.actions";
 import {UPLOAD_DIR} from "@/lib/constants";
 import fs from "fs/promises";
 import {toUnityIsoString} from "@/lib/helper";
+import {broadcastScreenUpdate} from "@/lib/sse";
 
 export async function addUserInfo(data: {
     userId: string;
@@ -72,15 +74,6 @@ export async function deleteUserInfo() {
             return { success: false, error: "User info not found" };
         }
 
-        // Optional: delete screen folder if exists
-        if (userInfo.screenJson?.FolderNameOnServer) {
-            try {
-                await deleteFolder(userInfo.screenJson.FolderNameOnServer);
-            } catch (e) {
-                console.warn("Failed to delete folder:", e);
-            }
-        }
-
         // Delete the entire user info document
         await UserInfoModel.deleteOne({ userId });
 
@@ -105,6 +98,9 @@ export async function saveUserInfo(data: {
     screenNames?: string[];
     screenJson?: any;
     analyticsJson?: any;
+    lastEdited?: Date | null;
+    lastEditedBy?: string | null;
+    lastEditedByName?: string | null;
 }) {
     try {
         if (!auth) {
@@ -119,11 +115,40 @@ export async function saveUserInfo(data: {
 
         const userId = session.user.id;
 
-        await UserInfoModel.findOneAndUpdate(
+        // Split data into user-specific and screen-specific fields
+        const { screenJson, analyticsJson, lastEdited, lastEditedBy, lastEditedByName, ...userFields } = data;
+
+        const currentUserRecord = await UserInfoModel.findOneAndUpdate(
             { userId },
-            { userId, ...data },
+            { userId, ...userFields },
             { upsert: true, returnDocument: 'after' }
         );
+
+        const screenName = userFields.loadedScreen !== undefined ? userFields.loadedScreen : currentUserRecord?.loadedScreen;
+        const accountLogin = userFields.loadedAccount !== undefined ? userFields.loadedAccount : currentUserRecord?.loadedAccount;
+
+        if (screenName && accountLogin && (screenJson !== undefined || analyticsJson !== undefined)) {
+            const updateFields: any = {};
+            if (screenJson !== undefined) updateFields.screenJson = screenJson;
+            if (analyticsJson !== undefined) updateFields.analyticsJson = analyticsJson;
+            if (lastEdited !== undefined) updateFields.lastEdited = lastEdited;
+            if (lastEditedBy !== undefined) updateFields.lastEditedBy = lastEditedBy;
+            if (lastEditedByName !== undefined) updateFields.lastEditedByName = lastEditedByName;
+
+            await ScreenInfoModel.findOneAndUpdate(
+                { screenName},
+                updateFields,
+                { upsert: true }
+            );
+
+            // 🔥 Notify all clients editing this screen
+            broadcastScreenUpdate(screenName, {
+                screen: screenName,
+                editedBy: lastEditedBy ?? "0",
+                editedByName: lastEditedByName ?? "Unknown",
+                version: Date.now()
+            });
+        }
 
         revalidatePath("/");
 
@@ -147,6 +172,13 @@ export async function getUserInfo() {
 
     const userId: string = session.user.id;
 
+    // Update user's lastActive timestamp on fetch
+    try {
+        await UserInfoModel.updateOne({ userId }, { lastActive: new Date() });
+    } catch (e) {
+        console.warn('Failed to update lastActive for user', e);
+    }
+
     // Try to find existing user info
     let user: any = null;
     try {
@@ -162,7 +194,6 @@ export async function getUserInfo() {
                 accountDetails: [],
                 loadedAccount: "",
                 loadedScreen: "",
-                screenJson: null,
             });
             await user.save();
         }
@@ -170,7 +201,33 @@ export async function getUserInfo() {
         console.warn('Failed to fetch or create user info', e);
         return null;
     }
-    return JSON.parse(JSON.stringify(user));
+
+    const userObj = JSON.parse(JSON.stringify(user));
+
+    // Fetch screenJson and analyticsJson from Screen collection if screen is loaded
+    if (userObj.loadedScreen && userObj.loadedAccount) {
+        try {
+            const screenInfo = await ScreenInfoModel.findOne({
+                screenName: userObj.loadedScreen
+            });
+            if (screenInfo) {
+                userObj.screenJson = screenInfo.screenJson;
+                userObj.analyticsJson = screenInfo.analyticsJson;
+            } else {
+                userObj.screenJson = null;
+                userObj.analyticsJson = null;
+            }
+        } catch (e) {
+            console.warn('Failed to fetch screen info', e);
+            userObj.screenJson = null;
+            userObj.analyticsJson = null;
+        }
+    } else {
+        userObj.screenJson = null;
+        userObj.analyticsJson = null;
+    }
+
+    return userObj;
 }
 
 export async function addAccountData(account: AccountData) {
@@ -232,8 +289,14 @@ export async function updateScreenJson(formData: FormData) {
 
     const parsed = JSON.parse(raw as string);
 
+    const userInfo = await getUserInfo();
+    if (!userInfo) return;
+
     await saveUserInfo({
         screenJson: parsed,
+        lastEdited: new Date(),
+        lastEditedBy: userInfo.userId,
+        lastEditedByName: userInfo.fullName,
     });
 }
 
@@ -294,75 +357,252 @@ export async function applyScreenChange() {
 export async function resetScreenChange(resetLoaded: boolean = false) {
     try {
         const userInfo = await getUserInfo();
+        if (!userInfo) return { success: false, error: "No user found" };
 
-        // Clean up any server folder tied to the current screen
-        if (userInfo?.screenJson?.FolderNameOnServer) {
+        if (resetLoaded) {
+            // Remove user from the screen's activeUsers list
+            if (userInfo.loadedScreen && userInfo.loadedAccount) {
+                await ScreenInfoModel.updateOne(
+                    { screenName: userInfo.loadedScreen},
+                    { $pull: { activeUsers: { userId: userInfo.userId } } }
+                );
+            }
+            // Clear the user's loadedScreen
+            await UserInfoModel.updateOne(
+                { userId: userInfo.userId },
+                { loadedScreen: "" }
+            );
+
+            broadcastScreenUpdate(userInfo.loadedScreen, {
+                screen: userInfo.loadedScreen,
+                editedBy: userInfo.userId ?? "0",
+                editedByName: userInfo.fullName ?? "Unknown",
+                version: Date.now(),
+                message: "has left editing session",
+            });
+            revalidatePath("/");
+            return { success: true };
+        }
+
+        // Discard/Reset changes for the loaded screen
+        if (!userInfo.loadedScreen || !userInfo.loadedAccount) {
+            return { success: false, error: "No screen loaded to reset" };
+        }
+
+        // Delete folder if folderName exists on the draft screen
+        if (userInfo.screenJson?.FolderNameOnServer) {
             await deleteFolder(userInfo.screenJson.FolderNameOnServer);
         }
 
-        // Base reset payload
-        const resetPayload: any = {
-            screenJson: null,
-            analyticsJson: null,
-        };
-
-        if (resetLoaded) {
-            resetPayload.loadedScreen = "";
+        const account = userInfo.accountDetails?.find(
+            (a: any) => a.accountLogin === userInfo.loadedAccount
+        );
+        if (!account) {
+            return { success: false, error: "No account found" };
         }
 
-        await saveUserInfo(resetPayload);
+        const screenRes = await fetch(
+            `https://teescreenapp.com/api/screen_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${userInfo.loadedScreen}`
+        );
+        if (!screenRes.ok) {
+            return { success: false, error: "Failed to fetch screen data" };
+        }
 
-        // Reload fresh data if a loadedScreen exists
-        if (!resetLoaded && userInfo.loadedScreen) {
-            const account = userInfo.accountDetails?.find(
-                (a: any) => a.accountLogin === userInfo.loadedAccount
+        const screenData = await screenRes.json();
+
+        let analyticsData: any = null;
+        try {
+            const analyticsRes = await fetch(
+                `https://teescreenapp.com/api/analytics_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenData.name}`
             );
-            if (!account) {
-                return { success: false, error: "No account found" };
+            if (analyticsRes.ok) {
+                analyticsData = await analyticsRes.json();
             }
+        } catch {
+            console.warn("Analytics request failed");
+        }
 
-            const screenRes = await fetch(
-                `https://teescreenapp.com/api/screen_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${userInfo.loadedScreen}`
-            );
-            if (!screenRes.ok) {
-                return { success: false, error: "Failed to fetch screen data" };
-            }
-
-            const screenData = await screenRes.json();
-
-            let analyticsData: any = null;
-            try {
-                const analyticsRes = await fetch(
-                    `https://teescreenapp.com/api/analytics_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenData.name}`
-                );
-                if (analyticsRes.ok) {
-                    analyticsData = await analyticsRes.json();
-                }
-            } catch {
-                console.warn("Analytics request failed");
-            }
-
-            await saveUserInfo({
-                loadedScreen: screenData.name,
+        // Save original/fresh JSONs back to the screen document
+        await ScreenInfoModel.findOneAndUpdate(
+            { screenName: screenData.name},
+            {
                 screenJson: screenData,
                 analyticsJson: analyticsData,
-            });
+                lastEdited: null,
+                lastEditedBy: null,
+                lastEditedByName: null,
+            },
+            { upsert: true }
+        );
 
-            if (screenData.FolderNameOnServer) {
-                try {
-                    await downloadClubImages(screenData.FolderNameOnServer);
-                } catch {
-                    console.warn("Failed to download club images");
-                }
+        if (screenData.FolderNameOnServer) {
+            try {
+                await downloadClubImages(screenData.FolderNameOnServer);
+            } catch {
+                console.warn("Failed to download club images");
             }
-
-            revalidatePath("/");
         }
 
+        broadcastScreenUpdate(userInfo.loadedScreen, {
+            screen: userInfo.loadedScreen,
+            editedBy: userInfo.userId ?? "0",
+            editedByName: userInfo.fullName ?? "Unknown",
+            version: Date.now(),
+            type: "reset",
+            message: "reset screen changes",
+        });
+
+
+        revalidatePath("/");
         return { success: true, message: "Reset and refreshed screen" };
     } catch (e) {
         console.error("resetScreenChange error:", e);
         return { success: false, error: "Failed to reset screen" };
+    }
+}
+
+export async function loadScreenAction(screenName: string) {
+    if (!auth) {
+        throw new Error("Auth module not initialised");
+    }
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+
+    if (!session?.user) return { success: false, error: "No session" };
+
+    const userId = session.user.id;
+
+    // Fetch user info first
+    const userInfo = await UserInfoModel.findOne({ userId });
+    if (!userInfo) return { success: false, error: "User not found" };
+
+    const loadedAccount = userInfo.loadedAccount;
+    const account = userInfo.accountDetails?.find(
+        (a: any) => a.accountLogin === loadedAccount
+    );
+    if (!account) {
+        return { success: false, error: "No matching account found" };
+    }
+
+    // 1. Unload current screen for this user
+    await resetScreenChange(true);
+
+    // 2. Check if screen document exists in ScreenInfoModel
+    let screenInfo = await ScreenInfoModel.findOne({
+        screenName
+    });
+
+    if (!screenInfo || !screenInfo.screenJson) {
+        // Fetch from API
+        const screenRes = await fetch(
+            `https://teescreenapp.com/api/screen_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenName}`
+        );
+
+        if (!screenRes.ok) {
+            return { success: false, error: "Failed to fetch screen data" };
+        }
+
+        const screenData = await screenRes.json();
+
+        let analyticsData: any = null;
+        try {
+            const analyticsRes = await fetch(
+                `https://teescreenapp.com/api/analytics_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenData.name}`
+            );
+            if (analyticsRes.ok) {
+                analyticsData = await analyticsRes.json();
+            }
+        } catch {
+            console.warn("Analytics request failed");
+        }
+
+        // Save fresh screen data
+        screenInfo = await ScreenInfoModel.findOneAndUpdate(
+            { screenName: screenData.name },
+            {
+                screenName: screenData.name,
+                screenJson: screenData,
+                analyticsJson: analyticsData,
+                lastEdited: null,
+                lastEditedBy: null,
+                lastEditedByName: null,
+            },
+            { upsert: true, new: true }
+        );
+
+        // Download images to tmp
+        if (screenData.FolderNameOnServer) {
+            try {
+                await downloadClubImages(screenData.FolderNameOnServer);
+            } catch {
+                console.warn("Failed to download club images");
+            }
+        }
+    }
+
+    if (!screenInfo) {
+        return { success: false, error: "Failed to initialize screen info" };
+    }
+
+    // Update user's loaded screen
+    await UserInfoModel.updateOne(
+        { userId },
+        { loadedScreen: screenInfo.screenName }
+    );
+
+    // Add user to the screen's activeUsers list (avoid duplicates)
+    await ScreenInfoModel.updateOne(
+        { screenName: screenInfo.screenName},
+        { $pull: { activeUsers: { userId } } }
+    );
+    await ScreenInfoModel.updateOne(
+        { screenName: screenInfo.screenName},
+        { $push: { activeUsers: { userId, fullName: userInfo.fullName, role: userInfo.role || 'Editor' } } }
+    );
+
+    broadcastScreenUpdate(screenInfo.screenName, {
+        screen: screenInfo.screenName,
+        editedBy: userInfo.userId ?? "0",
+        editedByName: userInfo.fullName ?? "Unknown",
+        version: Date.now(),
+        type: "presence",
+        message: "has joined editing session",
+    });
+
+    revalidatePath("/");
+    return { success: true };
+}
+
+export async function getScreenStatus(screenName: string) {
+    try {
+        if (!auth) return null;
+        const session = await auth.api.getSession({
+            headers: await headers(),
+        });
+        if (!session?.user) return null;
+
+        const currentUserId = session.user.id;
+
+        const screenInfo = await ScreenInfoModel.findOne({ screenName });
+
+        // Read activeUsers directly from the screen document
+        const activeUsers = (screenInfo?.activeUsers ?? []).map((u: any) => ({
+            userId: u.userId,
+            fullName: u.fullName,
+            role: u.role || 'Editor',
+            isCurrent: u.userId === currentUserId,
+        }));
+
+        return {
+            lastEdited: screenInfo?.lastEdited ? JSON.parse(JSON.stringify(screenInfo.lastEdited)) : null,
+            lastEditedBy: screenInfo?.lastEditedBy || null,
+            lastEditedByName: screenInfo?.lastEditedByName || null,
+            activeUsers,
+        };
+    } catch (error) {
+        console.error("Failed to get screen status:", error);
+        return null;
     }
 }
 

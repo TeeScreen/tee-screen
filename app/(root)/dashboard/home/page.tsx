@@ -6,6 +6,7 @@ import {
     getUserInfo,
     saveUserInfo,
     resetScreenChange,
+    loadScreenAction,
 } from "@/lib/actions/user.actions";
 
 import { revalidatePath } from "next/cache";
@@ -66,66 +67,7 @@ export default async function HomePage() {
 
     async function handleLoadScreen(screenName: string) {
         "use server";
-
-        const account = accounts.find(
-            (a: any) => a.accountLogin === loadedAccount
-        );
-        if (!account) {
-            console.error("No matching account found for loadedAccount:", loadedAccount);
-            return;
-        }
-
-        await resetScreenChange(true);
-
-        const screenRes = await fetch(
-            `https://teescreenapp.com/api/screen_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenName}`
-        );
-
-        if (!screenRes.ok) {
-            console.error("Failed to fetch screen data:", screenRes.status, screenRes.statusText);
-            return;
-        }
-
-        let screenData: any;
-        try {
-            screenData = await screenRes.json();
-        } catch (err) {
-            console.error("Invalid JSON in screen_data response:", err);
-            return;
-        }
-
-        let analyticsData: any = null;
-
-        try {
-            const analyticsRes = await fetch(
-                `https://teescreenapp.com/api/analytics_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenData.name}`
-            );
-
-            if (analyticsRes.ok) {
-                try {
-                    analyticsData = await analyticsRes.json();
-                } catch {
-                    console.warn("Analytics JSON malformed");
-                }
-            }
-        } catch {
-            console.warn("Analytics request failed");
-        }
-
-        await saveUserInfo({
-            loadedScreen: screenData.name,
-            screenJson: screenData,
-            analyticsJson: analyticsData,
-        });
-
-        if (screenData["FolderNameOnServer"]) {
-            try {
-                await downloadClubImages(screenData["FolderNameOnServer"]);
-            } catch {
-                console.warn("Failed to download club images");
-            }
-        }
-        revalidatePath("/");
+        await loadScreenAction(screenName);
     }
 
     // -----------------------------

@@ -8,6 +8,9 @@ import JSZip from "jszip";
 import { revalidatePath } from "next/cache";
 import { getUserInfo } from "./user.actions";
 import {toUnityIsoString} from "@/lib/helper";
+import {broadcastScreenUpdate} from "@/lib/sse";
+import {ScreenInfoModel} from "@/database/models/screen.model";
+import {UserInfoModel} from "@/database/models/user.model";
 
 type UploadResult = {
     success: boolean;
@@ -80,6 +83,8 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
         }
 
         const safeFileName = (await res.text()).trim();
+        await triggerUpdateEvent(newFileName, true);
+
         revalidatePath("/");
 
         return {
@@ -109,7 +114,7 @@ const deleteFile = async (folderName: string, fileName: string) => {
         )}&fileName=${encodeURIComponent(safe)}`;
 
         await fetch(url, { method: "GET" });
-
+        await triggerUpdateEvent(fileName, false);
         revalidatePath("/");
     } catch (error) {
         console.error("Delete error:", error);
@@ -243,9 +248,18 @@ export async function confirmScreenChanges(
             console.log(processRes);
             if (!processRes.ok) {
                 return { success: false, message: `Failed to process files for ${targetScreen}: ${processRes.body}` };
-            }}
+            }
+        }
+        broadcastScreenUpdate(targetScreen, {
+            screen: targetScreen,
+            editedBy: merged.lastEditedBy ?? "0",
+            editedByName: merged.lastEditedByName ?? "Unknown",
+            version: Date.now(),
+            message: "applied changes to " + targetScreen,
+        });
 
     }
+
 
     revalidatePath("/");
     return { success: true, message: "Changes copied successfully" };
@@ -309,6 +323,31 @@ function deepDiffMerge(
     }
 
     return { merged: result, diffs };
+}
+
+async function triggerUpdateEvent(fileName: string, upload: boolean)
+{
+    const userInfo = await getUserInfo();
+    if (!userInfo) return;
+    let message;
+    if(fileName)
+    {
+        if(upload)
+        {
+            message = `has uploaded a new ${fileName}`;
+        }
+        else {
+            message = `has deleted ${fileName}`;
+        }
+    }
+
+    broadcastScreenUpdate(userInfo.loadedScreen, {
+        screen: userInfo.loadedScreen,
+        editedBy: userInfo.userId ?? "0",
+        editedByName: userInfo.fullName ?? "Unknown",
+        version: Date.now(),
+        message: message,
+    });
 }
 
 

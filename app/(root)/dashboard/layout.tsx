@@ -17,12 +17,14 @@ import { headers } from "next/dist/server/request/headers";
 import { getUserInfo } from "@/lib/actions/user.actions";
 import { ApplyDialog } from "@/components/ApplyDialogue";
 import { DiscardDialog } from "@/components/DiscardDialogue";
+import { ScreenCollaborators } from "@/components/screen/ScreenCollaborators";
 
 import { GuideMenu } from "@/components/GuideMenu";
 import PreviewScreen from "@/components/demo/PreviewScreen";
 import { PreviewToggle } from "@/components/demo/PreviewToggle";
 import {PreviewTrigger} from "@/components/demo/PreviewTrigger";
 import {PreviewPanel} from "@/components/demo/PreviewPanel";
+import {GlobalSSEListener} from "@/components/sse/GlobalSSEListener";
 
 export const dynamic = "force-dynamic";
 
@@ -91,6 +93,15 @@ try {
 
                             {loadedScreen && <ApplyDialog />}
                             {loadedScreen && <DiscardDialog />}
+                            {loadedScreen && <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />}
+                            {loadedScreen && (
+                                <ScreenCollaborators
+                                    screenName={loadedScreen}
+                                    accountLogin={userInfo.loadedAccount}
+                                />
+                            )}
+                            {loadedScreen && <GlobalSSEListener screenName={loadedScreen} userId={userInfo.userId} />}
+
                         </div>
 
                         <div className="flex items-center gap-2">

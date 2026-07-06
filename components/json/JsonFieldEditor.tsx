@@ -97,7 +97,7 @@ export function JsonFieldEditor({
 
             setIsSaving(false);
             setDirty(true);
-        }, 500);
+        }, 1000);
     };
 
     /* -------------------------------------------------------
