@@ -3,10 +3,10 @@
 import { useRef, useState, useEffect } from "react";
 import InputField from "@/components/forms/InputField";
 import SelectField from "@/components/forms/SelectField";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { useDirtyState } from "@/stores/user-store";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
+import { FONT_OPTIONS, EFont } from "@/data/font";
 
 function getValue(obj: any, path: string) {
     return path.split(".").reduce((acc, key) => {
@@ -55,7 +55,7 @@ export function JsonFieldEditor({
     paths: {
         path: string;
         label: string;
-        type: "text" | "color" | "bool" | "number";
+        type: "text" | "color" | "bool" | "number" | "font";
         tag: string;
         placeholder?: string;
         options?: { label: string; value: string }[];
@@ -67,7 +67,12 @@ export function JsonFieldEditor({
     const { setDirty } = useDirtyState();
     const [isSaving, setIsSaving] = useState(false);
 
-    const form = useForm({ defaultValues: localJson });
+    const form = useForm({
+        defaultValues: {
+            ...localJson,
+            font: String(localJson.font ?? EFont.Anton), // <-- correct place
+        },
+    });
 
     /* -------------------------------------------------------
        Sync when server sends new JSON
@@ -136,6 +141,9 @@ export function JsonFieldEditor({
                 break;
             case "number":
                 defaultValue = field.options?.[0]?.value ?? 0;
+                break;
+            case "font":
+                defaultValue = EFont.SFProDisplay; // numeric 7
                 break;
             default:
                 defaultValue = null;
@@ -244,6 +252,26 @@ export function JsonFieldEditor({
                                     />
                                 );
                             }
+
+                            /* ------------------ FONT ------------------ */
+                            if (field.type === "font") {
+                                return (
+                                    <SelectField
+                                        key={field.path}
+                                        name={field.path}
+                                        label={field.label}
+                                        placeholder="Select font"
+                                        options={FONT_OPTIONS}
+                                        control={form.control}
+                                        error={null}
+                                        required={false}
+                                        defaultValue={String(currentValue)}
+                                        onChange={(val) => handleChange(field.path, Number(val))} // <-- convert back
+                                    />
+                                );
+                            }
+
+
 
                             /* ------------------ TEXT ------------------ */
                             return (
