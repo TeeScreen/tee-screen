@@ -20,7 +20,7 @@ export default async function Page() {
                     <JsonFieldEditor
                         json={screenJson}
                         paths={[
-                            /*{ path: "font", label: "Font", type: "font", tag: "UI" },*/
+                            { path: "font", label: "Font", type: "font", tag: "UI" },
                             { path: "showTopSection", label: "Show Top Section", type: "bool", tag: "UI" },
                             { path: "setTabIconsToFill", label: "Set Tab Icons to Fill", type: "bool", tag: "UI" },
                             { path: "UIColor", label: "UI Color", type: "color", tag: "UI" },

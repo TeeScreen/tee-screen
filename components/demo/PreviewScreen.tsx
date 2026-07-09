@@ -10,6 +10,7 @@ import {DiffEntry, findFileSafeName, previewScreenChanges} from '@/lib/actions/f
 import { useDirtyState } from "@/stores/user-store"
 import type { PreviewResult } from "@/components/screen/CopyConfirmDialog"
 import {info} from "next/dist/build/output/log";
+import {getFontInfo} from "@/data/font";
 
 async function resolvePreviewFile(folderName: string, fileName: string) {
     const safeFileName = await findFileSafeName(folderName, fileName)
@@ -46,6 +47,7 @@ export default function PreviewScreen() {
     const [backupBG, setBackupBG] = useState<string>("/assets/demo/backups/GolfBackground.png")
     const [brightness, setBrightness] = useState<number>(1)
     const [hideMatchCentre, setHideMatchCentre] = useState<boolean>(false)
+    const [font, setFont] = useState<string>("arial")
 
 
     const { version, dirty, externalEditVersion } = useDirtyState()
@@ -366,6 +368,8 @@ export default function PreviewScreen() {
             const { r, g, b } = data.UIColor;
             setBrightness((r + g + b) / (3 * 255));
         }
+        const fontInfo = getFontInfo(data?.font);
+        setFont(fontInfo?.className);
     }
 
     const textColor = brightness < 0.5 ? "text-white" : "text-black";
@@ -558,7 +562,7 @@ export default function PreviewScreen() {
                                                     />
                                                 )}
                                                 <span
-                                                    className={`relative z-10 ${textColor} font-semibold text-center max-w-full px-1 text-[clamp(0.6rem,1.5vw,0.9rem)]`}
+                                                    className={`relative z-10 ${textColor} ${font} font-semibold text-center max-w-full px-1 text-[clamp(0.6rem,1.5vw,0.9rem)]`}
                                                 >
                                                     {tab.name}
                                                 </span>
@@ -579,7 +583,7 @@ export default function PreviewScreen() {
 
                                                 {/* Text: vertically centered if no icon */}
                                                 <span
-                                                    className={`${textColor} font-semibold text-center break-words whitespace-normal w-full
+                                                    className={`${textColor} ${font} font-semibold text-center break-words whitespace-normal w-full
                                                     ${tab.icon
                                                         ? "flex-[0] bottom-0 text-[1vh] leading-tight"
                                                         : "flex items-center justify-center h-full text-[2vh]"}`}
@@ -713,7 +717,7 @@ export default function PreviewScreen() {
                                                 }
                                             }}
                                         >
-                                            <span className="drop-shadow-[2px_2px_3px_rgba(0,0,0,0.9)] text-[3vh] uppercase font-semibold text-center w-[85%] whitespace-normal break-words leading-[3vh]">
+                                            <span className={`${font} drop-shadow-[2px_2px_3px_rgba(0,0,0,0.9)] text-[3vh] uppercase font-semibold text-center w-[85%] whitespace-normal break-words leading-[3vh]`}>
                                                 {notice.text}
                                             </span>
                                         </Button>
