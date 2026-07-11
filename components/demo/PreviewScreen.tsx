@@ -18,11 +18,14 @@ async function resolvePreviewFile(folderName: string, fileName: string) {
     return `/api/downloads/${folderName}/${safeFileName}`
 }
 
+const ApiUrl = "https://teescreenapp.com/api/schedule";
+
 export default function PreviewScreen() {
     const [userInfo, setUserInfo] = useState<any>(null)
     const [overlayContent, setOverlayContent] = useState<{ type: 'image' | 'url' | 'vid' | 'full' | 'fbUrl' | 'fbImg'; src: string } | null>(null)
     const [loading, setLoading] = useState(false)
     const [previews, setPreviews] = useState<PreviewResult[]>([])
+    const [scheduled, setScheduled] = useState<boolean>(false)
 
     // image states
     const [backgroundImage, setBackgroundImage] = useState<string | null>(null)
@@ -55,9 +58,6 @@ export default function PreviewScreen() {
 
     // On version updates, call preview changes
     useEffect(() => {
-        console.log("version:", version)
-        console.log("dirty:", dirty)
-        console.log("loading:", loading)
 
         if (version > 0 && !loading && dirty) {
             handlePreview()
@@ -65,29 +65,11 @@ export default function PreviewScreen() {
         else if ((version === 0 || version === 1) && !dirty && !loading)
         {
             fetchData()
-            console.log("TEST 1")
         }
     }, [version, dirty])
 
-    // useEffect(() => {
-    //     const handler = () => {
-    //         if (version > 0 && !loading && dirty) {
-    //             handlePreview()
-    //         }
-    //         else if ((version === 0 || version === 1) && !dirty && !loading)
-    //         {
-    //             fetchData()
-    //             console.log("TEST 1")
-    //         }
-    //     };
-    //
-    //     window.addEventListener("screen-updated", handler);
-    //     return () => window.removeEventListener("screen-updated", handler);
-    // }, [loading]);
-
     const fetchData = async () => {
         setLoading(true)
-        console.log("Loading true");
         const info = await getUserInfo()
         setUserInfo(info)
         if (!info?.screenJson) {
@@ -102,8 +84,8 @@ export default function PreviewScreen() {
         const folderName = info.screenJson.FolderNameOnServer
         await resolveImages(folderName)
         await resolveTabsAndNotices(folderName, info.screenJson)
+        await fetchSchedule(info?.loadedScreen);
         setLoading(false)
-        console.log("Loading false");
 
     }
 
@@ -122,10 +104,115 @@ export default function PreviewScreen() {
         }
 
         updateOtherFields(userinfo.screenJson);
-
+        await fetchSchedule(userinfo?.loadedScreen);
         setLoading(false)
-
     }
+
+    const fetchSchedule = async (screenName : string) => {
+        try {
+            const res = await fetch(`${ApiUrl}?filename=${screenName}`);
+            if (!res.ok) {
+                console.log("no schedule available", await res.text());
+                return;
+            }
+
+            const data = await res.json();
+            const entries = data.entries || [];
+
+            const active = findActiveScheduleEntry(entries);
+
+            if (active) {
+                console.log("[schedule] Active entry:", active);
+                applyActiveScheduleEntry(active);
+
+            } else {
+                if(scheduled)
+                {
+                    removeActiveScheduleEntry();
+                }
+                
+                setScheduled(false)
+                console.log("[schedule] No active schedule entry");
+            }
+
+        } catch (err) {
+            console.log("Failed to load schedule", err);
+        }
+    };
+
+
+    function findActiveScheduleEntry(entries: any[]) {
+        const now = new Date();
+
+        return entries.find(e => {
+            const start = new Date(e.start);
+            const end = new Date(e.end);
+            return now >= start && now <= end;
+        });
+    }
+
+    function applyActiveScheduleEntry(entry: any) {
+        if (!entry) return;
+
+        setNotices([
+            {
+                text: entry.topNotice,
+                color: entry.topColour,
+                active: true,
+                urlActive: false,
+                url: null,
+                image: null,
+            },
+            {
+                text: entry.middleNotice,
+                color: entry.middleColour,
+                active: true,
+                urlActive: false,
+                url: null,
+                image: null,
+            },
+            {
+                text: entry.bottomNotice,
+                color: entry.bottomColour,
+                active: true,
+                urlActive: false,
+                url: null,
+                image: null,
+            },
+        ]);
+
+        setScheduled(true);
+    }
+    function removeActiveScheduleEntry() {
+
+        const data = userInfo.screenJson;
+        const noticeDefs = [
+            {
+                text: data.TopNoticeText,
+                color: data.TopNoticeBoardColour,
+                active: data.TopNoticeButtonActive,
+                urlActive: data.showUrlNoticeButtonTop,
+                url: data.urlNoticeButtonTop,
+            },
+            {
+                text: data.MiddleNoticeText,
+                color: data.MiddleNoticeBoardColour,
+                active: data.MiddleNoticeButtonActive,
+                urlActive: data.showUrlNoticeButtonMiddle,
+                url: data.urlNoticeButtonMiddle,
+            },
+            {
+                text: data.BottomNoticeText,
+                color: data.BottomNoticeBoardColour,
+                active: data.BottomNoticeButtonActive,
+                urlActive: data.showUrlNoticeButtonBottom,
+                url: data.urlNoticeButtonBottom,
+            },
+        ]
+        setNotices(noticeDefs)
+    }
+
+
 
     // Resolve base images
     const resolveImages = async (folderName: string) => {

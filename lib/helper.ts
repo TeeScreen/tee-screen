@@ -1,5 +1,4 @@
-// lib/helper.ts
-export function toUnityIsoString(): string {
+export function toUnityIsoString(hourOffset: number = 0): string {
     // Get "now" in UTC
     const now = new Date();
 
@@ -21,18 +20,15 @@ export function toUnityIsoString(): string {
     const year = get("year");
     const month = get("month");
     const day = get("day");
-    const hour = get("hour");
+
+    // Adjust the hour ONLY
+    const rawHour = Number(get("hour"));
+    const adjustedHour = ((rawHour + hourOffset) % 24 + 24) % 24; // safe wraparound
+    const hour = String(adjustedHour).padStart(2, "0");
+
     const minute = get("minute");
     const second = get("second");
     const ms = String(now.getMilliseconds()).padStart(3, "0");
-
-    // Compute offset for London at this instant
-    const londonDate = new Date(now.toLocaleString("en-GB", { timeZone: "Europe/London" }));
-    const tzOffset = -londonDate.getTimezoneOffset(); // minutes east of UTC
-    const sign = tzOffset >= 0 ? "+" : "-";
-    const absOffset = Math.abs(tzOffset);
-    const hhOffset = String(Math.floor(absOffset / 60)).padStart(2, "0");
-    const mmOffset = String(absOffset % 60).padStart(2, "0");
 
     return `${year}-${month}-${day}T${hour}:${minute}:${second}.${ms}`;
 }

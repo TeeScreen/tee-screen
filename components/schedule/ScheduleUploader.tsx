@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ScheduleByDate from "./ScheduleByDate";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react"; // spinner icon
+import { Loader2 } from "lucide-react";
+import {toUnityIsoString} from "@/lib/helper";
+import {useDirtyState} from "@/stores/user-store"; // spinner icon
 
 export type ScheduleEntry = {
     start: string;
@@ -24,6 +26,7 @@ const ApiUrl = "https://teescreenapp.com/api/schedule";
 export default function ScheduleUploader({ screenName }: { screenName: string }) {
     const [entries, setData] = useState<ScheduleEntry[]>([]);
     const [saving, setSaving] = useState(false); // track saving state
+    const { setDirty} = useDirtyState()
 
     // Load schedule from server
     useEffect(() => {
@@ -79,14 +82,29 @@ export default function ScheduleUploader({ screenName }: { screenName: string })
     // Add blank row
     const addRow = () => {
         const newEntry: ScheduleEntry = {
-            start: new Date().toISOString(),
-            end: new Date().toISOString(),
+            start: toUnityIsoString(),
+            end: toUnityIsoString(1),
             topNotice: "",
             middleNotice: "",
             bottomNotice: "",
-            topColour: "#ffffff",
-            middleColour: "#ffffff",
-            bottomColour: "#ffffff",
+            topColour: {
+                r: 255,
+                g: 255,
+                b: 255,
+                a: 255
+            },
+            middleColour: {
+                r: 255,
+                g: 255,
+                b: 255,
+                a: 255
+            },
+            bottomColour: {
+                r: 255,
+                g: 255,
+                b: 255,
+                a: 255
+            }
         };
         setData([...entries, newEntry]);
     };
@@ -109,6 +127,7 @@ export default function ScheduleUploader({ screenName }: { screenName: string })
             console.error("Error saving schedule", err);
             toast.error("Error saving schedule");
         } finally {
+            setDirty(true);
             setSaving(false);
         }
     };
