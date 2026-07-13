@@ -24,6 +24,66 @@ export function UploadCard({folderName, newFileName}: {folderName: string, newFi
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    async function uploadWithProgress({
+                                          file,
+                                          folderName,
+                                          newFileName,
+                                          onProgress,
+                                      }: {
+        file: File;
+        folderName: string;
+        newFileName: string;
+        onProgress: (pct: number, eta: number) => void;
+    }) {
+        const totalBytes = file.size;
+        let uploadedBytes = 0;
+        let lastTime = performance.now();
+        let lastBytes = 0;
+
+        const reader = file.stream().getReader();
+
+        const stream = new ReadableStream({
+            async pull(controller) {
+                const { done, value } = await reader.read();
+
+                if (done) {
+                    controller.close();
+                    return;
+                }
+
+                controller.enqueue(value);
+                uploadedBytes += value.length;
+
+                const now = performance.now();
+                const elapsed = (now - lastTime) / 1000;
+
+                if (elapsed >= 0.25) {
+                    const bytesPerSecond = (uploadedBytes - lastBytes) / elapsed;
+                    const remaining = totalBytes - uploadedBytes;
+                    const eta = remaining / bytesPerSecond;
+
+                    const pct = Math.round((uploadedBytes / totalBytes) * 100);
+                    onProgress(pct, Math.max(1, Math.round(eta)));
+
+                    lastTime = now;
+                    lastBytes = uploadedBytes;
+                }
+            }
+        });
+
+        return fetch(
+            `${process.env.SERVER_URL}/upload_stream.php?folder=${encodeURIComponent(folderName)}&name=${encodeURIComponent(newFileName)}`,
+            {
+                method: "POST",
+                body: stream,
+                headers: {
+                    "Content-Type": "application/octet-stream",
+                },
+            }
+        );
+    }
+
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (isUploading || !fileSelected) return;

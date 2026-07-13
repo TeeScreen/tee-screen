@@ -78,6 +78,19 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
             body: phpForm,
         });
 
+        // ---------- NEW: explicit status handling ----------
+        if (res.status === 413) {
+            return { success: false, message: "File too large (413)" };
+        }
+
+        if (res.status === 408) {
+            return { success: false, message: "Upload timed out (408)" };
+        }
+
+        if (!res.ok) {
+            return { success: false, message: `Upload failed (${res.status})` };
+        }
+
         if (!res.ok) {
             return { success: false, message: "Upload failed" };
         }
