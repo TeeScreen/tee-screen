@@ -12,19 +12,33 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { Loader2, Trash } from "lucide-react";
-import {useDirtyState} from "@/stores/user-store";
+import { useDirtyState } from "@/stores/user-store";
+import { toast } from "sonner";
 
 export function ConfirmDeleteButton({ action }: { action: () => Promise<void> }) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const {setDirty} = useDirtyState();
+    const { setDirty } = useDirtyState();
 
     async function onConfirm() {
         setLoading(true);
-        await action();
+
+        try {
+            await action();
+
+            toast.success("File deleted", {
+                description: "The file has been deleted successfully.",
+            });
+
+            setDirty(true);
+        } catch (err) {
+            toast.error("Delete failed", {
+                description: "Something went wrong while deleting the file.",
+            });
+        }
+
         setLoading(false);
         setOpen(false);
-        setDirty(true);
     }
 
     return (
@@ -43,7 +57,7 @@ export function ConfirmDeleteButton({ action }: { action: () => Promise<void> })
                 <DialogHeader>
                     <DialogTitle>Delete File?</DialogTitle>
                     <DialogDescription>
-                        This action cannot be undone. The file will be permanently removed.
+                        This will delete the file permanently and may not be retrievable.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -57,17 +71,21 @@ export function ConfirmDeleteButton({ action }: { action: () => Promise<void> })
                         Cancel
                     </Button>
 
-                    <form action={onConfirm} className="w-full sm:w-auto">
-                        <Button
-                            type="submit"
-                            variant="destructive"
-                            disabled={loading}
-                            className="w-full sm:w-auto"
-                        >
-                            {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                            {loading ? "Deleting..." : "Delete"}
-                        </Button>
-                    </form>
+                    <Button
+                        onClick={onConfirm}
+                        variant="destructive"
+                        disabled={loading}
+                        className="w-full sm:w-auto"
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="animate-spin mr-2" />
+                                Deleting…
+                            </>
+                        ) : (
+                            <>Delete</>
+                        )}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

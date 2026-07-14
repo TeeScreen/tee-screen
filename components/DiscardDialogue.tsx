@@ -28,14 +28,13 @@ export function DiscardDialog() {
         const result = await resetScreenChange();
 
         if (result.success) {
-            toast("Discarded changes successfully. Returning to screen page");
+            toast("Discarded changes successfully.");
             setDirty(false);
         } else {
-            toast("Failed to discard changes. Returning to screen page");
+            toast("Failed to discard changes.");
         }
         setIsLoading(false);
         setOpen(false);
-        redirect("/dashboard/home");
     }
 
     return (

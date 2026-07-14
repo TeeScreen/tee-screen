@@ -25,6 +25,7 @@ async function ensureBaseDir() {
 
 const findFileSafeName = async (folderName: string, fileName: string): Promise<string> => {
     try {
+        console.log(`fileName ${fileName}`);
         const url = `${process.env.SERVER_URL}/get_safefilename.php?folderName=${encodeURIComponent(
             folderName
         )}&fileName=${encodeURIComponent(fileName)}`;
@@ -96,7 +97,7 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
         }
 
         const safeFileName = (await res.text()).trim();
-        await triggerUpdateEvent(newFileName, true);
+        triggerUpdateEvent(newFileName, true);
 
         revalidatePath("/");
 
@@ -122,12 +123,16 @@ const deleteFile = async (folderName: string, fileName: string) => {
     try {
         const safe = await findFileSafeName(folderName, fileName);
 
+
         const url = `${process.env.SERVER_URL}/delete_tmp_file.php?folderName=${encodeURIComponent(
             folderName
         )}&fileName=${encodeURIComponent(safe)}`;
 
         await fetch(url, { method: "GET" });
-        await triggerUpdateEvent(fileName, false);
+
+        triggerUpdateEvent(fileName, false);
+
+
         revalidatePath("/");
     } catch (error) {
         console.error("Delete error:", error);

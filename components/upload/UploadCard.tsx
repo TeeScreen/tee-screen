@@ -155,11 +155,12 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
 
             if (!res.ok) {
                 setErrorMessage(`Upload failed (${res.status})`);
+                console.log(res.statusText);
                 setIsUploading(false);
                 return;
             }
 
-            await triggerUpdateEvent(newFileName, true);
+            triggerUpdateEvent(newFileName, true);
 
             setDirty(true);
 
