@@ -372,4 +372,5 @@ export {
     findFileSafeName,
     uploadFolder,
     getScreenPreview,
+    triggerUpdateEvent
 };
