@@ -804,7 +804,7 @@ export default function PreviewScreen() {
                                                 }
                                             }}
                                         >
-                                            <span className={`${font} drop-shadow-[2px_2px_3px_rgba(0,0,0,0.9)] text-[3vh] uppercase font-semibold text-center w-[85%] whitespace-normal break-words leading-[3vh]`}>
+                                            <span className={`${font} text-[3vh] uppercase font-semibold text-center w-[85%] whitespace-normal break-words leading-[3vh]`}>
                                                 {notice.text}
                                             </span>
                                         </Button>

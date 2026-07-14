@@ -16,6 +16,7 @@ export enum EFont {
     SFProDisplay,
     CenturyGoth,
     CenturyGothBold,
+    Outfit,
 }
 
 // ------------------------------------------------------------
@@ -32,6 +33,7 @@ export const FONT_DISPLAY_NAMES: Record<EFont, string> = {
     [EFont.SFProDisplay]: "SF Pro Display",
     [EFont.CenturyGoth]: "Century Gothic",
     [EFont.CenturyGothBold]: "Century Gothic Bold",
+    [EFont.Outfit]: "Outfit",
 };
 
 // ------------------------------------------------------------
@@ -107,6 +109,12 @@ const CenturyGothBoldFont = localFont({
     style: "normal",
 });
 
+const Outfit = localFont({
+    src: "../fonts/Outfit.ttf",
+    weight: "400",
+    style: "normal",
+});
+
 // ------------------------------------------------------------
 // 5. Typed registry mapping Unity enum → Next.js font loader
 // ------------------------------------------------------------
@@ -121,6 +129,7 @@ export const NextJsFontMap: Record<EFont, any> = {
     [EFont.SFProDisplay]: SFProDisplayFont,
     [EFont.CenturyGoth]: CenturyGothFont,
     [EFont.CenturyGothBold]: CenturyGothBoldFont,
+    [EFont.Outfit]: Outfit,
 };
 
 // ------------------------------------------------------------
