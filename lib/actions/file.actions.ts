@@ -25,6 +25,7 @@ async function ensureBaseDir() {
 
 const findFileSafeName = async (folderName: string, fileName: string): Promise<string> => {
     try {
+        console.log(`fileName ${fileName}`);
         const url = `${process.env.SERVER_URL}/get_safefilename.php?folderName=${encodeURIComponent(
             folderName
         )}&fileName=${encodeURIComponent(fileName)}`;
@@ -78,12 +79,25 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
             body: phpForm,
         });
 
+        // ---------- NEW: explicit status handling ----------
+        if (res.status === 413) {
+            return { success: false, message: "File too large (413)" };
+        }
+
+        if (res.status === 408) {
+            return { success: false, message: "Upload timed out (408)" };
+        }
+
+        if (!res.ok) {
+            return { success: false, message: `Upload failed (${res.status})` };
+        }
+
         if (!res.ok) {
             return { success: false, message: "Upload failed" };
         }
 
         const safeFileName = (await res.text()).trim();
-        await triggerUpdateEvent(newFileName, true);
+        triggerUpdateEvent(newFileName, true);
 
         revalidatePath("/");
 
@@ -109,12 +123,16 @@ const deleteFile = async (folderName: string, fileName: string) => {
     try {
         const safe = await findFileSafeName(folderName, fileName);
 
+
         const url = `${process.env.SERVER_URL}/delete_tmp_file.php?folderName=${encodeURIComponent(
             folderName
         )}&fileName=${encodeURIComponent(safe)}`;
 
         await fetch(url, { method: "GET" });
-        await triggerUpdateEvent(fileName, false);
+
+        triggerUpdateEvent(fileName, false);
+
+
         revalidatePath("/");
     } catch (error) {
         console.error("Delete error:", error);
@@ -359,4 +377,5 @@ export {
     findFileSafeName,
     uploadFolder,
     getScreenPreview,
+    triggerUpdateEvent
 };
