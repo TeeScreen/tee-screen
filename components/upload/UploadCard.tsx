@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
-import { deleteFile, triggerUpdateEvent } from "@/lib/actions/file.actions";
+import {deleteFile, triggerUpdateEvent, upload} from "@/lib/actions/file.actions";
 import { useRef, useState } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { useDirtyState } from "@/stores/user-store";
@@ -119,6 +119,8 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
 
     }
 
+    let isVideo = false;
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (isUploading || !fileSelected) return;
@@ -133,35 +135,72 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
             return;
         }
 
-        const controller = new AbortController();
-        setAbortController(controller);
+        // Detect file type
+        const ext = file.name.split(".").pop()?.toLowerCase() || "";
+        isVideo =
+            ext === "mp4" ||
+            ext === "mov" ||
+            ext === "webm" ||
+            ext === "mkv" ||
+            ext === "avi";
 
         try {
-            await deleteFile(folderName, newFileName);
+            let res;
 
-            const res = await uploadWithProgress({
-                file,
-                folderName,
-                newFileName,
-                onProgress: (pct, eta) => {
-                    setUploadProgress(pct);
-                    setUploadEta(eta);
-                },
-                onSpeed: (mbps) => {
-                    setUploadSpeed(mbps);
-                },
-                signal: controller.signal,
-            });
+            // -------------------------------------------------------
+            // VIDEO → STREAMING UPLOAD WITH PROGRESS
+            // -------------------------------------------------------
+            if (isVideo) {
+                console.log("Detected video");
 
-            if (!res.ok) {
-                setErrorMessage(`Upload failed (${res.status})`);
-                console.log(res.statusText);
-                setIsUploading(false);
-                return;
+                await deleteFile(folderName, newFileName);
+
+                const controller = new AbortController();
+                setAbortController(controller);
+
+                res = await uploadWithProgress({
+                    file,
+                    folderName,
+                    newFileName,
+                    onProgress: (pct, eta) => {
+                        setUploadProgress(pct);
+                        setUploadEta(eta);
+                    },
+                    onSpeed: (mbps) => {
+                        setUploadSpeed(mbps);
+                    },
+                    signal: controller.signal,
+                });
+
+                if (!res.ok) {
+                    setErrorMessage(`Upload failed (${res.status})`);
+                    setIsUploading(false);
+                    return;
+                }
             }
 
-            triggerUpdateEvent(newFileName, true);
+                // -------------------------------------------------------
+                // IMAGE → OLD MULTIPART UPLOAD
+            // -------------------------------------------------------
+            else {
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("folderName", folderName);
+                formData.append("newFileName", newFileName);
 
+                const result = await upload(formData);
+
+                if (!result.success) {
+                    setErrorMessage(result.message);
+                    setIsUploading(false);
+                    return;
+                }
+            }
+
+            // -------------------------------------------------------
+            // SUCCESS
+            // -------------------------------------------------------
+            triggerUpdateEvent(newFileName, true);
             setDirty(true);
 
         } catch (err: any) {
@@ -172,7 +211,9 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
             }
         }
 
+        // Reset input
         if (fileInputRef.current) fileInputRef.current.value = "";
+
         setFileSelected(false);
         setIsUploading(false);
         setAbortController(null);
@@ -207,7 +248,7 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
                         )}
                     </Field>
 
-                    {isUploading && (
+                    {isUploading && isVideo && (
                         <div className="w-full mt-4">
                             <div className="relative h-3 w-full rounded bg-neutral-800 overflow-hidden">
                                 <div
