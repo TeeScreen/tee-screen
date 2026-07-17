@@ -44,7 +44,7 @@ export const ContactForm = () => {
         setServerMessage("");
 
         try {
-            const res = await fetch(`${SERVER_URL}/contact_tech`, {
+            const res = await fetch(`https://teescreenapp.com/api/contact_tech`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
