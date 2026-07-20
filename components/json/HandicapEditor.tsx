@@ -28,6 +28,17 @@ const LABELS: Record<string, string> = {
     backNineBogeyRating: "Back 9 Bogey Rating",
 };
 
+/* -------------------------------------------------------
+   Compute teeName reactively (Colour-Gender)
+------------------------------------------------------- */
+function computeTeeName(handicap: any) {
+    const colour = handicap.displayedName?.trim() || "";
+    const gender = handicap.gender?.trim() || "";
+
+    const name = `${colour}-${gender}`;
+    return name.replace(/^-|-$/g, "");
+}
+
 export default function HandicapEditor({
                                            courseName,
                                            handicapData,
@@ -43,12 +54,15 @@ export default function HandicapEditor({
     updateJson: (json: any) => void;
     localJson: any;
 }) {
+    /* -------------------------------------------------------
+       Add new handicap entry
+    ------------------------------------------------------- */
     function addHandicap() {
         const updated = structuredClone(localJson);
         updated.golfCoursesData[courseName].handicapData.push({
-            teeName: "",
-            displayedName: "",
-            gender: "",
+            teeName: "Green-Male",
+            displayedName: "Green",
+            gender: "Male",
             par: 0,
             courseRating: 0,
             bogeyRating: 0,
@@ -67,12 +81,18 @@ export default function HandicapEditor({
         updateJson(updated);
     }
 
+    /* -------------------------------------------------------
+       Delete handicap entry
+    ------------------------------------------------------- */
     function deleteHandicap(index: number) {
         const updated = structuredClone(localJson);
         updated.golfCoursesData[courseName].handicapData.splice(index, 1);
         updateJson(updated);
     }
 
+    /* -------------------------------------------------------
+       Render
+    ------------------------------------------------------- */
     return (
         <Accordion type="multiple" className="border rounded p-2">
             <AccordionItem value="handicaps">
@@ -87,10 +107,9 @@ export default function HandicapEditor({
 
                     <Accordion type="multiple" className="border rounded p-2">
                         {handicapData.map((handicap: any, index: number) => {
-                            const title =
-                                handicap.displayedName && handicap.gender
-                                    ? `${handicap.displayedName} - ${handicap.gender}`
-                                    : `Handicap ${index + 1}`;
+                            const title = handicap.teeName?.trim()
+                                ? handicap.teeName
+                                : `Handicap ${index + 1}`;
 
                             return (
                                 <AccordionItem key={index} value={`handicap-${index}`}>
@@ -105,7 +124,7 @@ export default function HandicapEditor({
                                             Delete
                                         </Button>
 
-                                        {/* BASIC FIELDS (excluding teeName) */}
+                                        {/* BASIC FIELDS */}
                                         {Object.entries(handicap).map(([key, value]) => {
                                             if (key === "teeName") return null;
                                             if (key.startsWith("frontNine") || key.startsWith("backNine"))
@@ -122,23 +141,34 @@ export default function HandicapEditor({
                                                         onChange: (e: any) => {
                                                             const newVal = e.target.value;
 
-                                                            updateCourse(
-                                                                courseName,
-                                                                `handicapData.${index}.${key}`,
-                                                                newVal
-                                                            );
+                                                            // Work directly off localJson so we control the full mutation
+                                                            const updated = structuredClone(localJson);
+                                                            const course = updated.golfCoursesData[courseName];
+                                                            const handicap = course.handicapData[index];
 
-                                                            // Auto-update teeName = displayedName-gender
+                                                            // 1. Update the field itself
+                                                            (handicap as any)[key] = newVal;
+
+                                                            // 2. If colour or gender changed, recompute teeName from the SAME updated object
                                                             if (key === "displayedName" || key === "gender") {
-                                                                const updatedName = `${handicap.displayedName || ""}-${handicap.gender || ""}`;
-                                                                updateCourse(
-                                                                    courseName,
-                                                                    `handicapData.${index}.teeName`,
-                                                                    updatedName
-                                                                );
+                                                                const colour =
+                                                                    key === "displayedName" ? newVal : handicap.displayedName || "";
+                                                                const gender =
+                                                                    key === "gender" ? newVal : handicap.gender || "";
+
+                                                                const newTeeName = `${colour}-${gender}`.replace(/^-|-$/g, "");
+
+                                                                handicap.teeName = newTeeName;
                                                             }
+
+                                                            // 3. Push the fully updated JSON back up
+                                                            updated.golfCoursesData[courseName] = course;
+                                                            updateJson(updated);
                                                         },
                                                     }}
+
+
+
                                                 />
                                             );
                                         })}
