@@ -483,7 +483,7 @@ export default function PreviewScreen() {
                         >
                             {/* LEFT — TIME + DATE */}
                             <div className="flex flex-col justify-center h-full items-center left-0">
-                                <div className={`${textColor} text-[4vh] font-semibold leading-none py-1`}>
+                                <div className={`${font} ${textColor} text-[4vh] font-semibold leading-none py-1`}>
                                     {new Date().toLocaleTimeString("en-GB", {
                                         hour: "2-digit",
                                         minute: "2-digit",
@@ -491,7 +491,7 @@ export default function PreviewScreen() {
                                     })}
                                 </div>
 
-                                <div className={`${textColor} text-[1vh] font-medium leading-none`}>
+                                <div className={`${font} ${textColor} text-[1vh] font-medium leading-none`}>
                                     {new Date().toLocaleDateString("en-GB", {
                                         weekday: "long",
                                         day: "numeric",
@@ -516,10 +516,13 @@ export default function PreviewScreen() {
 
                             {/* RIGHT — WEATHER */}
                             <div className="flex justify-end items-center">
-                                <div className={`text-[2vh] text-muted-foreground ${textColor}`}>
-                                    Weather info
+                                <div className={` ${font} text-[1.5vh] ${textColor} flex flex-col items-end leading-tight`}>
+                                    <span>19°C</span>
+                                    <span>6.35 mph</span>
+                                    <span>broken clouds</span>
                                 </div>
                             </div>
+
                         </div>
 
 
