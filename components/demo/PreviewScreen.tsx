@@ -514,8 +514,8 @@ export default function PreviewScreen() {
     const textColor = brightness < 0.5 ? "text-white" : "text-black";
 
     return (
-        <div className="flex items-center justify-center h-screen bg-black">
-            <div className="aspect-[9/16] h-full max-h-screen bg-black shadow-[0_0_40px_rgba(0,0,0,0.5)] relative">
+        <div className="flex items-center justify-center h-screen">
+            <div className="aspect-[9/16] h-full max-h-screen shadow-[0_0_40px_rgba(0,0,0,0.5)] relative">
                 <Card className="relative w-full h-full border shadow-xl overflow-hidden rounded-none">
 
                     <div className="absolute inset-0 z-0">

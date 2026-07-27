@@ -18,7 +18,7 @@ export function PreviewPanel({ loadedScreen }: { loadedScreen: string }) {
     }, [loadedScreen, setPreview]);
 
     return (
-        <div className={`${visibility} w-auto border-sm bg-muted flex flex-col h-full`}>
+        <div className={`${visibility} w-auto border-sm bg-background flex flex-col h-full`}>
             {/* key tied to loadedScreen ensures remount only when it changes */}
             <PreviewScreen/>
         </div>

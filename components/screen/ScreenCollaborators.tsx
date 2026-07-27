@@ -117,24 +117,36 @@ export function ScreenCollaborators({
             <PopoverTrigger asChild>
                 <button
                     className={cn(
-                        "flex items-center gap-2.5 px-3 py-1.5 rounded-full border bg-card/60 backdrop-blur-md shadow-sm hover:bg-accent hover:text-accent-foreground transition-all duration-300 group cursor-pointer",
+                        // Desktop (unchanged)
+                        "sm:flex sm:items-center sm:gap-2.5 sm:px-3 sm:py-1.5 sm:rounded-full sm:border sm:bg-card/60 sm:backdrop-blur-md sm:shadow-sm sm:hover:bg-accent sm:hover:text-accent-foreground sm:transition-all sm:duration-300 sm:group sm:cursor-pointer",
+
+                        // Mobile compression
+                        "flex items-center gap-1.5 px-2 py-1 rounded-lg border bg-card/40 backdrop-blur-sm shadow-xs hover:bg-accent/70 hover:text-accent-foreground",
+
                         activeCount > 1 && "border-primary/30"
                     )}
                 >
                     {/* Pulsing indicator dot */}
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
+                    <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-full w-full bg-emerald-500"></span>
+        </span>
 
-                    {/* Overlapping Avatar Stack */}
-                    <div className="flex -space-x-2.5 overflow-hidden">
+                    {/* Avatar stack */}
+                    <div className="flex -space-x-1.5 sm:-space-x-2.5 overflow-hidden">
                         {status.activeUsers.slice(0, 3).map((user) => (
                             <Avatar
                                 key={user.userId}
                                 className={cn(
-                                    "h-5 w-5 border-2 border-background ring-1 ring-border shadow-sm text-[9px] font-bold select-none",
-                                    user.isCurrent ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                                    // Desktop
+                                    "sm:h-5 sm:w-5 sm:border-2 sm:border-background sm:ring-1 sm:ring-border sm:shadow-sm sm:text-[9px] sm:font-bold",
+
+                                    // Mobile
+                                    "h-4 w-4 border border-background ring-1 ring-border text-[7px] font-bold",
+
+                                    user.isCurrent
+                                        ? "bg-primary text-primary-foreground"
+                                        : "bg-muted text-muted-foreground"
                                 )}
                             >
                                 <AvatarFallback className="bg-inherit text-inherit">
@@ -142,23 +154,21 @@ export function ScreenCollaborators({
                                 </AvatarFallback>
                             </Avatar>
                         ))}
+
                         {activeCount > 3 && (
-                            <div className="flex items-center justify-center h-5 w-5 rounded-full border-2 border-background bg-muted text-[8px] font-bold text-muted-foreground ring-1 ring-border">
+                            <div className="flex items-center justify-center h-4 w-4 sm:h-5 sm:w-5 rounded-full border border-background bg-muted text-[7px] sm:text-[8px] font-bold text-muted-foreground ring-1 ring-border">
                                 +{activeCount - 3}
                             </div>
                         )}
                     </div>
 
                     {/* Summary text */}
-                    <span className="text-[11px] font-medium tracking-tight text-muted-foreground group-hover:text-foreground transition-colors duration-200">
-                        {activeCount === 1 ? (
-                            <span>Editing alone</span>
-                        ) : (
-                            <span>{activeCount} active editors</span>
-                        )}
-                    </span>
+                    <span className="text-[10px] sm:text-[11px] font-medium tracking-tight text-muted-foreground group-hover:text-foreground transition-colors duration-200">
+            {activeCount === 1 ? "Editing alone" : `${activeCount} active editors`}
+        </span>
                 </button>
             </PopoverTrigger>
+
 
             <PopoverContent className="w-80 p-4 rounded-2xl bg-card/95 backdrop-blur-md border shadow-lg flex flex-col gap-4 z-50">
                 {/* Active Users Section */}

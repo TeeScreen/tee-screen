@@ -88,27 +88,37 @@ export function JsonFieldEditor({
        Debounced auto-save
     ------------------------------------------------------- */
     const saveTimer = useRef<NodeJS.Timeout | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const editingTimer = useRef<NodeJS.Timeout | null>(null);
 
-    const autoSave = (updatedJson: any) => {
-        if (saveTimer.current) clearTimeout(saveTimer.current);
+    function scheduleEditingStop(updatedJson: any) {
+        if (editingTimer.current) clearTimeout(editingTimer.current);
 
-        saveTimer.current = setTimeout(async () => {
-            setIsSaving(true);
+        editingTimer.current = setTimeout(() => {
+            setIsEditing(false);
+            autoSave(updatedJson);
+        }, 1000); // user stopped typing for 600ms
+    }
 
-            const formData = new FormData();
-            formData.append("json", JSON.stringify(updatedJson));
+    const autoSave = async (updatedJson: any) => {
+        setIsSaving(true);
 
-            await action(formData);
+        const formData = new FormData();
+        formData.append("json", JSON.stringify(updatedJson));
 
-            setIsSaving(false);
-            setDirty(true);
-        }, 1000);
+        await action(formData);
+
+        setIsSaving(false);
+        setDirty(true);
     };
+
 
     /* -------------------------------------------------------
        Handle field change
     ------------------------------------------------------- */
     function handleChange(path: string, value: any) {
+        setIsEditing(true);
+
         const updated = setValue(localJson, path, value);
         setLocalJson(updated);
 
@@ -116,8 +126,9 @@ export function JsonFieldEditor({
             hiddenInputRef.current.value = JSON.stringify(updated);
         }
 
-        autoSave(updated);
+        scheduleEditingStop(updated);
     }
+
 
     /* -------------------------------------------------------
        Auto-create missing paths on render
