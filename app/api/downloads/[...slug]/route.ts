@@ -18,8 +18,17 @@ export const GET = async (req: NextRequest, { params }: { params: Params }) => {
             return NextResponse.json({ error: "Folder name and file name are required" }, { status: 400 });
         }
 
-        const safeFileName = await findFileSafeName(folderName, fileName);
-        const fileExt = path.extname(safeFileName).toLowerCase();
+// -------------------------------
+        // SAFE-NAME SHORT CIRCUIT
+        // -------------------------------
+        const isAlreadySafe =
+            fileName.startsWith("u-") ||
+            fileName.startsWith("d-") ||
+            /^[0-9]/.test(fileName);
+
+        const safeFileName = isAlreadySafe
+            ? fileName
+            : await findFileSafeName(folderName, fileName);        const fileExt = path.extname(safeFileName).toLowerCase();
         const contentType = getMimeTypeFromExtension(fileExt);
 
         if (!contentType) {

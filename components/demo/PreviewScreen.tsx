@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { getUserInfo } from '@/lib/actions/user.actions'
-import {DiffEntry, findFileSafeName, previewScreenChanges} from '@/lib/actions/file.actions'
+import {DiffEntry, findFileSafeName,findFileSafeNames, previewScreenChanges} from '@/lib/actions/file.actions'
 import { useDirtyState } from "@/stores/user-store"
 import type { PreviewResult } from "@/components/screen/CopyConfirmDialog"
 import {info} from "next/dist/build/output/log";
@@ -78,7 +78,6 @@ export default function PreviewScreen() {
             setLoading(false)
             return
         }
-        console.log("User info: " , info.loadedScreen);
         updateOtherFields(info.screenJson);
 
         const folderName = info.screenJson.FolderNameOnServer
@@ -212,56 +211,108 @@ export default function PreviewScreen() {
         setNotices(noticeDefs)
     }
 
-
-
-    // Resolve base images
     const resolveImages = async (folderName: string) => {
-        setBackgroundImage(await resolvePreviewFile(folderName, 'Background'))
-        setOverviewImage(await resolvePreviewFile(folderName, 'Overview'))
-        setLogoImage(await resolvePreviewFile(folderName, 'Logo'))
-        setHomeBG(await resolvePreviewFile(folderName, 'HomeBG'))
-        setAwayBG(await resolvePreviewFile(folderName, 'AwayBG'))
-        setLineUpBG(await resolvePreviewFile(folderName, 'LineUpBG'))
-        setHideScoreBG(await resolvePreviewFile(folderName, 'HideMatchImage'))
-    }
+        const previewNames = [
+            "Background",
+            "Overview",
+            "Logo",
+            "HomeBG",
+            "AwayBG",
+            "LineUpBG",
+            "HideMatchImage"
+        ];
 
-    // Resolve tabs and notices initially
+        const safeNames = await findFileSafeNames(folderName, previewNames);
+
+        const resolved = safeNames.map((safe, i) => {
+            const original = previewNames[i];
+
+            // Same logic as your old resolvePreviewFile()
+            if (!safe || safe === original || safe[0] === "d") {
+                return null;
+            }
+
+            return `/api/downloads/${folderName}/${safe}`;
+        });
+        // Assign in order
+        setBackgroundImage(resolved[0]);
+        setOverviewImage(resolved[1]);
+        setLogoImage(resolved[2]);
+        setHomeBG(resolved[3]);
+        setAwayBG(resolved[4]);
+        setLineUpBG(resolved[5]);
+        setHideScoreBG(resolved[6]);
+    };
+
     const resolveTabsAndNotices = async (folderName: string, data: any) => {
+        // All filenames needed for tabs + notices
+        const fileNames = [
+            // Tabs
+            "CustomTabIcon01.png",
+            "CustomTabImage01",
+            "CustomTabIcon02.png",
+            "CustomTabImage02",
+            "CustomTabIcon03.png",
+            "CustomTabImage03",
+            "CustomTabIcon04.png",
+            "CustomTabImage04",
+
+            // Notices
+            "NoticeImage01",
+            "NoticeImage02",
+            "NoticeImage03"
+        ];
+
+        // Fetch all safe names in one call
+        const safeNames = await findFileSafeNames(folderName, fileNames);
+
+        // Helper to resolve a single safe filename
+        const resolveSafe = (safe: string, original: string) => {
+            if (!safe || safe === original || safe[0] === "d") {
+                return null;
+            }
+            return `/api/downloads/${folderName}/${safe}`;
+        };
+
+        // Map safe names back to their respective items
+        let idx = 0;
+
         const tabDefs = [
             {
                 active: data.CustomTab01Active,
                 name: data.CustomTab01Name,
-                icon: await resolvePreviewFile(folderName, 'CustomTabIcon01.png'),
-                overlayImage: await resolvePreviewFile(folderName, 'CustomTabImage01'),
+                icon: resolveSafe(safeNames[idx++], "CustomTabIcon01.png"),
+                overlayImage: resolveSafe(safeNames[idx++], "CustomTabImage01"),
                 urlActive: data.CustomTab01UrlActive,
                 url: data.CustomTab01Url,
             },
             {
                 active: data.CustomTab02Active,
                 name: data.CustomTab02Name,
-                icon: await resolvePreviewFile(folderName, 'CustomTabIcon02.png'),
-                overlayImage: await resolvePreviewFile(folderName, 'CustomTabImage02'),
+                icon: resolveSafe(safeNames[idx++], "CustomTabIcon02.png"),
+                overlayImage: resolveSafe(safeNames[idx++], "CustomTabImage02"),
                 urlActive: data.CustomTab02UrlActive,
                 url: data.CustomTab02Url,
             },
             {
                 active: data.CustomTab03Active,
                 name: data.CustomTab03Name,
-                icon: await resolvePreviewFile(folderName, 'CustomTabIcon03.png'),
-                overlayImage: await resolvePreviewFile(folderName, 'CustomTabImage03'),
+                icon: resolveSafe(safeNames[idx++], "CustomTabIcon03.png"),
+                overlayImage: resolveSafe(safeNames[idx++], "CustomTabImage03"),
                 urlActive: data.CustomTab03UrlActive,
                 url: data.CustomTab03Url,
             },
             {
                 active: data.CustomTab04Active,
                 name: data.CustomTab04Name,
-                icon: await resolvePreviewFile(folderName, 'CustomTabIcon04.png'),
-                overlayImage: await resolvePreviewFile(folderName, 'CustomTabImage04'),
+                icon: resolveSafe(safeNames[idx++], "CustomTabIcon04.png"),
+                overlayImage: resolveSafe(safeNames[idx++], "CustomTabImage04"),
                 urlActive: data.CustomTab04UrlActive,
                 url: data.CustomTab04Url,
             },
-        ].filter(t => t.active)
-        setTabs(tabDefs)
+        ].filter(t => t.active);
+
+        setTabs(tabDefs);
 
         const noticeDefs = [
             {
@@ -270,7 +321,7 @@ export default function PreviewScreen() {
                 active: data.TopNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonTop,
                 url: data.urlNoticeButtonTop,
-                image: await resolvePreviewFile(folderName, 'NoticeImage01'),
+                image: resolveSafe(safeNames[idx++], "NoticeImage01"),
             },
             {
                 text: data.MiddleNoticeText,
@@ -278,7 +329,7 @@ export default function PreviewScreen() {
                 active: data.MiddleNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonMiddle,
                 url: data.urlNoticeButtonMiddle,
-                image: await resolvePreviewFile(folderName, 'NoticeImage02'),
+                image: resolveSafe(safeNames[idx++], "NoticeImage02"),
             },
             {
                 text: data.BottomNoticeText,
@@ -286,11 +337,12 @@ export default function PreviewScreen() {
                 active: data.BottomNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonBottom,
                 url: data.urlNoticeButtonBottom,
-                image: await resolvePreviewFile(folderName, 'NoticeImage03'),
+                image: resolveSafe(safeNames[idx++], "NoticeImage03"),
             },
-        ]
-        setNotices(noticeDefs)
-    }
+        ];
+
+        setNotices(noticeDefs);
+    };
 
     function applyJsonDiffs(diffs: DiffEntry[]) {
         diffs.forEach(diff => {

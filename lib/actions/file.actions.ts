@@ -47,6 +47,49 @@ const findFileSafeName = async (folderName: string, fileName: string): Promise<s
     }
 };
 
+const findFileSafeNames = async (
+    folderName: string,
+    fileNames: string[]
+): Promise<string[]> => {
+    try {
+        if (!Array.isArray(fileNames) || fileNames.length === 0) {
+            return [];
+        }
+
+        // Build array-style GET param: [a,b,c]
+        const encodedList = fileNames
+            .map((f) => encodeURIComponent(f))
+            .join(",");
+
+        const fileNamesParam = `[${encodedList}]`;
+
+        const url = `${process.env.SERVER_URL}/get_safefilenames.php?folderName=${encodeURIComponent(
+            folderName
+        )}&fileNames=${fileNamesParam}`;
+
+        const res = await fetch(url, { method: "GET" });
+
+        if (!res.ok) {
+            // fallback: return originals
+            return [...fileNames];
+        }
+
+        const arr = await res.json();
+
+        if (!Array.isArray(arr)) {
+            return [...fileNames];
+        }
+
+        // Map safe names → fallback to original if empty
+        return arr.map((safe, i) => {
+            const trimmed = String(safe || "").trim();
+            return trimmed || fileNames[i];
+        });
+    } catch {
+        return [...fileNames];
+    }
+};
+
 const upload = async (formData: FormData): Promise<UploadResult> => {
     try {
         const file = formData.get("file") as File;
@@ -369,6 +412,7 @@ export {
     deleteFolder,
     downloadClubImages,
     findFileSafeName,
+    findFileSafeNames,
     uploadFolder,
     getScreenPreview,
     triggerUpdateEvent

@@ -14,7 +14,6 @@ export function PreviewPanel({ loadedScreen }: { loadedScreen: string }) {
         if (loadedScreen) {
             setPreview(true);
             setDirty(false);
-            console.log("test 3")
         }
     }, [loadedScreen, setPreview]);
 
