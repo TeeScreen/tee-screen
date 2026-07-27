@@ -19,8 +19,20 @@ export async function GET(req: NextRequest) {
             const encoder = new TextEncoder();
 
             const client = {
-                write: (msg: string) => controller.enqueue(encoder.encode(msg)),
-                close: () => controller.close(),
+                write: (msg: string) => {
+                    try {
+                        controller.enqueue(encoder.encode(msg));
+                    } catch {
+                        // Controller stream might be closed or aborted
+                    }
+                },
+                close: () => {
+                    try {
+                        controller.close();
+                    } catch {
+                        // Stream already closed
+                    }
+                },
             };
 
             if (!globalAny.sseClients[screen]) {
@@ -34,9 +46,13 @@ export async function GET(req: NextRequest) {
 
             req.signal.addEventListener("abort", () => {
                 clearInterval(keepAlive);
-                globalAny.sseClients[screen] =
-                    globalAny.sseClients[screen].filter((c: any) => c !== client);
-                client.close();
+                if (globalAny.sseClients[screen]) {
+                    globalAny.sseClients[screen] =
+                        globalAny.sseClients[screen].filter((c: any) => c !== client);
+                    if (globalAny.sseClients[screen].length === 0) {
+                        delete globalAny.sseClients[screen];
+                    }
+                }
             });
         },
     });

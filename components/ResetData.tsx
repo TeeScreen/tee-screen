@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -22,7 +22,7 @@ type Props = {
 
 export function ResetLoadedDataDialog({ action, hasMultipleScreens }: Props) {
     const [open, setOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isPending, startTransition] = useTransition();
     const { dirty, setDirty } = useDirtyState();
 
     const labelText = hasMultipleScreens ? "Reset Loaded Screen Data" : "Refresh Screen Data";
@@ -34,25 +34,23 @@ export function ResetLoadedDataDialog({ action, hasMultipleScreens }: Props) {
     const successMessage = hasMultipleScreens ? "Reset successful." : "Refresh successful.";
     const failureMessage = hasMultipleScreens ? "Failed to reset data." : "Failed to refresh data.";
 
-    async function handleConfirm() {
-        setIsLoading(true);
-
-        try {
-            await action();
-            toast(successMessage);
-            setDirty(false);
-        } catch {
-            toast(failureMessage);
-        }
-
-        setIsLoading(false);
-        setOpen(false);
+    function handleConfirm() {
+        startTransition(async () => {
+            try {
+                await action();
+                toast(successMessage);
+                setDirty(false);
+            } catch {
+                toast(failureMessage);
+            }
+            setOpen(false);
+        });
     }
 
     return (
         <>
             {dirty && (
-                <Dialog open={open} onOpenChange={(v) => !isLoading && setOpen(v)}>
+                <Dialog open={open} onOpenChange={(v) => !isPending && setOpen(v)}>
                     <DialogTrigger asChild>
                         <Button variant="outline" className="w-full sm:w-auto inline-flex items-center gap-2">
                             {!hasMultipleScreens && <RefreshCw className="h-4 w-4" />}
@@ -72,7 +70,7 @@ export function ResetLoadedDataDialog({ action, hasMultipleScreens }: Props) {
                             <Button
                                 variant="outline"
                                 onClick={() => setOpen(false)}
-                                disabled={isLoading}
+                                disabled={isPending}
                             >
                                 Cancel
                             </Button>
@@ -80,9 +78,9 @@ export function ResetLoadedDataDialog({ action, hasMultipleScreens }: Props) {
                             <Button
                                 variant="destructive"
                                 onClick={handleConfirm}
-                                disabled={isLoading}
+                                disabled={isPending}
                             >
-                                {isLoading && (
+                                {isPending && (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 )}
                                 {loadingText}
@@ -96,14 +94,14 @@ export function ResetLoadedDataDialog({ action, hasMultipleScreens }: Props) {
                 <Button
                     variant="outline"
                     onClick={handleConfirm}
-                    disabled={isLoading}
+                    disabled={isPending}
                     className="w-full sm:w-auto inline-flex items-center gap-2"
                 >
-                    {isLoading && (
+                    {isPending && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    {!isLoading && !hasMultipleScreens && <RefreshCw className="h-4 w-4" />}
-                    {!isLoading && labelText}
+                    {!isPending && !hasMultipleScreens && <RefreshCw className="h-4 w-4" />}
+                    {!isPending && labelText}
                 </Button>
             )}
         </>

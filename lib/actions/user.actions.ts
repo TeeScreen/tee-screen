@@ -4,6 +4,7 @@ import {auth} from "@/lib/better-auth/auth";
 import {headers} from "next/headers";
 import {redirect} from "next/navigation";
 import {revalidatePath} from "next/cache";
+import {connectToDatabase} from "@/database/mongoose";
 import {AccountData, UserInfoModel} from "@/database/models/user.model";
 import {ScreenInfoModel} from "@/database/models/screen.model";
 import {deleteFolder, downloadClubImages, uploadFolder} from "@/lib/actions/file.actions";
@@ -23,17 +24,17 @@ export async function addUserInfo(data: {
     loadedScreen?: string;
 }){
     try {
+        await connectToDatabase();
         const userID: string = data.userId;
 
         const existingItem = await UserInfoModel.findOne({
             userId: userID,
-        });
+        }).lean();
 
         if (existingItem) {
-            return { success: false, error: 'Stock already in watchlist' };
+            return { success: false, error: 'User profile already exists' };
         }
 
-        // Add to watchlist
         const newItem = new UserInfoModel({
             userId: data.userId,
             fullName: data.fullName,
@@ -55,6 +56,7 @@ export async function addUserInfo(data: {
 
 export async function deleteUserInfo() {
     try {
+        await connectToDatabase();
         if (!auth) {
             // If auth is not initialised, fail loudly and predictably.
             throw new Error("Auth module not initialised");
@@ -68,7 +70,7 @@ export async function deleteUserInfo() {
         const userId = session.user.id;
 
         // Fetch user info first (in case we need to delete folders)
-        const userInfo = await UserInfoModel.findOne({ userId });
+        const userInfo = await UserInfoModel.findOne({ userId }).lean();
 
         if (!userInfo) {
             return { success: false, error: "User info not found" };
@@ -103,6 +105,7 @@ export async function saveUserInfo(data: {
     lastEditedByName?: string | null;
 }) {
     try {
+        await connectToDatabase();
         if (!auth) {
             // If auth is not initialised, fail loudly and predictably.
             throw new Error("Auth module not initialised");
@@ -122,7 +125,7 @@ export async function saveUserInfo(data: {
             { userId },
             { userId, ...userFields },
             { upsert: true, returnDocument: 'after' }
-        );
+        ).lean();
 
         const screenName = userFields.loadedScreen !== undefined ? userFields.loadedScreen : currentUserRecord?.loadedScreen;
         const accountLogin = userFields.loadedAccount !== undefined ? userFields.loadedAccount : currentUserRecord?.loadedAccount;
@@ -160,6 +163,7 @@ export async function saveUserInfo(data: {
 }
 
 export async function getUserInfo() {
+    await connectToDatabase();
     if (!auth) {
         // If auth is not initialised, fail loudly and predictably.
         throw new Error("Auth module not initialised");
@@ -172,19 +176,17 @@ export async function getUserInfo() {
 
     const userId: string = session.user.id;
 
-    // Update user's lastActive timestamp on fetch
-    try {
-        await UserInfoModel.updateOne({ userId }, { lastActive: new Date() });
-    } catch (e) {
+    // Update user's lastActive timestamp asynchronously without blocking response
+    UserInfoModel.updateOne({ userId }, { lastActive: new Date() }).catch((e) => {
         console.warn('Failed to update lastActive for user', e);
-    }
+    });
 
     // Try to find existing user info
-    let user: any = null;
+    let userObj: any = null;
     try {
-        user = await UserInfoModel.findOne({ userId });
-        if (!user) {
-            user = new UserInfoModel({
+        userObj = await UserInfoModel.findOne({ userId }).lean();
+        if (!userObj) {
+            const newDoc = new UserInfoModel({
                 userId,
                 fullName: session.user.name,
                 phoneNumber: "",
@@ -195,21 +197,20 @@ export async function getUserInfo() {
                 loadedAccount: "",
                 loadedScreen: "",
             });
-            await user.save();
+            await newDoc.save();
+            userObj = newDoc.toObject();
         }
     } catch (e) {
         console.warn('Failed to fetch or create user info', e);
         return null;
     }
 
-    const userObj = JSON.parse(JSON.stringify(user));
-
     // Fetch screenJson and analyticsJson from Screen collection if screen is loaded
     if (userObj.loadedScreen && userObj.loadedAccount) {
         try {
             const screenInfo = await ScreenInfoModel.findOne({
                 screenName: userObj.loadedScreen
-            });
+            }).lean();
             if (screenInfo) {
                 userObj.screenJson = screenInfo.screenJson;
                 userObj.analyticsJson = screenInfo.analyticsJson;
@@ -227,10 +228,11 @@ export async function getUserInfo() {
         userObj.analyticsJson = null;
     }
 
-    return userObj;
+    return userObj ? JSON.parse(JSON.stringify(userObj)) : null;
 }
 
 export async function addAccountData(account: AccountData) {
+    await connectToDatabase();
     if (!auth) {
         // If auth is not initialised, fail loudly and predictably.
         throw new Error("Auth module not initialised");
@@ -247,7 +249,7 @@ export async function addAccountData(account: AccountData) {
     const existing = await UserInfoModel.findOne({
         userId,
         "accountDetails.accountLogin": account.accountLogin
-    });
+    }).lean();
 
     if (existing) {
         throw new Error(`Account login "${account.accountLogin}" already exists for this user.`);
@@ -257,13 +259,14 @@ export async function addAccountData(account: AccountData) {
         { userId },
         { $push: { accountDetails: account } },
         { returnDocument: 'after' }
-    );
+    ).lean();
 
 
-    return JSON.parse(JSON.stringify(updated));
+    return updated ? JSON.parse(JSON.stringify(updated)) : null;
 }
 
 export async function removeAccountData(accountLogin: string) {
+    await connectToDatabase();
     if (!auth) {
         // If auth is not initialised, fail loudly and predictably.
         throw new Error("Auth module not initialised");
@@ -278,9 +281,9 @@ export async function removeAccountData(accountLogin: string) {
         { userId },
         { $pull: { accountDetails: { accountLogin } } },
         { returnDocument: 'after' }
-    );
+    ).lean();
 
-    return JSON.parse(JSON.stringify(updated));
+    return updated ? JSON.parse(JSON.stringify(updated)) : null;
 }
 
 export async function updateScreenJson(formData: FormData) {
@@ -356,6 +359,7 @@ export async function applyScreenChange() {
 
 export async function resetScreenChange(resetLoaded: boolean = false) {
     try {
+        await connectToDatabase();
         const userInfo = await getUserInfo();
         if (!userInfo) return { success: false, error: "No user found" };
 
@@ -462,6 +466,7 @@ export async function resetScreenChange(resetLoaded: boolean = false) {
 }
 
 export async function loadScreenAction(screenName: string) {
+    await connectToDatabase();
     if (!auth) {
         throw new Error("Auth module not initialised");
     }
@@ -474,7 +479,7 @@ export async function loadScreenAction(screenName: string) {
     const userId = session.user.id;
 
     // Fetch user info first
-    const userInfo = await UserInfoModel.findOne({ userId });
+    const userInfo = await UserInfoModel.findOne({ userId }).lean();
     if (!userInfo) return { success: false, error: "User not found" };
 
     const loadedAccount = userInfo.loadedAccount;
@@ -491,7 +496,7 @@ export async function loadScreenAction(screenName: string) {
     // 2. Check if screen document exists in ScreenInfoModel
     let screenInfo = await ScreenInfoModel.findOne({
         screenName
-    });
+    }).lean();
 
     if (!screenInfo || !screenInfo.screenJson) {
         // Fetch from API
@@ -529,7 +534,7 @@ export async function loadScreenAction(screenName: string) {
                 lastEditedByName: null,
             },
             { upsert: true, new: true }
-        );
+        ).lean();
 
         // Download images to tmp
         if (screenData.FolderNameOnServer) {
@@ -576,6 +581,7 @@ export async function loadScreenAction(screenName: string) {
 
 export async function getScreenStatus(screenName: string) {
     try {
+        await connectToDatabase();
         if (!auth) return null;
         const session = await auth.api.getSession({
             headers: await headers(),
@@ -584,7 +590,7 @@ export async function getScreenStatus(screenName: string) {
 
         const currentUserId = session.user.id;
 
-        const screenInfo = await ScreenInfoModel.findOne({ screenName });
+        const screenInfo = await ScreenInfoModel.findOne({ screenName }).lean();
 
         // Read activeUsers directly from the screen document
         const activeUsers = (screenInfo?.activeUsers ?? []).map((u: any) => ({
@@ -595,7 +601,7 @@ export async function getScreenStatus(screenName: string) {
         }));
 
         return {
-            lastEdited: screenInfo?.lastEdited ? JSON.parse(JSON.stringify(screenInfo.lastEdited)) : null,
+            lastEdited: screenInfo?.lastEdited ? screenInfo.lastEdited.toISOString() : null,
             lastEditedBy: screenInfo?.lastEditedBy || null,
             lastEditedByName: screenInfo?.lastEditedByName || null,
             activeUsers,

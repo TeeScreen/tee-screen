@@ -9,8 +9,6 @@ import { revalidatePath } from "next/cache";
 import { getUserInfo } from "./user.actions";
 import {toUnityIsoString} from "@/lib/helper";
 import {broadcastScreenUpdate} from "@/lib/sse";
-import {ScreenInfoModel} from "@/database/models/screen.model";
-import {UserInfoModel} from "@/database/models/user.model";
 
 type UploadResult = {
     success: boolean;
@@ -90,10 +88,6 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
 
         if (!res.ok) {
             return { success: false, message: `Upload failed (${res.status})` };
-        }
-
-        if (!res.ok) {
-            return { success: false, message: "Upload failed" };
         }
 
         const safeFileName = (await res.text()).trim();

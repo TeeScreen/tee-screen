@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { ChevronDown, ChevronUp, Monitor, Edit } from "lucide-react";
+import React, { useState, useTransition } from "react";
+import { ChevronDown, ChevronUp, Monitor, Edit, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScreenList } from "./ScreenList";
 import { ResetLoadedDataDialog } from "@/components/ResetData";
@@ -19,6 +19,13 @@ export function ScreenSelector({
     onResetScreen: () => Promise<void>;
 }) {
     const [isExpanded, setIsExpanded] = useState(!loadedScreen);
+    const [isPending, startTransition] = useTransition();
+
+    const handleLoadScreenWithTransition = (screenName: string) => {
+        startTransition(() => {
+            onLoadScreen(screenName);
+        });
+    };
 
     if (screens.length === 0) {
         return (
@@ -90,10 +97,19 @@ export function ScreenSelector({
 
                 <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
                     <Button
-                        onClick={() => onLoadScreen(singleScreen)}
+                        onClick={() => handleLoadScreenWithTransition(singleScreen)}
+                        disabled={isPending}
                         className="inline-flex items-center gap-2 w-full md:w-auto"
                     >
-                        Load Screen <Edit className="h-4 w-4" />
+                        {isPending ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" /> Loading...
+                            </>
+                        ) : (
+                            <>
+                                Load Screen <Edit className="h-4 w-4" />
+                            </>
+                        )}
                     </Button>
                 </div>
             </div>
@@ -144,23 +160,12 @@ export function ScreenSelector({
                                 <h3 className="text-sm font-semibold text-muted-foreground">
                                     Choose a screen to open &amp; edit
                                 </h3>
-                                {/*<Button
-                                    asChild
-                                    size="sm"
-                                    variant="ghost"
-                                    className="text-primary hover:text-primary/80 gap-1.5"
-                                >
-                                    <Link href="/dashboard/golf-course">
-                                        <Edit className="h-3.5 w-3.5" />
-                                        Edit current
-                                    </Link>
-                                </Button>*/}
                             </div>
                             <ScreenList
                                 screens={screens}
                                 loadedScreen={loadedScreen}
                                 onLoadScreen={(name) => {
-                                    onLoadScreen(name);
+                                    handleLoadScreenWithTransition(name);
                                     setIsExpanded(false);
                                 }}
                             />
@@ -186,7 +191,7 @@ export function ScreenSelector({
                         <ScreenList
                             screens={screens}
                             loadedScreen={loadedScreen}
-                            onLoadScreen={onLoadScreen}
+                            onLoadScreen={handleLoadScreenWithTransition}
                         />
                     </div>
                 </div>

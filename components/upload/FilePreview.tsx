@@ -20,7 +20,6 @@ const FilePreview = ({ folderName, fileName }: { folderName: string; fileName: s
 
     const resolveFile = async () => {
         setLoading(true);
-        await delay(3000);
         const safeFileName = await findFileSafeName(folderName, fileName);
 
         if (!safeFileName || safeFileName[0] === "d") {

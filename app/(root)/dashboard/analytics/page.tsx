@@ -1,7 +1,18 @@
 import React from "react";
 import { PanelTopBottomDashed } from "lucide-react";
 import { getUserInfo } from "@/lib/actions/user.actions";
-import InteractionsDashboard from "@/components/InteractionDashboard";
+import dynamicImport from "next/dynamic";
+
+const InteractionsDashboard = dynamicImport(
+    () => import("@/components/InteractionDashboard"),
+    {
+        loading: () => (
+            <div className="p-8 border rounded-2xl bg-card text-center text-muted-foreground animate-pulse">
+                Loading analytics dashboard...
+            </div>
+        ),
+    }
+);
 
 export const dynamic = "force-dynamic";
 
