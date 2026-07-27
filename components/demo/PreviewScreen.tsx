@@ -69,44 +69,44 @@ export default function PreviewScreen() {
     }, [version, dirty])
 
     const fetchData = async () => {
-        setLoading(true)
-        const info = await getUserInfo()
-        setUserInfo(info)
+        setLoading(true);
+        const info = await getUserInfo();
+        setUserInfo(info);
         if (!info?.screenJson) {
-            console.log("Loading false");
-
-            setLoading(false)
-            return
+            setLoading(false);
+            return;
         }
-        console.log("User info: " , info.loadedScreen);
         updateOtherFields(info.screenJson);
 
-        const folderName = info.screenJson.FolderNameOnServer
-        await resolveImages(folderName)
-        await resolveTabsAndNotices(folderName, info.screenJson)
-        await fetchSchedule(info?.loadedScreen);
-        setLoading(false)
-
-    }
+        const folderName = info.screenJson.FolderNameOnServer;
+        await Promise.all([
+            resolveImages(folderName),
+            resolveTabsAndNotices(folderName, info.screenJson),
+            fetchSchedule(info?.loadedScreen)
+        ]);
+        setLoading(false);
+    };
 
     const handlePreview = async () => {
-        setLoading(true)
-        const userinfo = await getUserInfo()
-        setUserInfo(userInfo);
-        const res = await previewScreenChanges([`${userinfo?.loadedScreen}`])
+        setLoading(true);
+        const userinfo = await getUserInfo();
+        setUserInfo(userinfo);
+        const res = await previewScreenChanges([`${userinfo?.loadedScreen}`]);
 
         if (res.success && res.previews) {
             setPreviews(res.previews);
             await applyFileChanges(res.sourceFolder, res.previews);
             res.previews.forEach(p => applyJsonDiffs(p.diffs || []));
         } else {
-            console.error(res.message || "Preview failed")
+            console.error(res.message || "Preview failed");
         }
 
-        updateOtherFields(userinfo.screenJson);
+        if (userinfo?.screenJson) {
+            updateOtherFields(userinfo.screenJson);
+        }
         await fetchSchedule(userinfo?.loadedScreen);
-        setLoading(false)
-    }
+        setLoading(false);
+    };
 
     const fetchSchedule = async (screenName : string) => {
         try {
@@ -130,7 +130,7 @@ export default function PreviewScreen() {
                 {
                     removeActiveScheduleEntry();
                 }
-                
+
                 setScheduled(false)
                 console.log("[schedule] No active schedule entry");
             }
@@ -214,54 +214,84 @@ export default function PreviewScreen() {
 
 
 
-    // Resolve base images
+    // Resolve base images concurrently
     const resolveImages = async (folderName: string) => {
-        setBackgroundImage(await resolvePreviewFile(folderName, 'Background'))
-        setOverviewImage(await resolvePreviewFile(folderName, 'Overview'))
-        setLogoImage(await resolvePreviewFile(folderName, 'Logo'))
-        setHomeBG(await resolvePreviewFile(folderName, 'HomeBG'))
-        setAwayBG(await resolvePreviewFile(folderName, 'AwayBG'))
-        setLineUpBG(await resolvePreviewFile(folderName, 'LineUpBG'))
-        setHideScoreBG(await resolvePreviewFile(folderName, 'HideMatchImage'))
-    }
+        const [bg, overview, logo, home, away, lineUp, hideScore] = await Promise.all([
+            resolvePreviewFile(folderName, 'Background'),
+            resolvePreviewFile(folderName, 'Overview'),
+            resolvePreviewFile(folderName, 'Logo'),
+            resolvePreviewFile(folderName, 'HomeBG'),
+            resolvePreviewFile(folderName, 'AwayBG'),
+            resolvePreviewFile(folderName, 'LineUpBG'),
+            resolvePreviewFile(folderName, 'HideMatchImage'),
+        ]);
 
-    // Resolve tabs and notices initially
+        setBackgroundImage(bg);
+        setOverviewImage(overview);
+        setLogoImage(logo);
+        setHomeBG(home);
+        setAwayBG(away);
+        setLineUpBG(lineUp);
+        setHideScoreBG(hideScore);
+    };
+
+    // Resolve tabs and notices concurrently
     const resolveTabsAndNotices = async (folderName: string, data: any) => {
+        const [
+            t01Icon, t01Img,
+            t02Icon, t02Img,
+            t03Icon, t03Img,
+            t04Icon, t04Img,
+            n01Img, n02Img, n03Img
+        ] = await Promise.all([
+            resolvePreviewFile(folderName, 'CustomTabIcon01.png'),
+            resolvePreviewFile(folderName, 'CustomTabImage01'),
+            resolvePreviewFile(folderName, 'CustomTabIcon02.png'),
+            resolvePreviewFile(folderName, 'CustomTabImage02'),
+            resolvePreviewFile(folderName, 'CustomTabIcon03.png'),
+            resolvePreviewFile(folderName, 'CustomTabImage03'),
+            resolvePreviewFile(folderName, 'CustomTabIcon04.png'),
+            resolvePreviewFile(folderName, 'CustomTabImage04'),
+            resolvePreviewFile(folderName, 'NoticeImage01'),
+            resolvePreviewFile(folderName, 'NoticeImage02'),
+            resolvePreviewFile(folderName, 'NoticeImage03'),
+        ]);
+
         const tabDefs = [
             {
                 active: data.CustomTab01Active,
                 name: data.CustomTab01Name,
-                icon: await resolvePreviewFile(folderName, 'CustomTabIcon01.png'),
-                overlayImage: await resolvePreviewFile(folderName, 'CustomTabImage01'),
+                icon: t01Icon,
+                overlayImage: t01Img,
                 urlActive: data.CustomTab01UrlActive,
                 url: data.CustomTab01Url,
             },
             {
                 active: data.CustomTab02Active,
                 name: data.CustomTab02Name,
-                icon: await resolvePreviewFile(folderName, 'CustomTabIcon02.png'),
-                overlayImage: await resolvePreviewFile(folderName, 'CustomTabImage02'),
+                icon: t02Icon,
+                overlayImage: t02Img,
                 urlActive: data.CustomTab02UrlActive,
                 url: data.CustomTab02Url,
             },
             {
                 active: data.CustomTab03Active,
                 name: data.CustomTab03Name,
-                icon: await resolvePreviewFile(folderName, 'CustomTabIcon03.png'),
-                overlayImage: await resolvePreviewFile(folderName, 'CustomTabImage03'),
+                icon: t03Icon,
+                overlayImage: t03Img,
                 urlActive: data.CustomTab03UrlActive,
                 url: data.CustomTab03Url,
             },
             {
                 active: data.CustomTab04Active,
                 name: data.CustomTab04Name,
-                icon: await resolvePreviewFile(folderName, 'CustomTabIcon04.png'),
-                overlayImage: await resolvePreviewFile(folderName, 'CustomTabImage04'),
+                icon: t04Icon,
+                overlayImage: t04Img,
                 urlActive: data.CustomTab04UrlActive,
                 url: data.CustomTab04Url,
             },
-        ].filter(t => t.active)
-        setTabs(tabDefs)
+        ].filter(t => t.active);
+        setTabs(tabDefs);
 
         const noticeDefs = [
             {
@@ -270,7 +300,7 @@ export default function PreviewScreen() {
                 active: data.TopNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonTop,
                 url: data.urlNoticeButtonTop,
-                image: await resolvePreviewFile(folderName, 'NoticeImage01'),
+                image: n01Img,
             },
             {
                 text: data.MiddleNoticeText,
@@ -278,7 +308,7 @@ export default function PreviewScreen() {
                 active: data.MiddleNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonMiddle,
                 url: data.urlNoticeButtonMiddle,
-                image: await resolvePreviewFile(folderName, 'NoticeImage02'),
+                image: n02Img,
             },
             {
                 text: data.BottomNoticeText,
@@ -286,11 +316,11 @@ export default function PreviewScreen() {
                 active: data.BottomNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonBottom,
                 url: data.urlNoticeButtonBottom,
-                image: await resolvePreviewFile(folderName, 'NoticeImage03'),
+                image: n03Img,
             },
-        ]
-        setNotices(noticeDefs)
-    }
+        ];
+        setNotices(noticeDefs);
+    };
 
     function applyJsonDiffs(diffs: DiffEntry[]) {
         diffs.forEach(diff => {
@@ -570,8 +600,8 @@ export default function PreviewScreen() {
                             <div>
                                 <div className="absolute top-[9.5%] right-3 z-20">
                                     <Button
-                                    className="h-[7vh] w-[7vh] font-semibold bg-white/50 text-black rounded-lg flex items-center justify-center"
-                                    onClick={() => setOverlayContent({ type: 'image', src: '/assets/demo/golf/HandicapFake.png' })}
+                                        className="h-[7vh] w-[7vh] font-semibold bg-white/50 text-black rounded-lg flex items-center justify-center"
+                                        onClick={() => setOverlayContent({ type: 'image', src: '/assets/demo/golf/HandicapFake.png' })}
                                     >
                                         <Image
                                             src="/assets/demo/golf/Handicap.png"
