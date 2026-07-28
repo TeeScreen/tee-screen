@@ -106,7 +106,10 @@ try {
 
                         <div className="flex items-center gap-2">
                             <LayoutControls />
-                            <ThemeSwitcher />
+                            <div className="hidden sm:flex">
+                                <ThemeSwitcher />
+                            </div>
+
                             <AccountSwitcher userName={userInfo.fullName} userRole={userInfo.role} />
                             {/* Preview toggle button */}
                             {loadedScreen && <PreviewTrigger/>}
