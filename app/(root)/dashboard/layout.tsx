@@ -100,7 +100,7 @@ try {
                                     accountLogin={userInfo.loadedAccount}
                                 />
                             )}
-                            {loadedScreen && <GlobalSSEListener screenName={loadedScreen} userId={userInfo.userId} />}
+                            {loadedScreen && <GlobalSSEListener screenName={loadedScreen} userId={userInfo.userId} fullName={userInfo.fullName || "Unknown"} />}
 
                         </div>
 
