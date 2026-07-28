@@ -126,7 +126,7 @@ try {
                     </div>
 
                     {/* Mobile: overlay */}
-                    <div className="md:hidden absolute inset-0 z-40 bg-background/95 backdrop-blur-md">
+                    <div className="md:hidden absolute inset-0 z-40">
                         <PreviewPanel loadedScreen={loadedScreen} />
                     </div>
                 </div>
