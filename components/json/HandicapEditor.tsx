@@ -141,10 +141,9 @@ export default function HandicapEditor({
                                                         onChange: (e: any) => {
                                                             let newVal = e.target.value;
 
-                                                            // If blank, revert to the default value from the original JSON
+                                                            // If blank, revert to 0
                                                             if (newVal.trim() === "") {
-                                                                const original = localJson.golfCoursesData[courseName].handicapData[index][key];
-                                                                newVal = original ?? ""; // fallback safety
+                                                                newVal = 0;
                                                             }
 
                                                             const updated = structuredClone(localJson);
