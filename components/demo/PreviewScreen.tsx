@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { getUserInfo } from '@/lib/actions/user.actions'
 import {DiffEntry, findFileSafeName,findFileSafeNames, previewScreenChanges} from '@/lib/actions/file.actions'
-import { useDirtyState } from "@/stores/user-store"
+import {useDirtyState, usePreviewState} from "@/stores/user-store"
 import type { PreviewResult } from "@/components/screen/CopyConfirmDialog"
 import {info} from "next/dist/build/output/log";
 import {getFontInfo} from "@/data/font";
+import {RotateCcw} from "lucide-react";
 
 async function resolvePreviewFile(folderName: string, fileName: string) {
     const safeFileName = await findFileSafeName(folderName, fileName)
@@ -54,11 +55,21 @@ export default function PreviewScreen() {
 
 
     const { version, dirty, externalEditVersion } = useDirtyState()
+    const { preview } = usePreviewState();
 
 
     // On version updates, call preview changes
     useEffect(() => {
+        if (preview)
+        {
+            console.log("fetching data")
 
+            fetchData()
+        }
+    }, [preview])
+
+    // On version updates, call preview changes
+    useEffect(() => {
         if (version > 0 && !loading && dirty) {
             handlePreview()
         }
@@ -473,10 +484,6 @@ export default function PreviewScreen() {
         )
     }
 
-    if (!userInfo || !userInfo.screenJson) return <div>Loading preview…</div>
-
-    const data = userInfo.screenJson
-
     function updateOtherFields(data: any) {
 
         if(!data)
@@ -522,6 +529,11 @@ export default function PreviewScreen() {
                         <Image src={backgroundImage ?? backupBG} alt="background" fill className="object-cover" />
                     </div>
 
+                    <div className="absolute bottom-0 left-0 z-50 p-1 h-[5%] w-[full]">
+                        <Button onClick={fetchData} variant="ghost">
+                            <RotateCcw/>
+                        </Button>
+                    </div>
 
                     {/* Foreground content pinned full screen */}
                     <div className="absolute inset-0 z-10 flex flex-col h-full">

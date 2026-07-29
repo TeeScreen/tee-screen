@@ -6,14 +6,16 @@ import PreviewScreen from "@/components/demo/PreviewScreen";
 
 export function PreviewPanel({ loadedScreen }: { loadedScreen: string }) {
     const { preview, setPreview } = usePreviewState();
-    const{ setDirty} = useDirtyState();
 
     const visibility = loadedScreen && preview ? "visible" : "hidden";
 
     useEffect(() => {
         if (loadedScreen) {
             setPreview(true);
-            setDirty(false);
+        }
+        else
+        {
+            setPreview(false);
         }
     }, [loadedScreen, setPreview]);
 
