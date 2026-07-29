@@ -45,6 +45,7 @@ export function GlobalSSEListener({
         // Establish SSE connection to standalone server
         const connect = () => {
             const url = `${sseUrl}/events?screen=${encodeURIComponent(screenName)}&userId=${encodeURIComponent(userId)}&fullName=${encodeURIComponent(fullName)}`;
+            console.log(`[SSE] Connecting to: ${url}`);
             es = new EventSource(url);
 
             // Listen for screen update events
