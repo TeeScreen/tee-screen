@@ -762,7 +762,7 @@ export default function PreviewScreen() {
                                         {[
                                             { name: 'League Tables', icon: '/assets/demo/football/LeagueTable.png', disabled: true },
                                             { name: 'Live Scores', icon: '/assets/demo/football/LiveScore.png', disabled: true },
-                                            { name: 'Lineups', icon: '/assets/demo/football/LineUp.png', disabled: false, type: 'fbImg', src : lineUpBG ?? "/assets/demo/backups/LineUpBG.jpg" },
+                                            { name: 'Lineups', icon: '/assets/demo/football/LineUp.png', disabled: false, type: 'fbImg', src : lineUpBG ?? "/assets/demo/backups/LineUpBG.png" },
                                             { name: 'News', icon: '/assets/demo/football/News.png', disabled: false , type: 'fbUrl', src : footballNews},
                                         ].map((btn, i) => (
                                             <button

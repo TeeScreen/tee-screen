@@ -138,11 +138,7 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
         // Detect file type
         const ext = file.name.split(".").pop()?.toLowerCase() || "";
         isVideo =
-            ext === "mp4" ||
-            ext === "mov" ||
-            ext === "webm" ||
-            ext === "mkv" ||
-            ext === "avi";
+            ext === "mp4";
 
         try {
             let res;

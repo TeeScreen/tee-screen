@@ -139,29 +139,31 @@ export default function HandicapEditor({
                                                     register={form.register}
                                                     validation={{
                                                         onChange: (e: any) => {
-                                                            const newVal = e.target.value;
+                                                            let newVal = e.target.value;
 
-                                                            // Work directly off localJson so we control the full mutation
+                                                            // If blank, revert to the default value from the original JSON
+                                                            if (newVal.trim() === "") {
+                                                                const original = localJson.golfCoursesData[courseName].handicapData[index][key];
+                                                                newVal = original ?? ""; // fallback safety
+                                                            }
+
                                                             const updated = structuredClone(localJson);
                                                             const course = updated.golfCoursesData[courseName];
                                                             const handicap = course.handicapData[index];
 
-                                                            // 1. Update the field itself
-                                                            (handicap as any)[key] = newVal;
+                                                            // 1. Update field
+                                                            handicap[key] = newVal;
 
-                                                            // 2. If colour or gender changed, recompute teeName from the SAME updated object
+                                                            // 2. Recompute teeName if colour/gender changed
                                                             if (key === "displayedName" || key === "gender") {
-                                                                const colour =
-                                                                    key === "displayedName" ? newVal : handicap.displayedName || "";
-                                                                const gender =
-                                                                    key === "gender" ? newVal : handicap.gender || "";
+                                                                const colour = key === "displayedName" ? newVal : handicap.displayedName || "";
+                                                                const gender = key === "gender" ? newVal : handicap.gender || "";
 
                                                                 const newTeeName = `${colour}-${gender}`.replace(/^-|-$/g, "");
-
                                                                 handicap.teeName = newTeeName;
                                                             }
 
-                                                            // 3. Push the fully updated JSON back up
+                                                            // 3. Push updated JSON
                                                             updated.golfCoursesData[courseName] = course;
                                                             updateJson(updated);
                                                         },

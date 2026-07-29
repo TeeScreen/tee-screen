@@ -61,17 +61,8 @@ const isAllowedMimeType = (
 const canShowInBrowser = (fileExt: string): boolean => {
     const browserViewableTypes = [
         ".png",
-        ".jpg",
-        ".jpeg",
-        ".gif",
-        ".webp",
-        ".svg",
         ".pdf",
-        ".txt",
-        ".mp3",
-        ".wav",
         ".mp4",
-        ".webm",
     ];
     return browserViewableTypes.includes(fileExt.toLowerCase());
 };
