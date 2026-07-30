@@ -47,7 +47,8 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
         onProgress: (pct: number, eta: number) => void;
         onSpeed: (mbps: number) => void;
         signal: AbortSignal;
-    }) {
+    })
+    {
         const totalBytes = file.size;
         let uploadedBytes = 0;
 
@@ -60,6 +61,7 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
             const type = getFileType(ext);
             if (type === "image") newFileName += ".png";
             if (type === "video") newFileName += ".mp4";
+            if (type === "document") newFileName += ".pdf";
         }
 
         const reader: ReadableStreamDefaultReader<Uint8Array> = file.stream().getReader();

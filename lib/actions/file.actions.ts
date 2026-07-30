@@ -107,6 +107,7 @@ const upload = async (formData: FormData): Promise<UploadResult> => {
             const type = getFileType(ext);
             if (type === "image") newFileName += ".png";
             if (type === "video") newFileName += ".mp4";
+            if (type === "document") newFileName += ".pdf";
         }
 
         // Build form for PHP
