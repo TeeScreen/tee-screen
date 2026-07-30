@@ -7,7 +7,7 @@ export const APP_CONFIG = {
   version: packageJson.version,
   copyright: `© ${currentYear}, Tee Screen`,
   meta: {
-    title: "Tee Screen - Modern Next.js Dashboard Starter Template",
+    title: "Tee Screen - Portal",
     description:
       "Tee Screen is a UK‑based company specialising in outdoor, weatherproof interactive digital signage, primarily serving golf courses, football clubs, and leisure venues.\n",
   },
