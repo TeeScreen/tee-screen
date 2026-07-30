@@ -632,7 +632,7 @@ export default function PreviewScreen() {
                         {/* Golf Section */}
                         {isGolfClub && (
                             <div>
-                                <div className="absolute top-[9.5%] right-3 z-20">
+                                {/*<div className="absolute top-[9.5%] right-3 z-20">
                                     <Button
                                     className="h-[7vh] w-[7vh] font-semibold bg-white/50 text-black rounded-lg flex items-center justify-center"
                                     onClick={() => setOverlayContent({ type: 'image', src: '/assets/demo/golf/HandicapFake.png' })}
@@ -644,7 +644,7 @@ export default function PreviewScreen() {
                                             className="object-contain"
                                         />
                                     </Button>
-                                </div>
+                                </div>*/}
                                 {!hideHolesOnScreen && (
                                     <div className="absolute top-[52.5%] w-full px-4 z-20 flex flex-col gap-3 items-center">
 
