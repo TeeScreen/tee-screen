@@ -117,8 +117,9 @@ try {
                     </div>
                 </header>
 
-                <div className="flex h-[calc(100vh-4rem)] relative">
+                <div className="flex h-full relative">
                     <div className="flex-1 p-4 md:p-6 overflow-auto">{children}</div>
+
                     <PreviewPanel loadedScreen={loadedScreen} />
 
                 </div>

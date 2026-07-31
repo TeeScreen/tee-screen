@@ -24,7 +24,7 @@ export function PreviewPanel({ loadedScreen }: { loadedScreen: string }) {
         <div className={`${visibility} ${hitTest}`}>
             {/* Desktop: side panel */}
             <div className="hidden md:block">
-                <div className={`w-auto border-sm bg-background flex flex-col h-full`}>
+                <div className={`w-auto border-sm bg-background flex flex-col h-[91vh]`}>
                     {/* key tied to loadedScreen ensures remount only when it changes */}
                     <PreviewScreen/>
                 </div>
@@ -32,7 +32,7 @@ export function PreviewPanel({ loadedScreen }: { loadedScreen: string }) {
 
             {/* Mobile: overlay */}
             <div className=" md:hidden absolute inset-0 z-40">
-                <div className={`w-auto border-sm bg-background flex flex-col h-full`}>
+                <div className={`w-auto border-sm bg-background flex flex-col h-[91vh]`}>
                     {/* key tied to loadedScreen ensures remount only when it changes */}
                     <PreviewScreen/>
                 </div>
