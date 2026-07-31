@@ -46,7 +46,21 @@ export default function HoleEditor({
             <h3 className="text-xl font-semibold">
                 Hole {hole.holeNumber ?? index + 1}
             </h3>
+            {/* --- COORDINATES SECTION --- */}
+            <div className="border rounded p-3 space-y-3">
+                <h4 className="font-semibold text-base">Coordinates</h4>
 
+                <HoleCoordinatesEditor
+                    courseName={courseName}
+                    hole={hole}
+                    index={index}
+                    form={form}
+                    updateCourse={updateCourse}
+                    updateCourseBatch={updateCourseBatch}
+                    courseLatLon={courseLatLon}
+                    teeSettings={teeSettings}   // ✔ dynamic labels + colours
+                />
+            </div>
             {/* --- YARDAGES SECTION --- */}
             <div className="border rounded p-3 space-y-3">
                 <h4 className="font-semibold text-base">Yardages</h4>
@@ -74,21 +88,6 @@ export default function HoleEditor({
                 />
             </div>
 
-            {/* --- COORDINATES SECTION --- */}
-            <div className="border rounded p-3 space-y-3">
-                <h4 className="font-semibold text-base">Coordinates</h4>
-
-                <HoleCoordinatesEditor
-                    courseName={courseName}
-                    hole={hole}
-                    index={index}
-                    form={form}
-                    updateCourse={updateCourse}
-                    updateCourseBatch={updateCourseBatch}
-                    courseLatLon={courseLatLon}
-                    teeSettings={teeSettings}   // ✔ dynamic labels + colours
-                />
-            </div>
 
         </div>
     );

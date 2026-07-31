@@ -8,6 +8,7 @@ export function PreviewPanel({ loadedScreen }: { loadedScreen: string }) {
     const { preview, setPreview } = usePreviewState();
 
     const visibility = loadedScreen && preview ? "visible" : "hidden";
+    const hitTest = loadedScreen && preview ? "pointer-events-auto" : "pointer-events-none";
 
     useEffect(() => {
         if (loadedScreen) {
@@ -20,9 +21,22 @@ export function PreviewPanel({ loadedScreen }: { loadedScreen: string }) {
     }, [loadedScreen, setPreview]);
 
     return (
-        <div className={`${visibility} w-auto border-sm bg-background flex flex-col h-full`}>
-            {/* key tied to loadedScreen ensures remount only when it changes */}
-            <PreviewScreen/>
+        <div className={`${visibility} ${hitTest}`}>
+            {/* Desktop: side panel */}
+            <div className="hidden md:block">
+                <div className={`w-auto border-sm bg-background flex flex-col h-full`}>
+                    {/* key tied to loadedScreen ensures remount only when it changes */}
+                    <PreviewScreen/>
+                </div>
+            </div>
+
+            {/* Mobile: overlay */}
+            <div className=" md:hidden absolute inset-0 z-40">
+                <div className={`w-auto border-sm bg-background flex flex-col h-full`}>
+                    {/* key tied to loadedScreen ensures remount only when it changes */}
+                    <PreviewScreen/>
+                </div>
+            </div>
         </div>
     );
 }

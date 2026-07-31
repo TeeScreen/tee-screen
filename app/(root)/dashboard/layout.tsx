@@ -119,16 +119,8 @@ try {
 
                 <div className="flex h-[calc(100vh-4rem)] relative">
                     <div className="flex-1 p-4 md:p-6 overflow-auto">{children}</div>
+                    <PreviewPanel loadedScreen={loadedScreen} />
 
-                    {/* Desktop: side panel */}
-                    <div className="hidden md:block">
-                        <PreviewPanel loadedScreen={loadedScreen} />
-                    </div>
-
-                    {/* Mobile: overlay */}
-                    <div className="md:hidden absolute inset-0 z-40">
-                        <PreviewPanel loadedScreen={loadedScreen} />
-                    </div>
                 </div>
 
 

@@ -93,6 +93,7 @@ export default function HoleCoordinatesEditor({
             </div>
 
             {/* Individual inputs per marker */}
+            {/*
             {(
                 Object.entries(points) as [keyof typeof points, { lat: number; lon: number }][]
             ).map(([key, coords]) => (
@@ -135,7 +136,7 @@ export default function HoleCoordinatesEditor({
                         </div>
                     </div>
                 </div>
-            ))}
+            ))}*/}
         </div>
     );
 }

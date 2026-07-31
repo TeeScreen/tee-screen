@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import {
     MapContainer,
     TileLayer,
@@ -63,6 +63,13 @@ export default function MapPicker({
     // Smooth proportional scaling relative to zoom
     // 16 = baseline size
     const scale = Math.pow(1.15, zoom - 16);
+
+    useEffect(() => {
+        const close = () => closeMenu();
+        window.addEventListener("click", close);
+        return () => window.removeEventListener("click", close);
+    }, []);
+
 
     // Tee markers (circles)
     const makeCircleIcon = (color: string, label: string) =>
@@ -150,6 +157,63 @@ export default function MapPicker({
             redTeePointLatLong: { ...clubLocation },
         });
     };
+
+    const [contextMenu, setContextMenu] = useState<{
+        lat: number;
+        lon: number;
+        x: number;
+        y: number;
+        open: boolean;
+    }>({
+        lat: 0,
+        lon: 0,
+        x: 0,
+        y: 0,
+        open: false,
+    });
+
+
+    function RightClickListener({
+                                    onOpen,
+                                }: {
+        onOpen: (lat: number, lon: number, x: number, y: number) => void;
+    }) {
+        useMapEvents({
+            contextmenu(e) {
+                const map = e.target._container;
+                const rect = map.getBoundingClientRect();
+
+                const x = e.originalEvent.clientX - rect.left;
+                const y = e.originalEvent.clientY - rect.top;
+
+                onOpen(e.latlng.lat, e.latlng.lng, x, y);
+            },
+        });
+        return null;
+    }
+
+
+    const placeAll = () => {
+        setPositions({
+            holePointLatLong: { lat: contextMenu.lat, lon: contextMenu.lon },
+            whiteTeePointLatLong: { lat: contextMenu.lat, lon: contextMenu.lon },
+            yellowTeePointLatLong: { lat: contextMenu.lat, lon: contextMenu.lon },
+            redTeePointLatLong: { lat: contextMenu.lat, lon: contextMenu.lon },
+        });
+        closeMenu();
+    };
+
+    const placeOne = (key: MarkerKey) => {
+        setPositions(prev => ({
+            ...prev,
+            [key]: { lat: contextMenu.lat, lon: contextMenu.lon },
+        }));
+        closeMenu();
+    };
+
+    const closeMenu = () =>
+        setContextMenu(prev => ({ ...prev, open: false }));
+
 
     const satelliteTiles =
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
@@ -256,9 +320,62 @@ export default function MapPicker({
                     zoomControl={false}
                     className="w-full h-full rounded-md"
                 >
+                    {contextMenu.open && (
+                        <div
+                            className="absolute z-[2000] bg-popover border rounded-md shadow-md text-sm"
+                            style={{
+                                top: contextMenu.y,
+                                left: contextMenu.x,
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <p className="font-semibold mb-2">Place markers here</p>
+
+                            <button
+                                className="w-full text-left px-2 py-1 hover:bg-muted rounded"
+                                onClick={placeAll}
+                            >
+                                Place All
+                            </button>
+
+                            <button
+                                className="w-full text-left px-2 py-1 hover:bg-muted rounded"
+                                onClick={() => placeOne("holePointLatLong")}
+                            >
+                                Place Hole Marker
+                            </button>
+
+                            <button
+                                className="w-full text-left px-2 py-1 hover:bg-muted rounded"
+                                onClick={() => placeOne("whiteTeePointLatLong")}
+                            >
+                                Place White Tee
+                            </button>
+
+                            <button
+                                className="w-full text-left px-2 py-1 hover:bg-muted rounded"
+                                onClick={() => placeOne("yellowTeePointLatLong")}
+                            >
+                                Place Yellow Tee
+                            </button>
+
+                            <button
+                                className="w-full text-left px-2 py-1 hover:bg-muted rounded"
+                                onClick={() => placeOne("redTeePointLatLong")}
+                            >
+                                Place Red Tee
+                            </button>
+                        </div>
+                    )}
                     <ZoomControl position="bottomright" />
 
                     <ZoomWatcher onZoom={setZoom} />
+                    <RightClickListener
+                        onOpen={(lat, lon, x, y) =>
+                            setContextMenu({ lat, lon, x, y, open: true })
+                        }
+                    />
+
 
                     <TileLayer
                         url={mapType === "satellite" ? satelliteTiles : streetTiles}
@@ -290,6 +407,7 @@ export default function MapPicker({
                     Confirm All
                 </Button>
             </div>
+
         </div>
     );
 }
