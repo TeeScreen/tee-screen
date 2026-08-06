@@ -25,6 +25,7 @@ export default async function Page() {
                             { path: "ClubVenueName", label: "Venue Name", type: "text", tag: "Info" },
                             { path: "twitterURL", label: "News URL", type: "text", tag: "Info" },
                             { path: "hideMatchCentre", label: "Hide Scoreboard", type: "bool", tag: "Info" },
+                            { path: "replaceNews", label: "Replace News with Fan Guide", type: "bool", tag: "Info" },
                         ]}
                         action={updateScreenJson}
                     />
@@ -42,7 +43,7 @@ export default async function Page() {
                                 <UploadSection folderName={folderName} fileName="AwayBG.png" label="Away Team" recommendedSize="642 x 400"/>
                                 <UploadSection folderName={folderName} fileName="LineUpBG.png" label="Line Up Background" recommendedSize="1080 x 1350"/>
                                 <UploadSection folderName={folderName} fileName="HideMatchImage.png" label="Hide Scoreboard Panel" recommendedSize="1282 x 400"/>
-
+                                <UploadSection folderName={folderName} fileName="FanGuide.pdf" label="Fan Guide PDF" recommendedSize="1282 x 400"/>
                             </div>
                         </AccordionContent>
                     </AccordionItem>

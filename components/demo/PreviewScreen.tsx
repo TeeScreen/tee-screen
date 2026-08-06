@@ -23,7 +23,7 @@ const ApiUrl = "https://teescreenapp.com/api/schedule";
 
 export default function PreviewScreen() {
     const [userInfo, setUserInfo] = useState<any>(null)
-    const [overlayContent, setOverlayContent] = useState<{ type: 'image' | 'url' | 'vid' | 'full' | 'fbUrl' | 'fbImg'; src: string } | null>(null)
+    const [overlayContent, setOverlayContent] = useState<{ type: 'image' | 'url' | 'vid' | 'pdf' | 'full' | 'fbUrl' | 'fbImg' | 'fbPdf'; src: string } | null>(null)
     const [loading, setLoading] = useState(false)
     const [previews, setPreviews] = useState<PreviewResult[]>([])
     const [scheduled, setScheduled] = useState<boolean>(false)
@@ -38,6 +38,7 @@ export default function PreviewScreen() {
     const [hideScoreBG, setHideScoreBG] = useState<string | null>(null)
     const [tabs, setTabs] = useState<any[]>([])
     const [notices, setNotices] = useState<any[]>([])
+    const [fanGuidePDF, setFanGuidePDF] = useState<string | null>(null)
 
     //json states
     // UI and config states
@@ -52,7 +53,7 @@ export default function PreviewScreen() {
     const [brightness, setBrightness] = useState<number>(1)
     const [hideMatchCentre, setHideMatchCentre] = useState<boolean>(false)
     const [font, setFont] = useState<string>("arial")
-
+    const [replaceNews, setReplaceNews] = useState<boolean>(false)
 
     const { version, dirty, externalEditVersion } = useDirtyState()
     const { preview } = usePreviewState();
@@ -230,7 +231,8 @@ export default function PreviewScreen() {
             "HomeBG",
             "AwayBG",
             "LineUpBG",
-            "HideMatchImage"
+            "HideMatchImage",
+            "FanGuide"
         ];
 
         const safeNames = await findFileSafeNames(folderName, previewNames);
@@ -253,6 +255,8 @@ export default function PreviewScreen() {
         setAwayBG(resolved[4]);
         setLineUpBG(resolved[5]);
         setHideScoreBG(resolved[6]);
+        setFanGuidePDF(resolved[7]);
+        console.log(fanGuidePDF);
     };
 
     const resolveTabsAndNotices = async (folderName: string, data: any) => {
@@ -453,6 +457,7 @@ export default function PreviewScreen() {
                 if (baseName === "AwayBG") setAwayBG(isAdding ? fileUrl : "")
                 if (baseName === "LineUpBG") setLineUpBG(isAdding ? fileUrl : "")
                 if (baseName === "HideMatchImage") setHideScoreBG(isAdding ? fileUrl : "")
+                if (baseName === "FanGuide") setFanGuidePDF(isAdding ? fileUrl : "")
 
                 // Tabs (detect index from name)
                 const tabMatch = baseName.match(/CustomTab(?:Icon|Image)(\d+)/)
@@ -509,6 +514,7 @@ export default function PreviewScreen() {
                 data.isFootballClub ? "FootballBackground.png" : "GolfBackground.png"
             }`
         );
+        setReplaceNews(data?.replaceNews ?? false);
 
         if (data?.UIColor) {
             const { r, g, b } = data.UIColor;
@@ -628,6 +634,22 @@ export default function PreviewScreen() {
                                     </div>
                                 </div>
                             )}
+                            {overlayContent?.type === 'pdf' && (
+                                <div className="absolute top-[10%] bottom-[-10%] left-[10%] right-[10%] z-50 flex items-center justify-center">
+                                    <embed
+                                        src={overlayContent.src}
+                                        type="application/pdf"
+                                        className="absolute inset-0 w-full h-full"
+                                    />
+
+                                    <button
+                                        className="absolute top-4 right-4 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold"
+                                        onClick={() => setOverlayContent(null)}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            )}
                         </div>
                         {/* Golf Section */}
                         {isGolfClub && (
@@ -699,7 +721,11 @@ export default function PreviewScreen() {
 
                                                 if (lower.endsWith(".mp4")) {
                                                     setOverlayContent({ type: "vid", src: tab.overlayImage });
-                                                } else {
+                                                }
+                                                else if (lower.endsWith(".pdf")){
+                                                    setOverlayContent({ type: "pdf", src: tab.overlayImage });
+                                                }
+                                                    else {
                                                     setOverlayContent({ type: "image", src: tab.overlayImage });
                                                 }
                                             }
@@ -763,7 +789,9 @@ export default function PreviewScreen() {
                                             { name: 'League Tables', icon: '/assets/demo/football/LeagueTable.png', disabled: true },
                                             { name: 'Live Scores', icon: '/assets/demo/football/LiveScore.png', disabled: true },
                                             { name: 'Lineups', icon: '/assets/demo/football/LineUp.png', disabled: false, type: 'fbImg', src : lineUpBG ?? "/assets/demo/backups/LineUpBG.png" },
-                                            { name: 'News', icon: '/assets/demo/football/News.png', disabled: false , type: 'fbUrl', src : footballNews},
+                                            replaceNews ?
+                                                { name: 'Fan Guide', icon: '/assets/demo/football/FanGuide.png', disabled: false , type: 'fbPdf', src : fanGuidePDF ?? "https://www.datocms-assets.com/43623/1689861809-the-ifab_football-rules_a-z.pdf"}
+                                                : { name: 'News', icon: '/assets/demo/football/News.png', disabled: false , type: 'fbUrl', src : footballNews}
                                         ].map((btn, i) => (
                                             <button
                                                 key={i}
@@ -773,12 +801,14 @@ export default function PreviewScreen() {
                                                     btn.disabled && "opacity-50 cursor-not-allowed"
                                                 )}
                                                 onClick={() => {
-                                                    if (!btn.disabled && btn.type == 'fbUrl') {
-                                                        setOverlayContent({type: btn.type, src: btn.src})
+                                                    if (btn.disabled) return;
+
+                                                    const t = btn?.type;
+                                                    console.log("btn type: ",t);
+                                                    if (t === "fbPdf" || t === "fbUrl" || t === "fbImg") {
+                                                        setOverlayContent({ type: t, src: btn?.src ?? "" });
                                                     }
-                                                    else if(!btn.disabled && btn.type == "fbImg"){
-                                                        setOverlayContent({type: btn.type, src: btn.src})
-                                                    }}}
+                                                }}
                                             >
                                                 <div className="relative w-[60%]  h-[60%] mb-1">
                                                     <Image src={btn.icon} alt={btn.name} fill className="object-contain" />
@@ -953,6 +983,25 @@ export default function PreviewScreen() {
                             </button>
                         </div>
                     )}
+
+                    {overlayContent?.type === 'fbPdf' && (
+                        <div className="absolute top-[10%] bottom-[25%] left-0 right-0 z-50 flex items-center justify-center">
+                            <embed
+                                src={overlayContent.src}
+                                type="application/pdf"
+                                className="absolute inset-0 w-full h-full"
+                            />
+
+                            <button
+                                className="absolute top-4 right-4 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold"
+                                onClick={() => setOverlayContent(null)}
+                            >
+                                ×
+                            </button>
+                        </div>
+                    )}
+
+
                     {/* Loading spinner overlay */}
                     {loading && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-50">

@@ -28,7 +28,6 @@ const FilePreview = ({ folderName, fileName }: { folderName: string; fileName: s
             setLoading(false);
             return;
         }
-
         const ext = path.extname(safeFileName).toLowerCase();
         setResolvedFileName(safeFileName);
         setFileType(getFileType(ext));
