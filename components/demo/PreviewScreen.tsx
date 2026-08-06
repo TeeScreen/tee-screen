@@ -636,10 +636,10 @@ export default function PreviewScreen() {
                             )}
                             {overlayContent?.type === 'pdf' && (
                                 <div className="absolute top-[10%] bottom-[-10%] left-[10%] right-[10%] z-50 flex items-center justify-center">
-                                    <embed
-                                        src={overlayContent.src}
-                                        type="application/pdf"
+                                    <iframe
+                                        src={`${overlayContent.src}#toolbar=0&navpanes=0&scrollbar=0`}
                                         className="absolute inset-0 w-full h-full"
+                                        style={{ border: "none" }}
                                     />
 
                                     <button
@@ -986,10 +986,10 @@ export default function PreviewScreen() {
 
                     {overlayContent?.type === 'fbPdf' && (
                         <div className="absolute top-[10%] bottom-[25%] left-0 right-0 z-50 flex items-center justify-center">
-                            <embed
-                                src={overlayContent.src}
-                                type="application/pdf"
+                            <iframe
+                                src={`${overlayContent.src}#toolbar=0&navpanes=0&scrollbar=0`}
                                 className="absolute inset-0 w-full h-full"
+                                style={{ border: "none" }}
                             />
 
                             <button
