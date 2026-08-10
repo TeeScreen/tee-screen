@@ -167,40 +167,50 @@ export default function ScreenAccountsCard({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {accounts.map((acc) => {
                             const isActive = acc.accountLogin === loadedAccount;
+
                             return (
-                                <div
+                                <button
                                     key={acc.accountLogin}
-                                    className={`p-4 border rounded-xl flex items-center justify-between transition-all duration-300 ${
-                                        isActive
-                                            ? "bg-primary/5 border-primary/30"
-                                            : "bg-muted/10 border-muted group hover:border-primary/20"
-                                    }`}
+                                    onClick={() => handleSelectAccount(acc.accountLogin)}
+                                    className={`
+                    p-4 border rounded-xl flex items-center justify-between w-full text-left
+                    transition-all duration-300 cursor-pointer
+                    ${isActive
+                                        ? "bg-primary/5 border-primary/30"
+                                        : "bg-muted/10 border-muted hover:border-primary/20"
+                                    }
+                `}
                                 >
                                     <div className="flex items-center gap-3 overflow-hidden">
                                         <div className={`p-2 rounded-lg ${isActive ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
                                             <ShieldCheck className="h-4 w-4" />
                                         </div>
+
                                         <div className="overflow-hidden">
                                             <p className="text-sm font-medium truncate">
                                                 {acc.accountLogin}
                                                 {isActive && (
                                                     <span className="ml-2 text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-1.5 py-0.5 rounded">
-                                                        Active
-                                                    </span>
+                                    Active
+                                </span>
                                                 )}
                                             </p>
                                             <p className="text-xs text-muted-foreground">TeeScreen Login</p>
                                         </div>
                                     </div>
+
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        onClick={() => handleDelete(acc.accountLogin)}
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // prevents triggering the select
+                                            handleDelete(acc.accountLogin);
+                                        }}
                                         className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
-                                </div>
+                                </button>
                             );
                         })}
                     </div>

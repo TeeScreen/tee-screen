@@ -315,7 +315,7 @@ export default function MapPicker({
             {/* Map */}
             <div className="flex-1 min-h-[300px]">
                 <MapContainer
-                    center={[clubLocation.lat, clubLocation.lon]}
+                    center={[points["holePointLatLong"].lat, points["holePointLatLong"].lon]}
                     zoom={16}
                     zoomControl={false}
                     className="w-full h-full rounded-md"
