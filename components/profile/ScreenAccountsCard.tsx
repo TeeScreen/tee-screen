@@ -169,17 +169,17 @@ export default function ScreenAccountsCard({
                             const isActive = acc.accountLogin === loadedAccount;
 
                             return (
-                                <button
+                                <div
                                     key={acc.accountLogin}
                                     onClick={() => handleSelectAccount(acc.accountLogin)}
                                     className={`
-                    p-4 border rounded-xl flex items-center justify-between w-full text-left
-                    transition-all duration-300 cursor-pointer
-                    ${isActive
-                                        ? "bg-primary/5 border-primary/30"
-                                        : "bg-muted/10 border-muted hover:border-primary/20"
-                                    }
-                `}
+                                        p-4 border rounded-xl flex items-center justify-between w-full text-left
+                                        transition-all duration-300 cursor-pointer
+                                        ${isActive
+                                                                        ? "bg-primary/5 border-primary/30"
+                                                                        : "bg-muted/10 border-muted hover:border-primary/20"
+                                                                    }
+                                    `}
                                 >
                                     <div className="flex items-center gap-3 overflow-hidden">
                                         <div className={`p-2 rounded-lg ${isActive ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
@@ -191,8 +191,8 @@ export default function ScreenAccountsCard({
                                                 {acc.accountLogin}
                                                 {isActive && (
                                                     <span className="ml-2 text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-1.5 py-0.5 rounded">
-                                    Active
-                                </span>
+                        Active
+                    </span>
                                                 )}
                                             </p>
                                             <p className="text-xs text-muted-foreground">TeeScreen Login</p>
@@ -210,7 +210,8 @@ export default function ScreenAccountsCard({
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
-                                </button>
+                                </div>
+
                             );
                         })}
                     </div>

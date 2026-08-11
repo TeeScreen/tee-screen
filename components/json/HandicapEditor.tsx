@@ -8,24 +8,22 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import InputField from "@/components/forms/InputField";
+import {round} from "@floating-ui/utils";
 
 const LABELS: Record<string, string> = {
     displayedName: "Colour",
     gender: "Gender",
     par: "Par",
     courseRating: "Course Rating",
-    bogeyRating: "Bogey Rating",
     slopeRating: "Slope Rating",
 
     frontNinePar: "Front 9 Par",
     frontNineCourseRating: "Front 9 Course Rating",
     frontNineSlopeRating: "Front 9 Slope Rating",
-    frontNineBogeyRating: "Front 9 Bogey Rating",
 
     backNinePar: "Back 9 Par",
     backNineCourseRating: "Back 9 Course Rating",
     backNineSlopeRating: "Back 9 Slope Rating",
-    backNineBogeyRating: "Back 9 Bogey Rating",
 };
 
 /* -------------------------------------------------------
@@ -60,23 +58,20 @@ export default function HandicapEditor({
     function addHandicap() {
         const updated = structuredClone(localJson);
         updated.golfCoursesData[courseName].handicapData.push({
-            teeName: "Green-Male",
-            displayedName: "Green",
-            gender: "Male",
+            teeName: "Colour-Gender",
+            displayedName: "Colour",
+            gender: "Gender",
             par: 0,
             courseRating: 0,
-            bogeyRating: 0,
             slopeRating: 0,
 
             frontNinePar: 0,
             frontNineCourseRating: 0,
             frontNineSlopeRating: 0,
-            frontNineBogeyRating: 0,
 
             backNinePar: 0,
             backNineCourseRating: 0,
             backNineSlopeRating: 0,
-            backNineBogeyRating: 0,
         });
         updateJson(updated);
     }
@@ -127,23 +122,39 @@ export default function HandicapEditor({
                                         {/* BASIC FIELDS */}
                                         {Object.entries(handicap).map(([key, value]) => {
                                             if (key === "teeName") return null;
+                                            if (
+                                                key === "bogeyRating"
+                                            ) {
+                                                return null;
+                                            }
                                             if (key.startsWith("frontNine") || key.startsWith("backNine"))
                                                 return null;
 
+                                            const isNumber = key.startsWith("par") || key.startsWith("course") || key.startsWith("slope");
                                             return (
                                                 <InputField
                                                     key={key}
                                                     name={`${courseName}.handicapData.${index}.${key}`}
                                                     label={LABELS[key] ?? key}
                                                     defaultValue={String(value)}
+                                                    type = {isNumber ? "number" : "text"}
                                                     register={form.register}
                                                     validation={{
                                                         onChange: (e: any) => {
                                                             let newVal = e.target.value;
 
+                                                            if (isNumber && !key.startsWith("course")) {
+                                                                newVal = round(newVal);
+                                                            }
+
                                                             // If blank, revert to 0
-                                                            if (newVal.trim() === "") {
-                                                                newVal = 0;
+                                                            if (newVal === "" || newVal === null || newVal === undefined){
+                                                                if(isNumber) {
+                                                                    newVal = 0;
+                                                                }
+                                                                else {
+                                                                    newVal = ""
+                                                                }
                                                             }
 
                                                             const updated = structuredClone(localJson);
@@ -165,6 +176,7 @@ export default function HandicapEditor({
                                                             // 3. Push updated JSON
                                                             updated.golfCoursesData[courseName] = course;
                                                             updateJson(updated);
+                                                            e.target.value = newVal;
                                                         },
                                                     }}
 
@@ -183,24 +195,36 @@ export default function HandicapEditor({
 
                                                 <AccordionContent className="space-y-2 p-2">
                                                     {Object.entries(handicap)
-                                                        .filter(([key]) => key.startsWith("frontNine"))
-                                                        .map(([key, value]) => (
-                                                            <InputField
-                                                                key={key}
-                                                                name={`${courseName}.handicapData.${index}.${key}`}
-                                                                label={LABELS[key] ?? key}
-                                                                defaultValue={String(value)}
-                                                                register={form.register}
-                                                                validation={{
-                                                                    onChange: (e: any) =>
-                                                                        updateCourse(
-                                                                            courseName,
-                                                                            `handicapData.${index}.${key}`,
-                                                                            e.target.value
-                                                                        ),
-                                                                }}
-                                                            />
-                                                        ))}
+                                                        .filter(([key]) => key.startsWith("frontNine") && !key.endsWith("BogeyRating"))
+                                                        .map(([key, value]) => {
+                                                            const isCourse = key.toLowerCase().includes("course");
+
+                                                            return (
+                                                                <InputField
+                                                                    key={key}
+                                                                    name={`${courseName}.handicapData.${index}.${key}`}
+                                                                    label={LABELS[key] ?? key}
+                                                                    type="number"
+                                                                    defaultValue={String(value)}
+                                                                    register={form.register}
+                                                                    validation={{
+                                                                        onChange: (e: any) => {
+                                                                            let value = e.target.value;
+
+                                                                            if (!isCourse) {
+                                                                                value = round(value);
+                                                                            }
+
+                                                                            updateCourse(
+                                                                                courseName,
+                                                                                `handicapData.${index}.${key}`,
+                                                                                value
+                                                                            );
+                                                                            e.target.value = value;
+                                                                        }}}
+                                                                />
+                                                            );
+                                                        })}
                                                 </AccordionContent>
                                             </AccordionItem>
 
@@ -212,25 +236,39 @@ export default function HandicapEditor({
 
                                                 <AccordionContent className="space-y-2 p-2">
                                                     {Object.entries(handicap)
-                                                        .filter(([key]) => key.startsWith("backNine"))
-                                                        .map(([key, value]) => (
-                                                            <InputField
-                                                                key={key}
-                                                                name={`${courseName}.handicapData.${index}.${key}`}
-                                                                label={LABELS[key] ?? key}
-                                                                defaultValue={String(value)}
-                                                                register={form.register}
-                                                                validation={{
-                                                                    onChange: (e: any) =>
-                                                                        updateCourse(
-                                                                            courseName,
-                                                                            `handicapData.${index}.${key}`,
-                                                                            e.target.value
-                                                                        ),
-                                                                }}
-                                                            />
-                                                        ))}
+                                                        .filter(([key]) => key.startsWith("backNine") && !key.endsWith("BogeyRating"))
+                                                        .map(([key, value]) => {
+                                                            const isCourse = key.toLowerCase().includes("course");
+
+                                                            return (
+                                                                <InputField
+                                                                    key={key}
+                                                                    name={`${courseName}.handicapData.${index}.${key}`}
+                                                                    label={LABELS[key] ?? key}
+                                                                    type="number"
+                                                                    defaultValue={String(value)}
+                                                                    register={form.register}
+                                                                    validation={{
+                                                                        onChange: (e: any) => {
+                                                                            let value = e.target.value;
+
+                                                                            if (!isCourse) {
+                                                                                value = round(value);
+                                                                            }
+
+                                                                            updateCourse(
+                                                                                courseName,
+                                                                                `handicapData.${index}.${key}`,
+                                                                                value
+                                                                            );
+                                                                            e.target.value = value;
+                                                                    }}}
+                                                                />
+                                                            );
+                                                        })}
                                                 </AccordionContent>
+
+
                                             </AccordionItem>
                                         </Accordion>
                                     </AccordionContent>
