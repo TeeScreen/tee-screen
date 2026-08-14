@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
+import {SERVER_URL} from "@/lib/constants";
 
 export type TeeSlot = {
     teeTime: string;
@@ -17,7 +18,13 @@ export type TeeSlot = {
 };
 
 
-export default function TeeSheetUploader({ folderName }: { folderName: string }) {
+export default function TeeSheetUploader({
+                                             folderName,
+                                             frontNine
+                                         }: {
+                                            folderName: string;
+                                            frontNine: boolean; })
+{
     const [slots, setSlots] = useState<TeeSlot[]>([]);
     const [saving, setSaving] = useState(false);
 
@@ -79,13 +86,14 @@ export default function TeeSheetUploader({ folderName }: { folderName: string })
         let timeColumn = -1;
         let playerColumns: number[] = [];
 
+        let date = new Date().toDateString();
+
         // -----------------------------------------
         // 1. FIND HEADER ROW + COLUMN INDEXES
         // -----------------------------------------
         for (let i = 0; i < 10; i++) {
             const row = raw[i];
             if (!row) continue;
-
             row.forEach((cell: any, colIndex: number) => {
                 if (typeof cell !== "string") return;
 
@@ -99,6 +107,12 @@ export default function TeeSheetUploader({ folderName }: { folderName: string })
                 if (lower.includes("player")) {
                     playerColumns.push(colIndex);
                     headerRowIndex = i;
+                }
+
+                if (
+                    lower.match(/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/) // 12/08/2024 or 12-08-24
+                ) {
+                    date = lower;
                 }
             });
 
@@ -125,7 +139,7 @@ export default function TeeSheetUploader({ folderName }: { folderName: string })
             // Detect tee time format
             if (!timeCell.match(/\d{1,2}:\d{2}/)) continue;
 
-            const teeTime = new Date(`2024-01-01 ${timeCell}`).toISOString();
+            const teeTime = `${date} ${timeCell}`;
 
             // Extract players
             const players = playerColumns.map(col => row[col] || "");
@@ -177,14 +191,18 @@ export default function TeeSheetUploader({ folderName }: { folderName: string })
         setSaving(true);
 
         try {
-            const res = await fetch(
-                `${process.env.SERVER_URL}/upload_teesheet?filename=${folderName}`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ slots })
-                }
-            );
+            const url = `${SERVER_URL}/upload_teesheet.php`;
+            const res = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    folderName,
+                    frontNine,
+                    slots
+                })
+            });
+
+            console.log("Response for UploadTee Sheet " , res);
 
             if (res.ok) {
                 toast.success("Tee sheet saved successfully");

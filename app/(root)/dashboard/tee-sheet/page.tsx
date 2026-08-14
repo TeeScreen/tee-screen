@@ -28,13 +28,13 @@ export default async function Page() {
                 {/* FRONT 9 */}
                 <section className="space-y-6">
                     <h2 className="text-xl font-semibold">Front 9 Tee Sheet</h2>
-                    <TeeSheetUploader folderName={`${folderName}_Front9`} />
+                    <TeeSheetUploader folderName={`${folderName}`} frontNine={true} />
                 </section>
 
                 {/* BACK 9 */}
                 <section className="space-y-6">
                     <h2 className="text-xl font-semibold">Back 9 Tee Sheet</h2>
-                    <TeeSheetUploader folderName={`${folderName}_Back9`} />
+                    <TeeSheetUploader folderName={`${folderName}`} frontNine={false} />
                 </section>
 
             </div>
