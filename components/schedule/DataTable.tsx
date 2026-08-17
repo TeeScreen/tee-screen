@@ -20,15 +20,17 @@ interface DataTableProps {
     columns: ColumnDef<ScheduleEntry>[];
     data: ScheduleEntry[];
     setData: React.Dispatch<React.SetStateAction<ScheduleEntry[]>>;
+    updateData: (updatedDay: ScheduleEntry[]) => void;
 }
 
-export function DataTable({ columns, data, setData }: DataTableProps) {
+export function DataTable({ columns, data, setData, updateData }: DataTableProps) {
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         meta: {
-            setData, // ✅ now in scope and typed
+            setData,
+            updateData,
         },
     });
 

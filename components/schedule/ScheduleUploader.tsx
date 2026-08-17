@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import ScheduleByDate from "./ScheduleByDate";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import {toUnityIsoString} from "@/lib/helper";
+import {nowUnityIsoString} from "@/lib/helper";
 import {useDirtyState} from "@/stores/user-store"; // spinner icon
 
 export type ScheduleEntry = {
@@ -79,36 +79,6 @@ export default function ScheduleUploader({ screenName }: { screenName: string })
         }
     };
 
-    // Add blank row
-    const addRow = () => {
-        const newEntry: ScheduleEntry = {
-            start: toUnityIsoString(),
-            end: toUnityIsoString(1),
-            topNotice: "",
-            middleNotice: "",
-            bottomNotice: "",
-            topColour: {
-                r: 255,
-                g: 255,
-                b: 255,
-                a: 255
-            },
-            middleColour: {
-                r: 255,
-                g: 255,
-                b: 255,
-                a: 255
-            },
-            bottomColour: {
-                r: 255,
-                g: 255,
-                b: 255,
-                a: 255
-            }
-        };
-        setData([...entries, newEntry]);
-    };
-
     // Save schedule
     const saveSchedule = async () => {
         setSaving(true);
@@ -142,11 +112,6 @@ export default function ScheduleUploader({ screenName }: { screenName: string })
                         Download Template
                     </a>
                 </Button>
-            </div>
-
-            {/* Row Controls */}
-            <div className="flex items-center gap-4">
-                <Button onClick={addRow}>Add Row</Button>
             </div>
 
             {/* Save Controls */}

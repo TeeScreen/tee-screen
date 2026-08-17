@@ -124,7 +124,7 @@ export const columns: ColumnDef<ScheduleEntry>[] = [
                     onClick={() => {
                         const data = [...(table.options.data as ScheduleEntry[])];
                         data.splice(row.index, 0, { ...row.original }); // duplicate row
-                        table.options.meta?.setData?.(data);
+                        table.options.meta?.updateData?.(data);
                     }}
                 >
                     Duplicate
@@ -134,7 +134,7 @@ export const columns: ColumnDef<ScheduleEntry>[] = [
                     onClick={() => {
                         const data = [...(table.options.data as ScheduleEntry[])];
                         data.splice(row.index, 1);
-                        table.options.meta?.setData?.(data);
+                        table.options.meta?.updateData?.(data);
                     }}
                 >
                     Delete

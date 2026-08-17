@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { DataTable } from "./DataTable";
 import { columns } from "./Columns";
 import { ScheduleEntry } from "./ScheduleUploader";
@@ -15,6 +15,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import {nowUnityIsoString, toUnityIsoStringFrom} from "@/lib/helper";
 
 function groupByDate(entries: ScheduleEntry[]) {
   const grouped: Record<string, ScheduleEntry[]> = {};
@@ -98,6 +99,43 @@ export default function ScheduleByDate({
     toast.success(`Created new schedule for ${newDate}`);
   };
 
+  const addRow = () => {
+    if (!currentDate) return;
+
+    // Build a Date object from the selected YYYY-MM-DD
+    const [y, m, d] = currentDate.split("-").map(Number);
+    const base = new Date(y, m - 1, d, 7, 0, 0, 0);
+
+    const newEntry: ScheduleEntry = {
+      start: toUnityIsoStringFrom(base, 0),   // 00:00 on currentDate
+      end:   toUnityIsoStringFrom(base, 1),   // 01:00 on currentDate
+      topNotice: "",
+      middleNotice: "",
+      bottomNotice: "",
+      topColour: { r: 255, g: 255, b: 255, a: 255 },
+      middleColour: { r: 255, g: 255, b: 255, a: 255 },
+      bottomColour: { r: 255, g: 255, b: 255, a: 255 }
+    };
+
+    setData(prev => [...prev, newEntry]);
+  };
+
+  const updateData = (updatedDay: ScheduleEntry[]) => {
+    setData(prev => {
+      const currentDateStr = currentDate; // YYYY-MM-DD
+
+      return [
+        // keep all other days
+        ...prev.filter(e =>
+            new Date(e.start).toISOString().slice(0, 10) !== currentDateStr
+        ),
+
+        // insert updated day
+        ...updatedDay
+      ];
+    });
+  };
+
   return (
       <div className="space-y-6">
         <div className="flex gap-4 items-center">
@@ -131,7 +169,7 @@ export default function ScheduleByDate({
         {/* Active dates list */}
         <div className="flex gap-2 flex-wrap">
           {dates.map((d) => (
-              <button
+              <Button
                   key={d}
                   onClick={() => setCurrentDate(d)}
                   className={`px-3 py-1 rounded-md text-sm font-medium transition-colors
@@ -142,11 +180,15 @@ export default function ScheduleByDate({
                   }`}
               >
                 {d}
-              </button>
+              </Button>
           ))}
         </div>
+        {/* Row Controls */}
+        <div className="flex items-center gap-2">
+          <Button onClick={addRow}>Add Row</Button>
+        </div>
 
-        <DataTable columns={columns} data={currentEntries} setData={setData} />
+        <DataTable columns={columns} data={currentEntries} setData={setData} updateData={updateData} />
 
         {/* Copy Day Dialog */}
         <Dialog open={copyDialogOpen} onOpenChange={setCopyDialogOpen}>

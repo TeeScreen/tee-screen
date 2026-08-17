@@ -10,7 +10,7 @@ import {ScreenInfoModel} from "@/database/models/screen.model";
 import {deleteFolder, downloadClubImages, uploadFolder} from "@/lib/actions/file.actions";
 import {UPLOAD_DIR} from "@/lib/constants";
 import fs from "fs/promises";
-import {toUnityIsoString} from "@/lib/helper";
+import {nowUnityIsoString} from "@/lib/helper";
 import {broadcastScreenUpdate} from "@/lib/sse";
 
 export async function addUserInfo(data: {
@@ -309,7 +309,7 @@ export async function applyScreenChange() {
         const data = userInfo.screenJson;
 
         // 1. Update timestamp
-        data.lastEdited = toUnityIsoString();
+        data.lastEdited = nowUnityIsoString();
 
         // 2. Serialize JSON
         const json = JSON.stringify(data);
