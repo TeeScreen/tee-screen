@@ -39,15 +39,6 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
             {/* RIGHT SECTION — COMPLETELY HIDDEN ON MOBILE */}
             <section className="auth-right-section hidden lg:flex lg:w-1/2 lg:flex-col">
 
-                {/* WELCOME BLOCKQUOTE */}
-                <div className="p-6 lg:mt-4 lg:mb-8">
-                    <blockquote className="auth-blockquote">
-                        Welcome to the new Tee Screen portal — rebuilt for clarity, speed, and a smoother account experience.
-                        Create your personal account to get started, then link any existing screen accounts directly inside
-                        your dashboard.
-                    </blockquote>
-                </div>
-
                 {/* WHITE LONG LOGO — FITS RIGHT SECTION */}
                 <div className="p-6 flex items-center justify-center h-[180px] relative">
                     <Image
@@ -60,6 +51,18 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
                 drop-shadow-[0_0_8px_black]
                 drop-shadow-[0_0_8px_black]
                 drop-shadow-[0_0_8px_black]
+            "
+                        priority
+                    />
+                </div>
+                {/* WHITE LONG LOGO — FITS RIGHT SECTION */}
+                <div className="p-6 flex items-center justify-center h-full relative">
+                    <Image
+                        src="/assets/images/forsite.jpg"
+                        alt="Tee Screen Portal"
+                        fill
+                        className="
+                object-contain
             "
                         priority
                     />
