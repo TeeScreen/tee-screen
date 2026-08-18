@@ -124,7 +124,7 @@ try {
                     </div>
 
                     {/* Sticky preview panel */}
-                    <div className="hidden md:block sticky top-12 h-screen">
+                    <div className="md:block sticky top-12 h-screen">
                         <PreviewPanel loadedScreen={loadedScreen} />
                     </div>
                 </div>
