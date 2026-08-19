@@ -42,6 +42,8 @@ export const useDirtyState = create<DirtyState>()(
 interface PreviewState {
     preview: boolean,
     setPreview: (isChanged: boolean) => void
+    screensaver: string,
+    setScreensaver: (newSaver: string) => void
 
 }
 
@@ -50,6 +52,10 @@ export const usePreviewState = create<PreviewState>()(
             preview: false,
             setPreview: (isChanged: boolean) => set((s) => ({
                 preview: isChanged
+            })),
+            screensaver: "",
+            setScreensaver: (newSaver: string) => set((s) => ({
+                screensaver: newSaver,
             })),
         }),
         { name: 'preview-storage' })

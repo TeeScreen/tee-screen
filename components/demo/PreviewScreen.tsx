@@ -23,7 +23,7 @@ const ApiUrl = "https://teescreenapp.com/api/schedule";
 
 export default function PreviewScreen() {
     const [userInfo, setUserInfo] = useState<any>(null)
-    const [overlayContent, setOverlayContent] = useState<{ type: 'image' | 'url' | 'vid' | 'pdf' | 'full' | 'fbUrl' | 'fbImg' | 'fbPdf'; src: string } | null>(null)
+    const [overlayContent, setOverlayContent] = useState<{ type: 'image' | 'url' | 'vid' | 'pdf' | 'full' | 'fbUrl' | 'fbImg' | 'fbPdf' | 'ssImage' | 'ssVid'; src: string } | null>(null)
     const [loading, setLoading] = useState(false)
     const [previews, setPreviews] = useState<PreviewResult[]>([])
     const [scheduled, setScheduled] = useState<boolean>(false)
@@ -56,8 +56,7 @@ export default function PreviewScreen() {
     const [replaceNews, setReplaceNews] = useState<boolean>(false)
 
     const { version, dirty, externalEditVersion } = useDirtyState()
-    const { preview } = usePreviewState();
-
+    const { preview, screensaver, setScreensaver } = usePreviewState();
 
     // On version updates, call preview changes
     useEffect(() => {
@@ -96,6 +95,7 @@ export default function PreviewScreen() {
         await resolveImages(folderName)
         await resolveTabsAndNotices(folderName, info.screenJson)
         await fetchSchedule(info?.loadedScreen);
+        setScreensaver("");
         setLoading(false)
 
     }
@@ -103,7 +103,7 @@ export default function PreviewScreen() {
     const handlePreview = async () => {
         setLoading(true)
         const userinfo = await getUserInfo()
-        setUserInfo(userInfo);
+        setUserInfo(userinfo);
         const res = await previewScreenChanges([`${userinfo?.loadedScreen}`])
 
         if (res.success && res.previews) {
@@ -525,6 +525,35 @@ export default function PreviewScreen() {
     }
 
     const textColor = brightness < 0.5 ? "text-white" : "text-black";
+
+    useEffect(() => {
+        if(screensaver == "")
+        {
+            return;
+        }
+        setupScreensaver();
+
+    }, [screensaver, setScreensaver])
+
+    const setupScreensaver = async () => {
+        const folder = userInfo?.screenJson?.FolderNameOnServer;
+        const safeFileName = await findFileSafeName(folder, screensaver);
+        if(safeFileName == screensaver) {
+            return;
+        }
+
+        if(safeFileName.endsWith(".png")) {
+            setOverlayContent({ type: 'ssImage', src: `/api/downloads/${folder}/${safeFileName}` });
+        }
+        else if(safeFileName.endsWith(".mp4")) {
+            setOverlayContent({ type: 'ssVid', src:  `/api/downloads/${folder}/${safeFileName}` });
+        }
+    }
+
+    const clearScreensaver = () => {
+        setScreensaver("");
+        setOverlayContent(null);
+    }
 
     return (
         <div className="flex items-center justify-center h-screen">
@@ -998,6 +1027,30 @@ export default function PreviewScreen() {
                             >
                                 ×
                             </button>
+                        </div>
+                    )}
+
+                    {overlayContent?.type === 'ssImage' && (
+                        <div className="absolute top-[10%]  left-0 right-0 z-50 flex items-center justify-center px-4">
+                            <div className="w-full aspect-square relative">
+                                <button onClick={() => clearScreensaver()}>
+                                    <Image src={overlayContent.src} alt="Overlay" fill className="object-contain" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    {overlayContent?.type === 'ssVid' && (
+                        <div className="absolute top-[10%]left-0 right-0 z-50 flex items-center justify-center px-4">
+                            <div className="w-full aspect-square relative">
+                                <button onClick={() => clearScreensaver()}>
+                                    <video
+                                        src={overlayContent.src}
+                                        autoPlay={true}
+                                        muted={true}
+                                        className="absolute inset-0 w-full h-full object-contain"
+                                    />
+                                </button>
+                            </div>
                         </div>
                     )}
 
