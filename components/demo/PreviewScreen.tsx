@@ -1040,7 +1040,7 @@ export default function PreviewScreen() {
                         </div>
                     )}
                     {overlayContent?.type === 'ssVid' && (
-                        <div className="absolute top-[10%]left-0 right-0 z-50 flex items-center justify-center px-4">
+                        <div className="absolute top-[10%] left-0 right-0 z-50 flex items-center justify-center px-4">
                             <div className="w-full aspect-square relative">
                                 <button onClick={() => clearScreensaver()}>
                                     <video
