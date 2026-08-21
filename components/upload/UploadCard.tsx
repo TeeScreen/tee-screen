@@ -22,6 +22,8 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [fileSelected, setFileSelected] = useState(false);
+    const [isVideo, setIsVideo] = useState(false);
+
 
     const [uploadProgress, setUploadProgress] = useState<number>(0);
     const [uploadEta, setUploadEta] = useState<number | null>(null);
@@ -109,14 +111,16 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
         onProgress: (pct: number, eta: number) => void;
         onSpeed: (mbps: number) => void;
         signal: AbortSignal;
-    }) {
+    })
+    {
+        const CHUNK_SIZE = 64 * 1024; // 64KB guaranteed chunks
         const totalBytes = file.size;
         let uploadedBytes = 0;
 
         let lastTime = performance.now();
         let lastBytes = 0;
 
-        const reader = file.stream().getReader();
+        const blobReader = file.slice(0, file.size);
 
         const stream = new ReadableStream({
             async pull(controller) {
@@ -125,16 +129,16 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
                     return;
                 }
 
-                const result = await reader.read();
-                const { done, value } = result;
+                const chunk = blobReader.slice(uploadedBytes, uploadedBytes + CHUNK_SIZE);
+                const buf = await chunk.arrayBuffer();
 
-                if (done) {
+                if (buf.byteLength === 0) {
                     controller.close();
                     return;
                 }
 
-                controller.enqueue(value);
-                uploadedBytes += value.length;
+                controller.enqueue(new Uint8Array(buf));
+                uploadedBytes += buf.byteLength;
 
                 const now = performance.now();
                 const elapsed = (now - lastTime) / 1000;
@@ -146,9 +150,11 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
                     const remaining = totalBytes - uploadedBytes;
                     const eta = remaining / bytesPerSecond;
 
-                    const pct = Math.round((uploadedBytes / totalBytes) * 100);
+                    onProgress(
+                        Math.round((uploadedBytes / totalBytes) * 100),
+                        Math.max(1, Math.round(eta))
+                    );
 
-                    onProgress(pct, Math.max(1, Math.round(eta)));
                     onSpeed(Number(mbps.toFixed(2)));
 
                     lastTime = now;
@@ -171,6 +177,7 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
         );
     }
 
+
     // -------------------------------------------------------
     // MAIN SUBMIT HANDLER
     // -------------------------------------------------------
@@ -189,7 +196,7 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
         }
 
         const ext = file.name.split(".").pop()?.toLowerCase() || "";
-        const isVideo = ext === "mp4";
+        setIsVideo( ext === "mp4");
 
         try {
             let res;
@@ -298,7 +305,7 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
                         )}
                     </Field>
 
-                    {isUploading && (
+                    {isUploading && isVideo && (
                         <div className="mt-4 text-sm">
                             <p>Progress: {uploadProgress}%</p>
                             <p>Speed: {uploadSpeed} MB/s</p>
