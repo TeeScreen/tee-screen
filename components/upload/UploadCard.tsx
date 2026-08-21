@@ -177,6 +177,76 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
         );
     }
 
+    async function uploadInChunks({
+                                      file,
+                                      folderName,
+                                      newFileName,
+                                      onProgress,
+                                      onSpeed,
+                                      signal,
+                                  }: {
+        file: File;
+        folderName: string;
+        newFileName: string;
+        onProgress: (pct: number, eta: number) => void;
+        onSpeed: (mbps: number) => void;
+        signal: AbortSignal;
+    }) {
+        const CHUNK_SIZE = 1 * 1024 * 1024; // 1MB
+        const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+
+        let uploadedChunks = 0;
+        let lastTime = performance.now();
+        let lastBytes = 0;
+
+        for (let i = 0; i < totalChunks; i++) {
+            if (signal.aborted) throw new DOMException("Upload cancelled", "AbortError");
+
+            const start = i * CHUNK_SIZE;
+            const end = Math.min(start + CHUNK_SIZE, file.size);
+            const chunk = file.slice(start, end);
+
+            const formData = new FormData();
+            formData.append("chunk", chunk);
+            formData.append("index", i.toString());
+            formData.append("total", totalChunks.toString());
+            formData.append("folder", folderName);
+            formData.append("name", newFileName);
+
+            const now = performance.now();
+            const elapsed = (now - lastTime) / 1000;
+
+            const res = await fetch("https://teescreenapp.com/api/upload_chunk.php", {
+                method: "POST",
+                body: formData,
+                signal,
+            });
+
+            if (!res.ok) {
+                throw new Error(`Chunk upload failed (${res.status})`);
+            }
+
+            uploadedChunks++;
+
+            // progress
+            const pct = Math.round((uploadedChunks / totalChunks) * 100);
+
+            const uploadedBytes = uploadedChunks * CHUNK_SIZE;
+            const bytesPerSecond = (uploadedBytes - lastBytes) / elapsed;
+            const mbps = bytesPerSecond / (1024 * 1024);
+
+            const remainingBytes = file.size - uploadedBytes;
+            const eta = remainingBytes / bytesPerSecond;
+
+            onProgress(pct, Math.max(1, Math.round(eta)));
+            onSpeed(Number(mbps.toFixed(2)));
+
+            lastTime = now;
+            lastBytes = uploadedBytes;
+        }
+
+        return { success: true };
+    }
 
     // -------------------------------------------------------
     // MAIN SUBMIT HANDLER
