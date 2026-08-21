@@ -201,8 +201,6 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
         if (!newFileName.toLowerCase().endsWith("." + ext)) {
             newFileName = newFileName + "." + ext;
         }
-        console.log("NewFileName 1 : ",  newFileName);
-
 
         try {
             const controller = new AbortController();
