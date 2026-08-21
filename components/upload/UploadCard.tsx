@@ -12,18 +12,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {upload, deleteFile, triggerUpdateEvent} from "@/lib/actions/file.actions";
 import { useState, useRef } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { useDirtyState } from "@/stores/user-store";
 import { useFileValidation } from "@/hooks/useFileValidation";
+import {triggerUpdateEvent} from "@/lib/actions/file.actions";
 
 export function UploadCard({ folderName, newFileName }: { folderName: string; newFileName: string }) {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [fileSelected, setFileSelected] = useState(false);
-    const [isVideo, setIsVideo] = useState(false);
-
 
     const [uploadProgress, setUploadProgress] = useState<number>(0);
     const [uploadEta, setUploadEta] = useState<number | null>(null);
@@ -37,9 +35,11 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { validate } = useFileValidation();
+    const [ext, setExt] = useState<string | null>(null);
+
 
     // -------------------------------------------------------
-    // CENTRAL ERROR HANDLER
+    // CENTRAL ERROR HANDLER (your original)
     // -------------------------------------------------------
     function reportUploadError(err: any, userMessage?: string) {
         console.error("[UPLOAD ERROR]", {
@@ -68,7 +68,7 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
     }
 
     // -------------------------------------------------------
-    // PREFLIGHT VALIDATION (runs when file is selected)
+    // PREFLIGHT VALIDATION
     // -------------------------------------------------------
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0] || null;
@@ -89,94 +89,20 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
             return;
         }
 
+        // -------------------------------------------------------
+        // ENFORCE CORRECT EXTENSION ON newFileName
+        // -------------------------------------------------------
+        setExt(result.ext); // png, mp4, pdf
+
+
         setPreflightValid(true);
         setPreflightMessage(null);
         setFileSelected(true);
     }
 
     // -------------------------------------------------------
-    // STREAMING UPLOAD WITH PROGRESS (VIDEO)
+    // CHUNKED UPLOAD (REAL PROGRESS)
     // -------------------------------------------------------
-    async function uploadWithProgress({
-                                          file,
-                                          folderName,
-                                          newFileName,
-                                          onProgress,
-                                          onSpeed,
-                                          signal,
-                                      }: {
-        file: File;
-        folderName: string;
-        newFileName: string;
-        onProgress: (pct: number, eta: number) => void;
-        onSpeed: (mbps: number) => void;
-        signal: AbortSignal;
-    })
-    {
-        const CHUNK_SIZE = 64 * 1024; // 64KB guaranteed chunks
-        const totalBytes = file.size;
-        let uploadedBytes = 0;
-
-        let lastTime = performance.now();
-        let lastBytes = 0;
-
-        const blobReader = file.slice(0, file.size);
-
-        const stream = new ReadableStream({
-            async pull(controller) {
-                if (signal.aborted) {
-                    controller.error("Upload cancelled");
-                    return;
-                }
-
-                const chunk = blobReader.slice(uploadedBytes, uploadedBytes + CHUNK_SIZE);
-                const buf = await chunk.arrayBuffer();
-
-                if (buf.byteLength === 0) {
-                    controller.close();
-                    return;
-                }
-
-                controller.enqueue(new Uint8Array(buf));
-                uploadedBytes += buf.byteLength;
-
-                const now = performance.now();
-                const elapsed = (now - lastTime) / 1000;
-
-                if (elapsed >= 0.25) {
-                    const bytesPerSecond = (uploadedBytes - lastBytes) / elapsed;
-                    const mbps = bytesPerSecond / (1024 * 1024);
-
-                    const remaining = totalBytes - uploadedBytes;
-                    const eta = remaining / bytesPerSecond;
-
-                    onProgress(
-                        Math.round((uploadedBytes / totalBytes) * 100),
-                        Math.max(1, Math.round(eta))
-                    );
-
-                    onSpeed(Number(mbps.toFixed(2)));
-
-                    lastTime = now;
-                    lastBytes = uploadedBytes;
-                }
-            }
-        });
-
-        return fetch(
-            `https://teescreenapp.com/api/upload_stream.php?folder=${encodeURIComponent(folderName)}&name=${encodeURIComponent(newFileName)}`,
-            {
-                method: "POST",
-                body: stream,
-                headers: {
-                    "Content-Type": "application/octet-stream",
-                },
-                signal,
-                duplex: "half",
-            } as any
-        );
-    }
-
     async function uploadInChunks({
                                       file,
                                       folderName,
@@ -211,24 +137,31 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
             formData.append("index", i.toString());
             formData.append("total", totalChunks.toString());
             formData.append("folder", folderName);
-            formData.append("name", newFileName);
+            formData.append("name", newFileName); // correct extension enforced
 
             const now = performance.now();
             const elapsed = (now - lastTime) / 1000;
 
-            const res = await fetch("https://teescreenapp.com/api/upload_chunk.php", {
-                method: "POST",
-                body: formData,
-                signal,
-            });
+            let res: Response;
+
+            try {
+                res = await fetch("https://teescreenapp.com/api/upload_chunk.php", {
+                    method: "POST",
+                    body: formData,
+                    signal,
+                });
+            } catch (err: any) {
+                reportUploadError(err);
+                throw err;
+            }
 
             if (!res.ok) {
+                reportUploadError(new Error(`Chunk upload failed (${res.status})`));
                 throw new Error(`Chunk upload failed (${res.status})`);
             }
 
             uploadedChunks++;
 
-            // progress
             const pct = Math.round((uploadedChunks / totalChunks) * 100);
 
             const uploadedBytes = uploadedChunks * CHUNK_SIZE;
@@ -265,65 +198,34 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
             return;
         }
 
-        const ext = file.name.split(".").pop()?.toLowerCase() || "";
-        setIsVideo( ext === "mp4");
+        if (!newFileName.toLowerCase().endsWith("." + ext)) {
+            newFileName = newFileName + "." + ext;
+        }
+        console.log("NewFileName 1 : ",  newFileName);
+
 
         try {
-            let res;
+            const controller = new AbortController();
+            setAbortController(controller);
 
-            if (isVideo) {
-                if(!newFileName.endsWith("mp4"))
-                {
-                    newFileName = newFileName + ".mp4";
-                }
+            await uploadInChunks({
+                file,
+                folderName,
+                newFileName,
+                onProgress: (pct, eta) => {
+                    setUploadProgress(pct);
+                    setUploadEta(eta);
+                },
+                onSpeed: (mbps) => {
+                    setUploadSpeed(mbps);
+                },
+                signal: controller.signal,
+            });
 
-                await deleteFile(folderName, newFileName);
-
-                const controller = new AbortController();
-                setAbortController(controller);
-
-                res = await uploadWithProgress({
-                    file,
-                    folderName,
-                    newFileName,
-                    onProgress: (pct, eta) => {
-                        setUploadProgress(pct);
-                        setUploadEta(eta);
-                    },
-                    onSpeed: (mbps) => {
-                        setUploadSpeed(mbps);
-                    },
-                    signal: controller.signal,
-                });
-
-                if (!res.ok) {
-                    console.error("[UPLOAD RESPONSE ERROR]", {
-                        status: res.status,
-                        statusText: res.statusText,
-                        url: res.url
-                    });
-
-                    setErrorMessage("Upload failed — please try again.");
-                    setIsUploading(false);
-                    return;
-                }
-            } else {
-                const formData = new FormData();
-                formData.append("file", file);
-                formData.append("folderName", folderName);
-                formData.append("newFileName", newFileName);
-
-                const result = await upload(formData);
-
-                if (!result.success) {
-                    console.error("[MULTIPART UPLOAD ERROR]", result);
-                    setErrorMessage("Upload failed — please try again.");
-                    setIsUploading(false);
-                    return;
-                }
-            }
-
-            triggerUpdateEvent(newFileName, true);
+            setUploadProgress(100);
+            setUploadEta(1);
+            setUploadSpeed(0);
+            triggerUpdateEvent(newFileName,true);
             setDirty(true);
 
         } catch (err: any) {
@@ -375,7 +277,7 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
                         )}
                     </Field>
 
-                    {isUploading && isVideo && (
+                    {isUploading && (
                         <div className="mt-4 text-sm">
                             <p>Progress: {uploadProgress}%</p>
                             <p>Speed: {uploadSpeed} MB/s</p>
