@@ -38,6 +38,45 @@ function ZoomWatcher({ onZoom }: { onZoom: (z: number) => void }) {
     return null;
 }
 
+function useMapPickerShortcuts(
+    cursor: { lat: number; lon: number } | null,
+    actions: {
+        placeOne: (key: MarkerKey, lat: number, lon: number) => void;
+        placeAll: (lat: number, lon: number) => void;
+    }
+) {
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if (!cursor) return;
+
+            const { lat, lon } = cursor;
+
+            switch (e.key.toLowerCase()) {
+                case "1":
+                    actions.placeOne("holePointLatLong", lat, lon);
+                    console.log("fire in the hole " , lat, " " , lon);
+                    break;
+                case "4":
+                    actions.placeOne("whiteTeePointLatLong", lat, lon);
+                    break;
+                case "3":
+                    actions.placeOne("yellowTeePointLatLong", lat, lon);
+                    break;
+                case "2":
+                    actions.placeOne("redTeePointLatLong", lat, lon);
+                    break;
+                case "a":
+                    actions.placeAll(lat, lon);
+                    break;
+            }
+        };
+
+        window.addEventListener("keydown", handler);
+        return () => window.removeEventListener("keydown", handler);
+    }, [cursor, actions]);
+}
+
+
 export default function MapPicker({
                                       points,
                                       clubLocation,
@@ -59,6 +98,7 @@ export default function MapPicker({
     const [mapType, setMapType] = useState<"satellite" | "street">("satellite");
     const [infoOpen, setInfoOpen] = useState(false);
     const [zoom, setZoom] = useState(16);
+    const [cursor, setCursor] = useState<{ lat: number; lon: number } | null>(null);
 
     // Smooth proportional scaling relative to zoom
     // 16 = baseline size
@@ -203,10 +243,14 @@ export default function MapPicker({
         closeMenu();
     };
 
-    const placeOne = (key: MarkerKey) => {
+    const placeOne = (
+        key: MarkerKey,
+        lat: number = contextMenu.lat,
+        lon: number = contextMenu.lon
+    ) => {
         setPositions(prev => ({
             ...prev,
-            [key]: { lat: contextMenu.lat, lon: contextMenu.lon },
+            [key]: { lat: lat, lon: lon },
         }));
         closeMenu();
     };
@@ -214,6 +258,18 @@ export default function MapPicker({
     const closeMenu = () =>
         setContextMenu(prev => ({ ...prev, open: false }));
 
+
+    function CursorTracker({ setCursor }: {
+        setCursor: (pos: { lat: number; lon: number }) => void;
+    }) {
+        useMapEvents({
+            mousemove(e) {
+                setCursor({ lat: e.latlng.lat, lon: e.latlng.lng });
+            },
+        });
+        return null;
+    }
+    useMapPickerShortcuts(cursor, { placeOne, placeAll });
 
     const satelliteTiles =
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
@@ -375,6 +431,7 @@ export default function MapPicker({
                             setContextMenu({ lat, lon, x, y, open: true })
                         }
                     />
+                    <CursorTracker setCursor={setCursor}/>
 
 
                     <TileLayer
