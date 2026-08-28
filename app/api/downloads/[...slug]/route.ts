@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import fsp from "fs/promises";
 import path from "path";
-import { canShowInBrowser, getMimeTypeFromExtension } from "@/lib/utils";
+import { getMimeTypeFromExtension } from "@/lib/utils";
 import { MAX_FILE_SIZE, SERVER_URL } from "@/lib/constants";
 import { findFileSafeName } from "@/lib/actions/file.actions";
 
@@ -11,8 +11,26 @@ type Params = Promise<{ slug: string[] }>;
 export const GET = async (req: NextRequest, { params }: { params: Params }) => {
     try {
         const { slug } = await params;
-        const folderName = slug[0];
-        const fileName = slug[1];
+
+        console.log("Hell yeah:" , slug);
+
+        let folderLocation = "tmp";
+        let folderName;
+        let fileName;
+
+        if(slug.length > 2)
+        {
+            folderLocation = slug[0];
+            folderName = slug[1];
+            fileName = slug[2];
+        }
+        else
+        {
+            folderName = slug[0];
+            fileName = slug[1];
+        }
+
+
 
         if (!fileName || !folderName) {
             return NextResponse.json({ error: "Folder name and file name are required" }, { status: 400 });
@@ -35,7 +53,8 @@ export const GET = async (req: NextRequest, { params }: { params: Params }) => {
             return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
         }
 
-        const localPath = path.join(process.cwd(), "tmp", folderName, safeFileName);
+        const localPath = path.join(process.cwd(), folderLocation, folderName, safeFileName);
+
 
         let existsLocally = true;
         try {
@@ -88,7 +107,8 @@ export const GET = async (req: NextRequest, { params }: { params: Params }) => {
         }
 
         // --- EXTERNAL STREAMING ---
-        const externalUrl = `${SERVER_URL}/tmp/${folderName}/${safeFileName}`;
+        const externalUrl = `${SERVER_URL}/${folderLocation}/${folderName}/${safeFileName}`;
+        console.log("External url : ", externalUrl);
         const externalRes = await fetch(externalUrl, {
             headers: range ? { Range: range } : {},
         });

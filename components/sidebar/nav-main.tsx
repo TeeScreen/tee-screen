@@ -32,11 +32,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import type { NavGroup, NavMainItem } from "@/navigation/sidebar/sidebar-items";
+import {isUserAdmin} from "@/lib/actions/user.actions";
 
 export interface SubScreenTypes {
   isFootball?: boolean;
   isGolf?: boolean;
   hasCheckIn?: boolean;
+  isAdmin?: boolean;
 }
 
 interface NavMainProps {
@@ -230,8 +232,8 @@ export function NavMain({
                     const matchesSubScreen =
                         (item.isFootball === undefined || item.isFootball === subScreenTypes?.isFootball) &&
                         (item.isGolf === undefined || item.isGolf === subScreenTypes?.isGolf) &&
-                      (item.hasCheckIn === undefined || item.hasCheckIn === subScreenTypes?.hasCheckIn);
-
+                      (item.hasCheckIn === undefined || item.hasCheckIn === subScreenTypes?.hasCheckIn) &&
+                        (item.isAdmin === undefined || item.isAdmin === subScreenTypes?.isAdmin);
                     if (!matchesSubScreen) return null;
 
                     // Collapsed desktop

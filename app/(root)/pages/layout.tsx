@@ -16,7 +16,7 @@ import { ThemeSwitcher } from "@/components/sidebar/theme-switcher";
 import {redirect} from "next/navigation";
 import {auth} from "@/lib/better-auth/auth";
 import {headers} from "next/dist/server/request/headers";
-import {applyScreenChange, getUserInfo} from "@/lib/actions/user.actions";
+import {applyScreenChange, getUserInfo, isUserAdmin} from "@/lib/actions/user.actions";
 import { ApplyDialog } from "@/components/ApplyDialogue";
 import {toast} from "sonner";
 import { DiscardDialog } from "@/components/DiscardDialogue";
@@ -30,8 +30,14 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
   if(!session?.user) redirect("/sign-in");
 
   const userInfo = await getUserInfo();
-
   const loadedScreen = userInfo?.loadedScreen ?? "";
+
+  const isFootball = userInfo?.screenJson?.isFootballClub ?? false;
+  const isGolf = (userInfo?.screenJson?.isGolfClub && userInfo?.screenJson?.CanEditHoles) ?? false;
+  const hasCheckIn = userInfo?.screenJson?.hasCheckInFunctionality ?? false;
+  const isAdmin = await isUserAdmin(userInfo?.loadedAccount);
+
+
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
   const [variant, collapsible] = await Promise.all([
@@ -41,7 +47,9 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <AppSidebar variant={variant} collapsible={collapsible} loadedScreen={loadedScreen} user={session?.user} />
+      <AppSidebar variant={variant} collapsible={collapsible} loadedScreen={loadedScreen} user={session?.user}
+                  subScreenTypes={{ isFootball, isGolf, hasCheckIn, isAdmin}}
+      />
       <SidebarInset
         className={cn(
           "[html[data-content-layout=centered]_&]:mx-auto! [html[data-content-layout=centered]_&]:max-w-screen-2xl!",

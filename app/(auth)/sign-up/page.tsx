@@ -64,7 +64,13 @@ const SignUp = () => {
                     type="email"
                     register={register}
                     error={errors.email}
-                    validation={{required: 'Email is required', pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ , message: 'Email address is required'}}
+                    validation={{
+                        required: "Email is required",
+                        pattern: {
+                            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                            message: "Invalid email format",
+                        },
+                    }}
                 />
                 <InputField
                     name="password"
@@ -73,8 +79,15 @@ const SignUp = () => {
                     type="password"
                     register={register}
                     error={errors.password}
-                    validation={{required: 'Password is required', minLength: 8}}
+                    validation={{
+                        required: "Password is required",
+                        minLength: {
+                            value: 8,
+                            message: "Minimum 8 characters",
+                        },
+                    }}
                 />
+
 
                 <InputField
                     name="phoneNumber"

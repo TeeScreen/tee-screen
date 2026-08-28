@@ -6,7 +6,7 @@ import {
   Home, ImageUp, Camera,
   type LucideIcon, NotebookTabs,
   PanelsTopLeft, PanelTopBottomDashed, Trophy,
-  Wallpaper, FileQuestionMark, NotebookPen, ChartNoAxesCombined, Hourglass,
+  Wallpaper, FileQuestionMark, NotebookPen, ChartNoAxesCombined, Hourglass, ShieldUser,
 } from "lucide-react";
 
 export interface NavSubItem {
@@ -30,6 +30,7 @@ export interface NavMainItem {
   isFootball?: boolean;
   isGolf?: boolean;
   hasCheckIn?: boolean;
+  isAdmin?: boolean;
 }
 
 export interface NavGroup {
@@ -43,6 +44,12 @@ export const sidebarItems: NavGroup[] = [
     id: 1,
     label: "Dashboards",
     items: [
+      {
+        title: "Admin Dashboards",
+        url: "/dashboard/admin",
+        icon: ShieldUser,
+        isAdmin: true,
+      },
       {
         title: "Screens",
         url: "/dashboard/home",

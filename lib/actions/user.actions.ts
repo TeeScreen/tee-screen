@@ -674,6 +674,39 @@ export async function reloadAccountAction(login: string) {
     revalidatePath("/pages/settings");
 }
 
+export async function isUserAdmin(user: string): Promise<boolean> {
+    if (!user) return false;
+
+    const admins = getAdmins();
+    return admins.includes(user);
+}
+
+const getAdmins = (): string[] => {
+    const raw = process.env.ADMINS;
+
+    if (!raw) {
+        throw new Error("ADMINS env variable missing");
+    }
+
+    return raw
+        .split(",")
+        .map(a => a.trim())
+        .filter(a => a.length > 0);
+};
+
+
+export async function getAdminScreenData()
+{
+    const res = await fetch(`${process.env.SERVER_URL}/screens_live.json`)
+
+    if(res.ok)
+    {
+        return await res.json();
+    }
+}
+
+
+
 
 
 
