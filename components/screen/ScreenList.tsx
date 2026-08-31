@@ -49,7 +49,14 @@ export function ScreenList({
 
                             {/* Dropdown */}
                             <select
-                                className="border rounded px-2 py-1 text-sm w-full sm:flex-1 max-w-full"
+                                className="
+        w-full sm:flex-1 max-w-full
+        border border-input
+        bg-input text-black bg-background
+        rounded-md
+        px-2 py-1 text-sm
+        focus:outline-none focus:ring-2 focus:ring-ring
+      "
                                 value={selectedTextScreen}
                                 onChange={(e) => setSelectedTextScreen(e.target.value)}
                             >

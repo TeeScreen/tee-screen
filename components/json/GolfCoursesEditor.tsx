@@ -9,7 +9,7 @@ import {
     AccordionContent,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Loader2, Pencil } from "lucide-react";
+import {Loader2, Pencil, Trash2} from "lucide-react";
 
 import HolesEditorWrapper from "../golf/HolesEditorWrapper";
 import HandicapEditor from "@/components/json/HandicapEditor";
@@ -46,7 +46,7 @@ export function GolfCoursesEditor({
     // COURSE NAME DIALOG STATE
     // -----------------------------
     const [courseDialogOpen, setCourseDialogOpen] = useState(false);
-    const [courseDialogMode, setCourseDialogMode] = useState<"add" | "rename">("add");
+    const [courseDialogMode, setCourseDialogMode] = useState<"add" | "rename" | "delete" >("add");
     const [courseNameInput, setCourseNameInput] = useState("");
     const [courseNameOriginal, setCourseNameOriginal] = useState<string | null>(null);
 
@@ -59,6 +59,13 @@ export function GolfCoursesEditor({
 
     function openRenameCourseDialog(oldName: string) {
         setCourseDialogMode("rename");
+        setCourseNameInput(oldName);
+        setCourseNameOriginal(oldName);
+        setCourseDialogOpen(true);
+    }
+
+    function openDeleteCourseDialog(oldName: string) {
+        setCourseDialogMode("delete");
         setCourseNameInput(oldName);
         setCourseNameOriginal(oldName);
         setCourseDialogOpen(true);
@@ -189,6 +196,23 @@ export function GolfCoursesEditor({
         updateJson(updated);
     }
 
+    // -----------------------------
+    // DELETE COURSE
+    // -----------------------------
+    function deleteCourse(name: string) {
+        if (!name || name.trim() === "") return;
+
+        const updated = structuredClone(localJson);
+
+        // If the course doesn't exist, bail early
+        if (!updated.golfCoursesData[name]) return;
+
+        delete updated.golfCoursesData[name];
+
+        updateJson(updated);
+    }
+
+
     return (
         <div className="space-y-6">
             {/* ADD COURSE BUTTON */}
@@ -228,6 +252,24 @@ export function GolfCoursesEditor({
                                         className="h-6 w-6 flex items-center justify-center rounded-md opacity-70 hover:opacity-100 hover:bg-accent cursor-pointer"
                                                                         >
                                         <Pencil className="h-4 w-4" />
+                                    </span>
+
+                                    <span
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            openDeleteCourseDialog(courseName);
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter" || e.key === " ") {
+                                                e.stopPropagation();
+                                                openDeleteCourseDialog(courseName);
+                                            }
+                                        }}
+                                        className="h-6 w-6 flex items-center justify-center rounded-md opacity-70 hover:opacity-100 hover:bg-accent cursor-pointer"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
                                     </span>
 
                                 </div>
@@ -283,12 +325,12 @@ export function GolfCoursesEditor({
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {courseDialogMode === "add"
-                                ? "Add New Course"
-                                : "Rename Course"}
+                            {courseDialogMode === "add" && "Add New Course"}
+                            {courseDialogMode === "rename" && "Rename Course"}
+                            {courseDialogMode === "delete" && "Delete Course"}
                         </DialogTitle>
                         <DialogDescription>
-                            Enter the course name below.
+                            Confirm the course name to delete below.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -311,8 +353,10 @@ export function GolfCoursesEditor({
                             onClick={() => {
                                 if (courseDialogMode === "add") {
                                     addCourse(courseNameInput);
-                                } else if (courseNameOriginal) {
+                                } else if (courseDialogMode === "rename" && courseNameOriginal) {
                                     renameCourse(courseNameOriginal, courseNameInput);
+                                } else if (courseDialogMode === "delete" && courseNameOriginal) {
+                                    deleteCourse(courseNameInput)
                                 }
                                 setCourseDialogOpen(false);
                             }}
