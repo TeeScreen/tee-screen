@@ -62,8 +62,6 @@ export default function PreviewScreen() {
     useEffect(() => {
         if (preview)
         {
-            console.log("fetching data")
-
             fetchData()
         }
     }, [preview])
@@ -564,7 +562,7 @@ export default function PreviewScreen() {
                         <Image src={backgroundImage ?? backupBG} alt="background" fill className="object-cover" />
                     </div>
 
-                    <div className="absolute bottom-0 left-0 z-50 p-1 h-[5%] w-[full]">
+                    <div className="absolute bottom-0 left-0 z-100 p-1 h-[5%] w-[full]">
                         <Button onClick={fetchData} variant="ghost">
                             <RotateCcw/>
                         </Button>
