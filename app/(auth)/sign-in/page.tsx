@@ -75,7 +75,7 @@ const SignIn = () => {
 
                 <GoogleSignInButton/>
 
-                <FooterLink text="Don't have an account?" linkText="Create an account" href="/sign-up" />
+                <FooterLink text="Don't have an account?" linkText="Create account" href="/sign-up" />
             </form>
         </>
     );
