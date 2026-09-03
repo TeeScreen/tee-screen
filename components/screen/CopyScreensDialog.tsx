@@ -19,7 +19,7 @@ type PreviewResponse = {
 
 type CopyScreensDialogProps = {
     screens: string[];
-    copyAction: (selected: string[]) => Promise<PreviewResponse>;
+    copyAction: (selected: string[], mode: string) => Promise<PreviewResponse>;
 };
 
 export function CopyScreensDialog({ screens, copyAction }: CopyScreensDialogProps) {
@@ -27,18 +27,29 @@ export function CopyScreensDialog({ screens, copyAction }: CopyScreensDialogProp
     const [selected, setSelected] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    // Mutually exclusive mode toggle
+    const [mode, setMode] = useState<"current" | "full">("current");
+
+    function toggleMode(value: "current" | "full") {
+        setMode(value);
+    }
+
     function toggleScreen(screen: string) {
         setSelected((prev) =>
-            prev.includes(screen) ? prev.filter((s) => s !== screen) : [...prev, screen]
+            prev.includes(screen)
+                ? prev.filter((s) => s !== screen)
+                : [...prev, screen]
         );
     }
 
     async function handleSubmit() {
         setIsLoading(true);
-        const res = await copyAction(selected); // <-- pass array, not FormData
+
+        console.log("MODE SELECTED:", mode);
+
+        const res = await copyAction(selected, mode);
 
         if (res?.success) {
-            // Preview succeeded — ScreenList will show confirmation dialog
             setOpen(false);
             setSelected([]);
         } else {
@@ -59,12 +70,44 @@ export function CopyScreensDialog({ screens, copyAction }: CopyScreensDialogProp
                     <DialogHeader>
                         <DialogTitle>Copy Changes</DialogTitle>
                         <DialogDescription>
-                            Select screens to preview the changes before confirming.
+                            Select what to copy and where to copy it.
                         </DialogDescription>
                     </DialogHeader>
 
+                    {/* MODE SECTION */}
+                    <div className="flex flex-col gap-3 mb-4">
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                            What to Copy
+                        </h3>
+
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={mode === "current"}
+                                onChange={() => toggleMode("current")}
+                            />
+                            <span>Current Changes</span>
+                        </label>
+
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={mode === "full"}
+                                onChange={() => toggleMode("full")}
+                            />
+                            <span>Full Screen</span>
+                        </label>
+                    </div>
+
+                    {/* SCREEN SELECTION SECTION */}
+                    <div className="flex flex-col gap-3 mb-2">
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                            Screens to Copy To
+                        </h3>
+                    </div>
+
                     <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
-                        {screens.map((screen: string) => (
+                        {screens.map((screen) => (
                             <label key={screen} className="flex items-center gap-2">
                                 <input
                                     type="checkbox"
@@ -86,6 +129,7 @@ export function CopyScreensDialog({ screens, copyAction }: CopyScreensDialogProp
                         >
                             Cancel
                         </Button>
+
                         <Button
                             variant="default"
                             type="button"

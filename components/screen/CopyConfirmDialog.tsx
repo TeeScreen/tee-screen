@@ -85,7 +85,7 @@ export const CopyConfirmDialog: FC<CopyConfirmDialogProps> = ({
                                             // removes leading "u"/"d" + timestamp and extension
                                             const fileUrl = `/api/downloads/${sourceFolder}/${file}`;
 
-                                            const isAdding = file.toLowerCase().startsWith("u");
+                                            const isAdding = !file.toLowerCase().startsWith("d");
                                             const isRemoving = file.toLowerCase().startsWith("d");
 
                                             return (

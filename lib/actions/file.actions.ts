@@ -6,7 +6,7 @@ import fs from "fs/promises";
 import path from "path";
 import JSZip from "jszip";
 import { revalidatePath } from "next/cache";
-import { getUserInfo } from "./user.actions";
+import {getUserInfo, saveUserInfo} from "./user.actions";
 import {nowUnityIsoString} from "@/lib/helper";
 import {broadcastScreenUpdate} from "@/lib/sse";
 
@@ -239,7 +239,7 @@ const getScreenPreview = async (screenName: string): Promise<string | null> => {
     }
 }
 
-export async function previewScreenChanges(targetScreens: string[]) {
+export async function previewScreenChanges(targetScreens: string[], mode :string = "current" ) {
     const userInfo = await getUserInfo();
     const sourceData = userInfo?.screenJson;
     if (!sourceData) return { success: false, message: "No source data" };
@@ -254,7 +254,7 @@ export async function previewScreenChanges(targetScreens: string[]) {
 
     // Fetch uploaded files (those starting with U)
     const filesRes = await fetch(
-        `${process.env.SERVER_URL}/get_tmp_changes?screen=${sourceFolder}`
+        `${process.env.SERVER_URL}/get_tmp_changes?screen=${sourceFolder}&mode=${mode}`
     );
     const files = filesRes.ok ? await filesRes.json() : [];
 
@@ -275,7 +275,7 @@ export async function previewScreenChanges(targetScreens: string[]) {
 
 
 export async function confirmScreenChanges(
-    previews: { targetScreen: string; merged: any }[], sourceFolder?: string
+    previews: { targetScreen: string; merged: any }[], sourceFolder?: string, mode : string = "current",
 ) {
     for (const { targetScreen, merged } of previews) {
         merged.lastEdited = nowUnityIsoString();
@@ -299,13 +299,22 @@ export async function confirmScreenChanges(
         if(sourceFolder) {
             // Optionally trigger your PHP script that processes tmp folder
             const processRes = await fetch(
-                `${process.env.SERVER_URL}/upload_changes_tmp?source=${sourceFolder}&target=${merged.FolderNameOnServer}`
+                `${process.env.SERVER_URL}/upload_changes_tmp?source=${sourceFolder}&target=${merged.FolderNameOnServer}&mode=${mode}`
             );
             console.log(processRes);
             if (!processRes.ok) {
                 return { success: false, message: `Failed to process files for ${targetScreen}: ${processRes.body}` };
             }
         }
+
+        await saveUserInfo({
+            loadedScreen: targetScreen,
+            screenJson: merged,
+            lastEdited: new Date(),
+            lastEditedBy: merged.lastEditedBy ?? "0",
+            lastEditedByName: merged.lastEditedByName ?? "Unknown",
+        });
+
         broadcastScreenUpdate(targetScreen, {
             screen: targetScreen,
             editedBy: merged.lastEditedBy ?? "0",
@@ -339,9 +348,9 @@ export type DiffEntry = {
 function deepDiffMerge(
     original: Record<string, any>,
     modified: Record<string, any>,
-    skipKeys: string[] = ["name", "FolderNameOnServer", "GolfCourseLatLon" , "CourseLogoURL",
+skipKeys: string[] = ["name", "FolderNameOnServer", "GolfCourseLatLon" , "CourseLogoURL",
         "CourseOverviewURL", "AccountsThatHaveAccess", "CourseName", "lastEdited"],
-    path: string = ""
+    path: string = "",
 ): { merged: Record<string, any>; diffs: DiffEntry[] } {
     const result: Record<string, any> = { ...original };
     const diffs: DiffEntry[] = [];

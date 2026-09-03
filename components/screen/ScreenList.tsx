@@ -27,8 +27,11 @@ export function ScreenList({
     const [selectedTextScreen, setSelectedTextScreen] = useState<string>("");
     const [loading, setLoading] = useState(false);
 
-    async function handleCopy(selected: string[]) {
-        const res = await previewScreenChanges(selected);
+    const [mode, setMode] = useState<string>("current");
+
+    async function handleCopy(selected: string[], mode: string) {
+        const res = await previewScreenChanges(selected, mode);
+        setMode(mode);
         if (res.success && res.previews) {
             setPendingPreviews(res.previews);
             setSourceFolder(res.sourceFolder);
@@ -132,7 +135,7 @@ export function ScreenList({
                     sourceFolder={sourceFolder}
                     previews={pendingPreviews}
                     onConfirm={async () => {
-                        const res = await confirmScreenChanges(pendingPreviews, sourceFolder);
+                        const res = await confirmScreenChanges(pendingPreviews, sourceFolder, mode);
                         if (res.success) toast.success(res.message);
                         else toast.error(res.message);
                         setPendingPreviews(null);
