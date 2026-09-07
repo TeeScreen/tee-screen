@@ -4,6 +4,8 @@ import React from "react";
 import HoleCoordinatesEditor from "./HoleCoordinatesEditor";
 import HoleYardageEditor from "./HoleYardageEditor";
 import HoleDetailsEditor from "./HoleDetailsEditor";
+import UploadSection from "@/components/UploadSection";
+import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
 
 type RGBA = { r: number; g: number; b: number; a: number };
 
@@ -39,6 +41,8 @@ export default function HoleEditor({
                                        courseLatLon,
                                        teeSettings,
                                    }: HoleEditorProps) {
+
+    const folderName = form.getValues().FolderNameOnServer;
     return (
         <div className="space-y-6">
 
@@ -87,6 +91,28 @@ export default function HoleEditor({
                     updateCourse={updateCourse}
                 />
             </div>
+
+            {folderName && (
+            <Accordion type="single" collapsible className="border rounded p-2">
+                <AccordionItem value="hole-advert">
+                    <AccordionTrigger>
+                        <h4 className="font-semibold text-base">Hole Advert</h4>
+                    </AccordionTrigger>
+
+                    <AccordionContent className="p-2">
+                        <UploadSection
+                            folderName={folderName}
+                            fileName={`HoleSponsorImage${hole.holeNumber}`}
+                            label="Hole Advert"
+                        />
+                    </AccordionContent>
+                </AccordionItem>
+            </Accordion>
+            )}
+
+
+
+
 
 
         </div>
