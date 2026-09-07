@@ -184,9 +184,11 @@ export default function ScheduleByDate({
           ))}
         </div>
         {/* Row Controls */}
-        <div className="flex items-center gap-2">
-          <Button onClick={addRow}>Add Row</Button>
-        </div>
+        {currentDate != "" &&
+          <div className="flex items-center gap-2">
+            <Button onClick={addRow}>Add Row</Button>
+          </div>
+        }
 
         <DataTable columns={columns} data={currentEntries} setData={setData} updateData={updateData} />
 

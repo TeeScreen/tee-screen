@@ -163,32 +163,30 @@ export default function PreviewScreen() {
     function applyActiveScheduleEntry(entry: any) {
         if (!entry) return;
 
+        const data = userInfo.screenJson;
         setNotices([
             {
-                text: entry.topNotice,
-                color: entry.topColour,
-                active: true,
-                urlActive: false,
-                url: null,
-                image: null,
+                text: entry.topNotice ? entry.topNotice : data.TopNoticeText,
+                color: entry.topNotice ? entry.topColour : data.TopNoticeBoardColour,
+                active: data.TopNoticeButtonActive,
+                urlActive: data.showUrlNoticeButtonTop,
+                url: data.urlNoticeButtonTop,
             },
             {
-                text: entry.middleNotice,
-                color: entry.middleColour,
-                active: true,
-                urlActive: false,
-                url: null,
-                image: null,
+                text: entry.middleNotice ?  entry.middleNotice : data.MiddleNoticeText,
+                color: entry.middleNotice ? entry.middleColour : data.MiddleNoticeBoardColour,
+                active: data.MiddleNoticeButtonActive,
+                urlActive: data.showUrlNoticeButtonMiddle,
+                url: data.urlNoticeButtonMiddle,
             },
             {
-                text: entry.bottomNotice,
-                color: entry.bottomColour,
-                active: true,
-                urlActive: false,
-                url: null,
-                image: null,
+                text: entry.bottomNotice ? entry.bottomNotice : data.BottomNoticeText,
+                color: entry.bottomNotice ? entry.bottomColour : data.BottomNoticeBoardColour,
+                active: data.BottomNoticeButtonActive,
+                urlActive: data.showUrlNoticeButtonBottom,
+                url: data.urlNoticeButtonBottom,
             },
-        ]);
+        ])
 
         setScheduled(true);
     }
