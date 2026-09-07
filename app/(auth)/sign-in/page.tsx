@@ -66,7 +66,7 @@ const SignIn = () => {
                     type="password"
                     register={register}
                     error={errors.password}
-                    validation={{ required: 'Password is required', minLength: 8 }}
+                    validation={{ required: 'Password is required'}}
                 />
 
                 <Button type="submit" disabled={isSubmitting} className="w-full mt-5">
