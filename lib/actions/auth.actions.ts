@@ -176,3 +176,26 @@ export async function updatePasswordAction(formData: FormData) {
         return { success: false, error: "Failed to update password" };
     }
 }
+
+export async function requestPasswordReset(email: string)
+{
+    try {
+        if(!auth)
+        {
+            throw new Error("Auth module not initialised");
+        }
+        const data = await auth.api.requestPasswordReset({
+            body: {
+                email: email, // required, The email address of the user to send a password reset email to
+                redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password`, // The URL to redirect the user to reset their password. If the token isn't valid or expired, it'll be redirected with a query parameter `?error=INVALID_TOKEN`. If the token is valid, it'll be redirected with a query parameter `?token=VALID_TOKEN
+            },
+        });
+
+        return { success: true };
+
+    } catch(err)
+    {
+        console.error("Password reset request failed:", err);
+        return { success: false, error: "Failed to request password reset" };
+    }
+}

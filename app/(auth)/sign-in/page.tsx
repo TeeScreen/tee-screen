@@ -1,48 +1,69 @@
-'use client';
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import InputField from '@/components/forms/InputField';
-import FooterLink from '@/components/forms/FooterLink';
-import {signInWithEmail, signUpWithEmail} from "@/lib/actions/auth.actions";
-import {toast} from "sonner";
-import {useRouter} from "next/navigation";
-import {createAuthClient} from "better-auth/client";
-import {GoogleSignInButton} from "@/components/profile/GoogleSignIn";
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import InputField from "@/components/forms/InputField";
+import FooterLink from "@/components/forms/FooterLink";
+import { requestPasswordReset, signInWithEmail } from "@/lib/actions/auth.actions";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { GoogleSignInButton } from "@/components/profile/GoogleSignIn";
+import { useState } from "react";
 
 const SignIn = () => {
-    const router = useRouter()
+    const router = useRouter();
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
+
     const {
         register,
         handleSubmit,
+        watch,
         formState: { errors, isSubmitting },
     } = useForm<SignInFormData>({
         defaultValues: {
-            email: '',
-            password: '',
+            email: "",
+            password: "",
             rememberMe: false,
         },
-        mode: 'onBlur',
+        mode: "onBlur",
     });
 
-    const authClient = createAuthClient();
+    const emailValue = watch("email");
 
     const onSubmit = async (data: SignInFormData) => {
-        console.log("signing in: ", data);
-
         try {
-            console.log("signing in: ", data);
             const result = await signInWithEmail(data);
-            if(result.success) {
-                router.push("/");
+
+            if (result.success) {
                 toast("Sign in was successful");
-            }
-            else {
+                router.push("/");
+            } else {
                 toast.error(result.error);
+
+                if (result.error?.toLowerCase().includes("password")) {
+                    setShowForgotPassword(true);
+                }
             }
-        } catch (e) {
+        } catch {
+            toast.error("Sign in failed unexpectedly");
         }
-    }
+    };
+
+    const forgotPassword = async () => {
+        if (!emailValue) {
+            toast.error("Enter your email first");
+            return;
+        }
+
+        const result = await requestPasswordReset(emailValue);
+
+        if (result.success) {
+            toast("Password reset email sent");
+            router.push("/check-email");
+        } else {
+            toast.error(result.error);
+        }
+    };
 
     return (
         <>
@@ -56,7 +77,11 @@ const SignIn = () => {
                     placeholder="Enter your email"
                     register={register}
                     error={errors.email}
-                    validation={{required: 'Email is required', pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ , message: 'Email address is required'}}
+                    validation={{
+                        required: "Email is required",
+                        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                        message: "Email address is required",
+                    }}
                 />
 
                 <InputField
@@ -66,18 +91,30 @@ const SignIn = () => {
                     type="password"
                     register={register}
                     error={errors.password}
-                    validation={{ required: 'Password is required'}}
+                    validation={{ required: "Password is required" }}
                 />
 
                 <Button type="submit" disabled={isSubmitting} className="w-full mt-5">
-                    {isSubmitting ? 'Signing In' : 'Sign In'}
+                    {isSubmitting ? "Signing In" : "Sign In"}
                 </Button>
 
-                <GoogleSignInButton/>
+                {showForgotPassword && (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        className="w-full"
+                        onClick={forgotPassword}
+                    >
+                        Forgot password?
+                    </Button>
+                )}
+
+                <GoogleSignInButton />
 
                 <FooterLink text="Don't have an account?" linkText="Create account" href="/sign-up" />
             </form>
         </>
     );
 };
+
 export default SignIn;

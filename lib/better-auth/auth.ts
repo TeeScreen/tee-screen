@@ -24,6 +24,25 @@ const createAuth = (db: Db) =>
             minPasswordLength: 8,
             maxPasswordLength: 128,
             autoSignIn: true,
+            revokeSessionsOnPasswordReset: true,
+            sendResetPassword: async ({ user, url, token }, request) => {
+                await fetch("https://teescreenapp.com/api/reset-mailer", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify({
+                        email: user.email,
+                        url: url, // BetterAuth-generated reset link
+                    }),
+                });
+            },
+
+            onPasswordReset: async ({ user }, request) => {
+                // your logic here
+                console.log(`Password for user ${user.email} has been reset.`);
+            },
         },
 
         plugins: [nextCookies()],

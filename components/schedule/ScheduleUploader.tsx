@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, {useEffect, useState} from "react";
 import * as XLSX from "xlsx";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
 import ScheduleByDate from "./ScheduleByDate";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import {nowUnityIsoString} from "@/lib/helper";
-import {useDirtyState} from "@/stores/user-store"; // spinner icon
+import {toast} from "sonner";
+import {Info, Loader2} from "lucide-react";
+import {useDirtyState} from "@/stores/user-store";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog"; // spinner icon
 
 export type ScheduleEntry = {
     start: string;
@@ -23,10 +23,11 @@ export type ScheduleEntry = {
 
 const ApiUrl = "https://teescreenapp.com/api/schedule";
 
-export default function ScheduleUploader({ screenName }: { screenName: string }) {
+export default function ScheduleUploader({screenName}: { screenName: string }) {
     const [entries, setData] = useState<ScheduleEntry[]>([]);
     const [saving, setSaving] = useState(false); // track saving state
-    const { setDirty} = useDirtyState()
+    const {setDirty} = useDirtyState()
+    const [infoOpen, setInfoOpen] = useState(false);
 
     // Load schedule from server
     useEffect(() => {
@@ -85,8 +86,8 @@ export default function ScheduleUploader({ screenName }: { screenName: string })
         try {
             const res = await fetch(ApiUrl, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ filename: screenName, entries }),
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({filename: screenName, entries}),
             });
             if (res.ok) {
                 toast.success("Schedule saved successfully!");
@@ -106,30 +107,93 @@ export default function ScheduleUploader({ screenName }: { screenName: string })
         <div className="space-y-8">
             {/* Import / Template */}
             <div className="flex items-center gap-4">
-                <Input type="file" accept=".xlsx,.csv" onChange={handleUpload} />
+                <Input type="file" accept=".xlsx,.csv" onChange={handleUpload}/>
                 <Button asChild>
                     <a href="/schedule-template.csv" download>
                         Download Template
                     </a>
                 </Button>
             </div>
-
-            {/* Save Controls */}
             <div className="flex items-center gap-4">
                 <Button onClick={saveSchedule} variant="secondary" disabled={saving}>
                     {saving ? (
                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
                             Saving...
                         </>
                     ) : (
                         "Save Schedule"
                     )}
                 </Button>
+
+                {/* Info button */}
+                <Button
+                    size="icon"
+                    variant="secondary"
+                    className="rounded-full shadow"
+                    onClick={() => setInfoOpen(true)}
+                >
+                    <Info className="h-4 w-4"/>
+                </Button>
             </div>
 
+
+            {/* Info Dialog */}
+            <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+                <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>How Scheduling Works</DialogTitle>
+                        <DialogDescription className="text-sm">
+                            <span>
+                                Ensure you save the schedule to view any current scheduled notices on the preview
+                            </span>
+                            <br/><br/>
+
+                            <span>
+                                The schedule is organised by <strong>date</strong>. Select a date to view or edit all
+                                entries for that day. You can add rows, copy the entire day to another date, or delete
+                                all entries for that date.
+                            </span>
+                            <br/><br/>
+
+                            <span>
+                                Each row represents a scheduled notice with a <strong>start</strong> and <strong>end</strong>
+                                time. When you upload a CSV or XLSX file, times are automatically converted to ISO format.
+                            </span>
+                            <br/><br/>
+
+                            <span>
+                                If you leave any notice text field <strong>blank</strong> (top, middle, or bottom),
+                                the system will display the screen’s <strong>default notice</strong> for that section.
+                                This allows you to schedule only the parts you want to override.
+                            </span>
+                            <br/><br/>
+
+                            <span>
+                                Colours can be provided as <strong>RGBA objects</strong> (JSON) or <strong>hex strings</strong>
+                                (CSV). Both formats are supported and normalised when saving.
+                            </span>
+                            <br/><br/>
+
+                            <span>
+                                Use <strong>Add Row</strong> to insert a new entry for the currently selected date.
+                                Use <strong>Copy Day</strong> to duplicate all entries to another date. Use
+                                <strong>Delete All</strong> to remove every entry for the selected date.
+                            </span>
+                            <br/><br/>
+
+                            <span>
+                                When finished, click <strong>Save Schedule</strong> in the uploader to push all changes
+                                to the server.
+                            </span>
+                        </DialogDescription>
+                    </DialogHeader>
+                </DialogContent>
+            </Dialog>
+
+
             {/* Data View */}
-            <ScheduleByDate entries={entries} setData={setData} />
+            <ScheduleByDate entries={entries} setData={setData}/>
         </div>
     );
 }
