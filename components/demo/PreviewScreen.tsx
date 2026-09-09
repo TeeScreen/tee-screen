@@ -561,7 +561,7 @@ export default function PreviewScreen() {
                     </div>
 
                     <div className="absolute bottom-0 left-0 z-100 p-1 h-[5%] w-[full]">
-                        <Button onClick={fetchData} variant="ghost">
+                        <Button onClick={fetchData} variant="outline">
                             <RotateCcw/>
                         </Button>
                     </div>
