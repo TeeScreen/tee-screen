@@ -166,23 +166,26 @@ export default function PreviewScreen() {
         const data = userInfo.screenJson;
         setNotices([
             {
+                active: entry.topNotice ?  true : data?.noticeTopIsActive ?? true,
                 text: entry.topNotice ? entry.topNotice : data.TopNoticeText,
                 color: entry.topNotice ? entry.topColour : data.TopNoticeBoardColour,
-                active: data.TopNoticeButtonActive,
+                interactive: data.TopNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonTop,
                 url: data.urlNoticeButtonTop,
             },
             {
+                active: entry.middleNotice ?  true : data?.noticeMiddleIsActive ?? true,
                 text: entry.middleNotice ?  entry.middleNotice : data.MiddleNoticeText,
                 color: entry.middleNotice ? entry.middleColour : data.MiddleNoticeBoardColour,
-                active: data.MiddleNoticeButtonActive,
+                interactive: data.MiddleNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonMiddle,
                 url: data.urlNoticeButtonMiddle,
             },
             {
+                active: entry.bottomNotice ?  true : data?.noticeBottomIsActive ?? true,
                 text: entry.bottomNotice ? entry.bottomNotice : data.BottomNoticeText,
                 color: entry.bottomNotice ? entry.bottomColour : data.BottomNoticeBoardColour,
-                active: data.BottomNoticeButtonActive,
+                interactive: data.BottomNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonBottom,
                 url: data.urlNoticeButtonBottom,
             },
@@ -195,23 +198,26 @@ export default function PreviewScreen() {
         const data = userInfo.screenJson;
         const noticeDefs = [
             {
+                active: data?.noticeTopIsActive ?? true,
                 text: data.TopNoticeText,
                 color: data.TopNoticeBoardColour,
-                active: data.TopNoticeButtonActive,
+                interactive: data.TopNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonTop,
                 url: data.urlNoticeButtonTop,
             },
             {
+                active: data?.noticeMiddleIsActive ?? true,
                 text: data.MiddleNoticeText,
                 color: data.MiddleNoticeBoardColour,
-                active: data.MiddleNoticeButtonActive,
+                interactive: data.MiddleNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonMiddle,
                 url: data.urlNoticeButtonMiddle,
             },
             {
+                active: data?.noticeBottomIsActive ?? true,
                 text: data.BottomNoticeText,
                 color: data.BottomNoticeBoardColour,
-                active: data.BottomNoticeButtonActive,
+                interactive: data.BottomNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonBottom,
                 url: data.urlNoticeButtonBottom,
             },
@@ -327,25 +333,28 @@ export default function PreviewScreen() {
 
         const noticeDefs = [
             {
+                active: data?.noticeTopIsActive ?? true,
                 text: data.TopNoticeText,
                 color: data.TopNoticeBoardColour,
-                active: data.TopNoticeButtonActive,
+                interactive: data.TopNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonTop,
                 url: data.urlNoticeButtonTop,
                 image: resolveSafe(safeNames[idx++], "NoticeImage01"),
             },
             {
+                active: data?.noticeMiddleIsActive ?? true,
                 text: data.MiddleNoticeText,
                 color: data.MiddleNoticeBoardColour,
-                active: data.MiddleNoticeButtonActive,
+                interactive: data.MiddleNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonMiddle,
                 url: data.urlNoticeButtonMiddle,
                 image: resolveSafe(safeNames[idx++], "NoticeImage02"),
             },
             {
+                active: data?.noticeBottomIsActive ?? true,
                 text: data.BottomNoticeText,
                 color: data.BottomNoticeBoardColour,
-                active: data.BottomNoticeButtonActive,
+                interactive: data.BottomNoticeButtonActive,
                 urlActive: data.showUrlNoticeButtonBottom,
                 url: data.urlNoticeButtonBottom,
                 image: resolveSafe(safeNames[idx++], "NoticeImage03"),
@@ -383,19 +392,33 @@ export default function PreviewScreen() {
                 }));
             }
 
-            // --- Notices active/url flags ---
-            if (path.endsWith("TopNoticeButtonActive")) {
+            // --- Notices active flags ---
+            if (path.endsWith("noticeTopIsActive")) {
                 setNotices(prev => prev.map((n, i) => i === 0 ? { ...n, active: newValue } : n));
             }
-            if (path.endsWith("MiddleNoticeButtonActive")) {
+            if (path.endsWith("noticeMiddleIsActive")) {
                 setNotices(prev => prev.map((n, i) => i === 1 ? { ...n, active: newValue } : n));
             }
-            if (path.endsWith("BottomNoticeButtonActive")) {
+            if (path.endsWith("noticeBottomIsActive")) {
                 setNotices(prev => prev.map((n, i) => i === 2 ? { ...n, active: newValue } : n));
+            }
+
+            // --- Notices interactive/url flags ---
+            if (path.endsWith("TopNoticeButtonActive")) {
+                setNotices(prev => prev.map((n, i) => i === 0 ? { ...n, interactive: newValue } : n));
+                console.log("TopNoticeButtonActive changed: ", path);
+
+            }
+            if (path.endsWith("MiddleNoticeButtonActive")) {
+                setNotices(prev => prev.map((n, i) => i === 1 ? { ...n, interactive: newValue } : n));
+            }
+            if (path.endsWith("BottomNoticeButtonActive")) {
+                setNotices(prev => prev.map((n, i) => i === 2 ? { ...n, interactive: newValue } : n));
             }
 
             if (path.endsWith("showUrlNoticeButtonTop")) {
                 setNotices(prev => prev.map((n, i) => i === 0 ? { ...n, urlActive: newValue } : n));
+                console.log("showUrlNoticeButtonTop changed: ");
             }
             if (path.endsWith("showUrlNoticeButtonMiddle")) {
                 setNotices(prev => prev.map((n, i) => i === 1 ? { ...n, urlActive: newValue } : n));
@@ -908,16 +931,17 @@ export default function PreviewScreen() {
                                 </div>
                             ) : (
                                 // Notices Section
-                                <div className="w-full h-full flex flex-col gap-[0.1vh]">
+                                <div className="w-full h-full flex flex-col justify-end gap-[0.1vh]">
                                     {notices.map((notice, i) => (
-                                        <Button
+                                        notice.active ? (<Button
                                             key={i}
-                                            className="h-[7vh] p-0 w-full flex-1 rounded-none flex items-center justify-center"
+                                            className="max-h-[7.9vh] p-0 w-full flex-1 rounded-none flex items-center justify-center"
                                             style={{
                                                 backgroundColor: `rgba(${notice.color.r},${notice.color.g},${notice.color.b},${notice.color.a / 255})`,
                                             }}
                                             onClick={() => {
-                                                if (notice.active) {
+                                                if (notice.interactive) {
+                                                    console.log("Notice: " , i , " :", notice.urlActive);
                                                     if (notice.urlActive && notice.url) {
                                                         setOverlayContent({ type: "url", src: notice.url });
                                                     } else if (notice.image) {
@@ -929,7 +953,7 @@ export default function PreviewScreen() {
                                             <span className={`${font} text-[3vh] uppercase font-semibold text-center w-[85%] whitespace-normal break-words leading-[3vh]`}>
                                                 {notice.text}
                                             </span>
-                                        </Button>
+                                        </Button>) : null
                                     ))}
                                 </div>
 

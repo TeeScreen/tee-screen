@@ -57,8 +57,9 @@ export function JsonFieldEditor({
         label: string;
         type: "text" | "color" | "bool" | "number" | "font";
         tag: string;
-        placeholder?: string;
+        placeholder?: any;
         options?: { label: string; value: string }[];
+        dependencies? : {path:string; value: boolean} [];
     }[];
     action: (formData: FormData) => void;
 }) {
@@ -140,24 +141,29 @@ export function JsonFieldEditor({
 
         let defaultValue;
 
-        switch (field.type) {
-            case "text":
-                defaultValue = "";
-                break;
-            case "bool":
-                defaultValue = false;
-                break;
-            case "color":
-                defaultValue = { r: 0, g: 0, b: 0, a: 1 };
-                break;
-            case "number":
-                defaultValue = field.options?.[0]?.value ?? 0;
-                break;
-            case "font":
-                defaultValue = EFont.SFProDisplay; // numeric 7
-                break;
-            default:
-                defaultValue = null;
+        if(field.placeholder) {
+            defaultValue = field.placeholder;
+        }
+        else{
+            switch (field.type) {
+                case "text":
+                    defaultValue = "";
+                    break;
+                case "bool":
+                    defaultValue = false;
+                    break;
+                case "color":
+                    defaultValue = { r: 0, g: 0, b: 0, a: 1 };
+                    break;
+                case "number":
+                    defaultValue = field.options?.[0]?.value ?? 0;
+                    break;
+                case "font":
+                    defaultValue = EFont.SFProDisplay; // numeric 7
+                    break;
+                default:
+                    defaultValue = null;
+            }
         }
 
         const updated = setValue(localJson, field.path, defaultValue);
@@ -181,11 +187,21 @@ export function JsonFieldEditor({
         return acc;
     }, {});
 
+    const getIsDependent = (dependencies: { path: string; value: boolean }[]) => {
+        if (!dependencies || dependencies.length === 0) return "";
+
+        const isBlocked = dependencies.some(dep => {
+            const current = localJson[dep.path];
+            return current !== dep.value;
+        });
+
+        return isBlocked ? "pointer-events-none opacity-50" : "";
+    };
     /* -------------------------------------------------------
        Render
     ------------------------------------------------------- */
     return (
-        <div className="space-y-6">
+        <div className={`space-y-6`}>
             {isSaving && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -196,110 +212,104 @@ export function JsonFieldEditor({
             {Object.entries(groups).map(([tag, fields]) => (
                 <div key={tag} className="space-y-4 border rounded-lg p-4">
                     <h3 className="text-lg font-semibold capitalize">{tag}</h3>
-
                     <div className="grid gap-6">
-                        {(fields as any[]).map((field: any) => {
-                            const currentValue = ensurePath(field);
+                        {(fields as any[]).map((field: any) => (
+                            <div key={field.path} className={getIsDependent(field.dependencies)}>
+                                {(() => {
+                                    const currentValue = ensurePath(field);
 
-                            /* ------------------ BOOL ------------------ */
-                            if (field.type === "bool") {
-                                return (
-                                    <div key={field.path} className="flex items-center gap-3">
-                                        <label className="font-medium">{field.label}</label>
-                                        <input
-                                            type="checkbox"
-                                            checked={Boolean(currentValue)}
-                                            onChange={(e) => handleChange(field.path, e.target.checked)}
-                                            className="h-5 w-5 accent-primary"
+                                    if (field.type === "bool") {
+                                        return (
+                                            <div className="flex items-center gap-3">
+                                                <label className="font-medium">{field.label}</label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={Boolean(currentValue)}
+                                                    onChange={(e) => handleChange(field.path, e.target.checked)}
+                                                    className="h-5 w-5 accent-primary"
+                                                />
+                                            </div>
+                                        );
+                                    }
+
+                                    if (field.type === "color") {
+                                        const rgba = currentValue || { r: 0, g: 0, b: 0, a: 1 };
+
+                                        const toHex = (c: any) =>
+                                            `#${c.r.toString(16).padStart(2, "0")}${c.g
+                                                .toString(16)
+                                                .padStart(2, "0")}${c.b.toString(16).padStart(2, "0")}`;
+
+                                        const hexToRgba = (hex: string, alpha: number) => {
+                                            const r = parseInt(hex.slice(1, 3), 16);
+                                            const g = parseInt(hex.slice(3, 5), 16);
+                                            const b = parseInt(hex.slice(5, 7), 16);
+                                            return { r, g, b, a: alpha };
+                                        };
+
+                                        return (
+                                            <div className="flex flex-col gap-2">
+                                                <label className="font-medium">{field.label}</label>
+                                                <input
+                                                    type="color"
+                                                    value={toHex(rgba)}
+                                                    onChange={(e) => {
+                                                        const updated = hexToRgba(e.target.value, rgba.a);
+                                                        handleChange(field.path, updated);
+                                                    }}
+                                                    className="h-10 w-20 rounded border"
+                                                />
+                                            </div>
+                                        );
+                                    }
+
+                                    if (field.type === "number") {
+                                        return (
+                                            <SelectField
+                                                name={field.path}
+                                                label={field.label}
+                                                placeholder={field.placeholder}
+                                                options={field.options || []}
+                                                control={form.control}
+                                                error={null}
+                                                required={false}
+                                            />
+                                        );
+                                    }
+
+                                    if (field.type === "font") {
+                                        return (
+                                            <SelectField
+                                                name={field.path}
+                                                label={field.label}
+                                                placeholder="Select font"
+                                                options={FONT_OPTIONS}
+                                                control={form.control}
+                                                error={null}
+                                                required={false}
+                                                defaultValue={String(currentValue)}
+                                                onChange={(val) => handleChange(field.path, Number(val))}
+                                            />
+                                        );
+                                    }
+
+                                    return (
+                                        <InputField
+                                            name={field.path}
+                                            label={field.label}
+                                            placeholder={field.placeholder}
+                                            value={currentValue}
+                                            register={() => ({
+                                                onChange: (e: any) => handleChange(field.path, e.target.value),
+                                            })}
+                                            error={null}
                                         />
-                                    </div>
-                                );
-                            }
-
-                            /* ------------------ COLOR ------------------ */
-                            if (field.type === "color") {
-                                const rgba = currentValue || { r: 0, g: 0, b: 0, a: 1 };
-
-                                const toHex = (c: any) =>
-                                    `#${c.r.toString(16).padStart(2, "0")}${c.g
-                                        .toString(16)
-                                        .padStart(2, "0")}${c.b.toString(16).padStart(2, "0")}`;
-
-                                const hexToRgba = (hex: string, alpha: number) => {
-                                    const r = parseInt(hex.slice(1, 3), 16);
-                                    const g = parseInt(hex.slice(3, 5), 16);
-                                    const b = parseInt(hex.slice(5, 7), 16);
-                                    return { r, g, b, a: alpha };
-                                };
-
-                                return (
-                                    <div key={field.path} className="flex flex-col gap-2">
-                                        <label className="font-medium">{field.label}</label>
-                                        <input
-                                            type="color"
-                                            value={toHex(rgba)}
-                                            onChange={(e) => {
-                                                const updated = hexToRgba(e.target.value, rgba.a);
-                                                handleChange(field.path, updated);
-                                            }}
-                                            className="h-10 w-20 rounded border"
-                                        />
-                                    </div>
-                                );
-                            }
-
-                            /* ------------------ NUMBER (Select) ------------------ */
-                            if (field.type === "number") {
-                                return (
-                                    <SelectField
-                                        key={field.path}
-                                        name={field.path}
-                                        label={field.label}
-                                        placeholder={field.placeholder}
-                                        options={field.options || []}
-                                        control={form.control}
-                                        error={null}
-                                        required={false}
-                                    />
-                                );
-                            }
-
-                            /* ------------------ FONT ------------------ */
-                            if (field.type === "font") {
-                                return (
-                                    <SelectField
-                                        key={field.path}
-                                        name={field.path}
-                                        label={field.label}
-                                        placeholder="Select font"
-                                        options={FONT_OPTIONS}
-                                        control={form.control}
-                                        error={null}
-                                        required={false}
-                                        defaultValue={String(currentValue)}
-                                        onChange={(val) => handleChange(field.path, Number(val))} // <-- convert back
-                                    />
-                                );
-                            }
-
-
-
-                            /* ------------------ TEXT ------------------ */
-                            return (
-                                <InputField
-                                    key={field.path}
-                                    name={field.path}
-                                    label={field.label}
-                                    placeholder={field.placeholder}
-                                    value={currentValue}
-                                    register={() => ({
-                                        onChange: (e: any) => handleChange(field.path, e.target.value),
-                                    })}
-                                    error={null}
-                                />
-                            );
-                        })}
+                                    );
+                                })()}
+                            </div>
+                        ))}
                     </div>
+
                 </div>
             ))}
 
