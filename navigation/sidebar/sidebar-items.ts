@@ -6,7 +6,7 @@ import {
   Home, ImageUp, Camera,
   type LucideIcon, NotebookTabs,
   PanelsTopLeft, PanelTopBottomDashed, Trophy,
-  Wallpaper, FileQuestionMark, NotebookPen, ChartNoAxesCombined, Hourglass, ShieldUser,
+  Wallpaper, FileQuestionMark, NotebookPen, ChartNoAxesCombined, Hourglass, ShieldUser, BookOpen,
 } from "lucide-react";
 
 export interface NavSubItem {
@@ -143,6 +143,11 @@ export const sidebarItems: NavGroup[] = [
     label: "Pages",
     items: [
       {
+        title: "User Documentation",
+        url: "/pages/guide",
+        icon: BookOpen,
+      },
+      {
         title: "Account Settings",
         url: "/pages/settings",
         icon: BadgeCheck,
@@ -172,3 +177,4 @@ export const sidebarItems: NavGroup[] = [
     ],
   },
 ];
+
