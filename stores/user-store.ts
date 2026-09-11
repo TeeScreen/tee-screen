@@ -44,7 +44,9 @@ interface PreviewState {
     setPreview: (isChanged: boolean) => void
     screensaver: string,
     setScreensaver: (newSaver: string) => void
-
+    draftJson: any | null
+    setDraftJson: (json: any) => void
+    updateDraftJson: (updater: (prev: any) => any) => void
 }
 
 export const usePreviewState = create<PreviewState>()(
@@ -57,6 +59,9 @@ export const usePreviewState = create<PreviewState>()(
             setScreensaver: (newSaver: string) => set((s) => ({
                 screensaver: newSaver,
             })),
+            draftJson: null,
+            setDraftJson: (json: any) => set(() => ({ draftJson: json })),
+            updateDraftJson: (updater: (prev: any) => any) => set((s) => ({ draftJson: updater(s.draftJson) })),
         }),
         { name: 'preview-storage' })
 )

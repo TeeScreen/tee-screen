@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import InputField from "@/components/forms/InputField";
 import SelectField from "@/components/forms/SelectField";
-import { useDirtyState } from "@/stores/user-store";
+import { useDirtyState, usePreviewState } from "@/stores/user-store";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import { FONT_OPTIONS, EFont } from "@/data/font";
@@ -66,6 +66,7 @@ export function JsonFieldEditor({
     const [localJson, setLocalJson] = useState(json);
     const hiddenInputRef = useRef<HTMLInputElement>(null);
     const { setDirty } = useDirtyState();
+    const { setDraftJson } = usePreviewState();
     const [isSaving, setIsSaving] = useState(false);
 
     const form = useForm({
@@ -80,10 +81,11 @@ export function JsonFieldEditor({
     ------------------------------------------------------- */
     useEffect(() => {
         setLocalJson(json);
+        setDraftJson(json);
         if (hiddenInputRef.current) {
             hiddenInputRef.current.value = JSON.stringify(json);
         }
-    }, [json]);
+    }, [json, setDraftJson]);
 
     /* -------------------------------------------------------
        Debounced auto-save
@@ -122,6 +124,7 @@ export function JsonFieldEditor({
 
         const updated = setValue(localJson, path, value);
         setLocalJson(updated);
+        setDraftJson(updated);
 
         if (hiddenInputRef.current) {
             hiddenInputRef.current.value = JSON.stringify(updated);

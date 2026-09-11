@@ -1,5 +1,4 @@
 import {useCallback, useState} from "react";
-import {HexColorPicker} from "react-colorful";
 
 export interface RGBA {
     r: number;

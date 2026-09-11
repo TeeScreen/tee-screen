@@ -7,9 +7,6 @@ import PreviewScreen from "@/components/demo/PreviewScreen";
 export function PreviewPanel({ loadedScreen }: { loadedScreen: string }) {
     const { preview, setPreview } = usePreviewState();
 
-    const visibility = loadedScreen && preview ? "visible" : "hidden";
-    const hitTest = loadedScreen && preview ? "pointer-events-auto" : "pointer-events-none";
-
     useEffect(() => {
         if (loadedScreen) {
             setPreview(true);
@@ -20,8 +17,12 @@ export function PreviewPanel({ loadedScreen }: { loadedScreen: string }) {
         }
     }, [loadedScreen, setPreview]);
 
+    if (!loadedScreen || !preview) {
+        return null;
+    }
+
     return (
-        <div className={`${visibility} ${hitTest}`}>
+        <div className="visible pointer-events-auto">
             <div
                 className="
                 w-auto border-sm bg-background flex flex-col

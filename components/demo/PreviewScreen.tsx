@@ -56,7 +56,15 @@ export default function PreviewScreen() {
     const [replaceNews, setReplaceNews] = useState<boolean>(false)
 
     const { version, dirty, externalEditVersion } = useDirtyState()
-    const { preview, screensaver, setScreensaver } = usePreviewState();
+    const { preview, screensaver, setScreensaver, draftJson } = usePreviewState();
+
+    // On draftJson updates, optimistically update UI fields without waiting for server round-trips
+    useEffect(() => {
+        if (draftJson) {
+            updateOtherFields(draftJson);
+            updateTabsAndNoticesFromDraft(draftJson);
+        }
+    }, [draftJson]);
 
     // On version updates, call preview changes
     useEffect(() => {
@@ -83,26 +91,23 @@ export default function PreviewScreen() {
         setUserInfo(info)
         if (!info?.screenJson) {
             console.log("Loading false");
-
             setLoading(false)
             return
         }
         updateOtherFields(info.screenJson);
 
         const folderName = info.screenJson.FolderNameOnServer
-        await resolveImages(folderName)
-        await resolveTabsAndNotices(folderName, info.screenJson)
+        await resolveAllAssets(folderName, info.screenJson)
         await fetchSchedule(info?.loadedScreen);
         setScreensaver("");
         setLoading(false)
-
     }
 
     const handlePreview = async () => {
-        setLoading(true)
+        // Do not set loading=true during live edits to prevent blocking spinner flash
         const userinfo = await getUserInfo()
-        setUserInfo(userinfo);
-        const res = await previewScreenChanges([`${userinfo?.loadedScreen}`])
+        if (userinfo) setUserInfo(userinfo);
+        const res = await previewScreenChanges([`${userinfo?.loadedScreen}`], "current", userinfo)
 
         if (res.success && res.previews) {
             setPreviews(res.previews);
@@ -112,9 +117,9 @@ export default function PreviewScreen() {
             console.error(res.message || "Preview failed")
         }
 
-        updateOtherFields(userinfo.screenJson);
-        await fetchSchedule(userinfo?.loadedScreen);
-        setLoading(false)
+        if (userinfo?.screenJson) {
+            updateOtherFields(userinfo.screenJson);
+        }
     }
 
     const fetchSchedule = async (screenName : string) => {
@@ -225,8 +230,96 @@ export default function PreviewScreen() {
         setNotices(noticeDefs)
     }
 
-    const resolveImages = async (folderName: string) => {
-        const previewNames = [
+    const updateTabsAndNoticesFromDraft = (data: any) => {
+        if (!data) return;
+
+        setTabs(prevTabs => {
+            const rawTabs = [
+                {
+                    active: data.CustomTab01Active,
+                    name: data.CustomTab01Name,
+                    urlActive: data.CustomTab01UrlActive,
+                    url: data.CustomTab01Url,
+                },
+                {
+                    active: data.CustomTab02Active,
+                    name: data.CustomTab02Name,
+                    urlActive: data.CustomTab02UrlActive,
+                    url: data.CustomTab02Url,
+                },
+                {
+                    active: data.CustomTab03Active,
+                    name: data.CustomTab03Name,
+                    urlActive: data.CustomTab03UrlActive,
+                    url: data.CustomTab03Url,
+                },
+                {
+                    active: data.CustomTab04Active,
+                    name: data.CustomTab04Name,
+                    urlActive: data.CustomTab04UrlActive,
+                    url: data.CustomTab04Url,
+                },
+            ];
+
+            return rawTabs
+                .map((raw, idx) => {
+                    const prev = prevTabs[idx] || {};
+                    return {
+                        ...prev,
+                        active: raw.active ?? prev.active,
+                        name: raw.name ?? prev.name,
+                        urlActive: raw.urlActive ?? prev.urlActive,
+                        url: raw.url ?? prev.url,
+                    };
+                })
+                .filter(t => t.active);
+        });
+
+        setNotices(prevNotices => {
+            const noticeDefs = [
+                {
+                    active: data?.noticeTopIsActive ?? true,
+                    text: data.TopNoticeText,
+                    color: data.TopNoticeBoardColour,
+                    interactive: data.TopNoticeButtonActive,
+                    urlActive: data.showUrlNoticeButtonTop,
+                    url: data.urlNoticeButtonTop,
+                },
+                {
+                    active: data?.noticeMiddleIsActive ?? true,
+                    text: data.MiddleNoticeText,
+                    color: data.MiddleNoticeBoardColour,
+                    interactive: data.MiddleNoticeButtonActive,
+                    urlActive: data.showUrlNoticeButtonMiddle,
+                    url: data.urlNoticeButtonMiddle,
+                },
+                {
+                    active: data?.noticeBottomIsActive ?? true,
+                    text: data.BottomNoticeText,
+                    color: data.BottomNoticeBoardColour,
+                    interactive: data.BottomNoticeButtonActive,
+                    urlActive: data.showUrlNoticeButtonBottom,
+                    url: data.urlNoticeButtonBottom,
+                },
+            ];
+
+            return noticeDefs.map((def, idx) => {
+                const prev = prevNotices[idx] || {};
+                return {
+                    ...prev,
+                    active: def.active ?? prev.active,
+                    text: def.text ?? prev.text,
+                    color: def.color ?? prev.color,
+                    interactive: def.interactive ?? prev.interactive,
+                    urlActive: def.urlActive ?? prev.urlActive,
+                    url: def.url ?? prev.url,
+                };
+            });
+        });
+    };
+
+    const resolveAllAssets = async (folderName: string, data: any) => {
+        const allFileNames = [
             "Background",
             "Overview",
             "Logo",
@@ -234,37 +327,7 @@ export default function PreviewScreen() {
             "AwayBG",
             "LineUpBG",
             "HideMatchImage",
-            "FanGuide"
-        ];
-
-        const safeNames = await findFileSafeNames(folderName, previewNames);
-
-        const resolved = safeNames.map((safe, i) => {
-            const original = previewNames[i];
-
-            // Same logic as your old resolvePreviewFile()
-            if (!safe || safe === original || safe[0] === "d") {
-                return null;
-            }
-
-            return `/api/downloads/${folderName}/${safe}`;
-        });
-        // Assign in order
-        setBackgroundImage(resolved[0]);
-        setOverviewImage(resolved[1]);
-        setLogoImage(resolved[2]);
-        setHomeBG(resolved[3]);
-        setAwayBG(resolved[4]);
-        setLineUpBG(resolved[5]);
-        setHideScoreBG(resolved[6]);
-        setFanGuidePDF(resolved[7]);
-        console.log(fanGuidePDF);
-    };
-
-    const resolveTabsAndNotices = async (folderName: string, data: any) => {
-        // All filenames needed for tabs + notices
-        const fileNames = [
-            // Tabs
+            "FanGuide",
             "CustomTabIcon01.png",
             "CustomTabImage01",
             "CustomTabIcon02.png",
@@ -273,17 +336,13 @@ export default function PreviewScreen() {
             "CustomTabImage03",
             "CustomTabIcon04.png",
             "CustomTabImage04",
-
-            // Notices
             "NoticeImage01",
             "NoticeImage02",
             "NoticeImage03"
         ];
 
-        // Fetch all safe names in one call
-        const safeNames = await findFileSafeNames(folderName, fileNames);
+        const safeNames = await findFileSafeNames(folderName, allFileNames);
 
-        // Helper to resolve a single safe filename
         const resolveSafe = (safe: string, original: string) => {
             if (!safe || safe === original || safe[0] === "d") {
                 return null;
@@ -291,9 +350,16 @@ export default function PreviewScreen() {
             return `/api/downloads/${folderName}/${safe}`;
         };
 
-        // Map safe names back to their respective items
-        let idx = 0;
+        setBackgroundImage(resolveSafe(safeNames[0], allFileNames[0]));
+        setOverviewImage(resolveSafe(safeNames[1], allFileNames[1]));
+        setLogoImage(resolveSafe(safeNames[2], allFileNames[2]));
+        setHomeBG(resolveSafe(safeNames[3], allFileNames[3]));
+        setAwayBG(resolveSafe(safeNames[4], allFileNames[4]));
+        setLineUpBG(resolveSafe(safeNames[5], allFileNames[5]));
+        setHideScoreBG(resolveSafe(safeNames[6], allFileNames[6]));
+        setFanGuidePDF(resolveSafe(safeNames[7], allFileNames[7]));
 
+        let idx = 8;
         const tabDefs = [
             {
                 active: data.CustomTab01Active,

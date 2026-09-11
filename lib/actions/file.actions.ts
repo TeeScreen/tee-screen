@@ -239,8 +239,8 @@ const getScreenPreview = async (screenName: string): Promise<string | null> => {
     }
 }
 
-export async function previewScreenChanges(targetScreens: string[], mode :string = "current" ) {
-    const userInfo = await getUserInfo();
+export async function previewScreenChanges(targetScreens: string[], mode :string = "current", cachedUserInfo?: any) {
+    const userInfo = cachedUserInfo || await getUserInfo();
     const sourceData = userInfo?.screenJson;
     if (!sourceData) return { success: false, message: "No source data" };
     const sourceFolder = sourceData.FolderNameOnServer;
