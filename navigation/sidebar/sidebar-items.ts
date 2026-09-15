@@ -131,13 +131,13 @@ export const sidebarItems: NavGroup[] = [
         needsLoad: true,
         hasCheckIn: true,
       },
-      {
-        title: "Daily Tee Sheet",
-        url: "/dashboard/tee-sheet",
-        icon: CalendarCheck,
-        needsLoad: true,
-        isGolf: true,
-      },
+      // {
+      //   title: "Daily Tee Sheet",
+      //   url: "/dashboard/tee-sheet",
+      //   icon: CalendarCheck,
+      //   needsLoad: true,
+      //   isGolf: true,
+      // },
       {
         title: "Analytics",
         url: "/dashboard/analytics",
