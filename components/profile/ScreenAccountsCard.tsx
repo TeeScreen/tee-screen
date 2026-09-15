@@ -159,7 +159,7 @@ export default function ScreenAccountsCard({
                         <Key className="h-8 w-8 text-muted-foreground mb-2 stroke-[1.5]" />
                         <p className="text-sm font-medium">No Screen Accounts Connected</p>
                         <p className="text-xs text-muted-foreground max-w-xs mt-1">
-                            Click "Add New Screen" to connect your TeeScreen account credentials.
+                            Click "Add New Screen" to connect your TeeScreen account credentials. (This might also be your old login from the previous portal)
                         </p>
                         <AddAccountDialog action={handleAddAccount} />
                     </div>
