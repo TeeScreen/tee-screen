@@ -30,7 +30,7 @@ export default async function Page() {
                                 paths={[
                                     {
                                         path: "noticeTopIsActive",
-                                        label: "Make Notice Active",
+                                        label: "Enable Notice",
                                         type: "bool",
                                         tag: "top notice",
                                         placeholder: true
@@ -100,7 +100,7 @@ export default async function Page() {
                                 paths={[
                                     {
                                         path: "noticeMiddleIsActive",
-                                        label: "Make Notice Active",
+                                        label: "Enable Notice",
                                         type: "bool",
                                         tag: "middle notice",
                                         placeholder: true
@@ -170,7 +170,7 @@ export default async function Page() {
                                 paths={[
                                     {
                                         path: "noticeBottomIsActive",
-                                        label: "Make Notice Active",
+                                        label: "Enable Notice",
                                         type: "bool",
                                         tag: "bottom notice",
                                         placeholder: true

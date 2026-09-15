@@ -105,11 +105,11 @@ const GUIDES_DATA: DocumentationGuide[] = [
     },
     steps: [
       "Navigate to the Screens home dashboard from the sidebar menu.",
-      "Select your club or account from the Account Switcher dropdown at the top right of the screen.",
-      "Click 'Load Screen' on the target screen card to begin editing.",
-      "Confirm the green active badge shows your target screen in the top navbar.",
+      "Select your club or account from the Account Switcher dropdown at the centre of the screen.",
+      "Click 'Load Screen' on the selected screen card to begin editing.",
+      "Confirm the preview shows your target screen in right side preview.",
     ],
-    tips: "Ensure you have proper editor or administrator permissions assigned to load locked screens.",
+    tips: "Ensure you have proper the proper account loaded. Try reloading the account from the account settings if your screen still isn't appearing",
   },
   {
     id: "copy-screens",
@@ -158,7 +158,7 @@ const GUIDES_DATA: DocumentationGuide[] = [
     },
     steps: [
       "Make any modifications to text, images, schedules, or colors within dashboard pages.",
-      "Observe your edits instantly in the right-hand Live Preview simulator drawer.",
+      "Observe your edits instantly in the right-hand Live Preview simulator.",
       "Click the 'Apply Changes' button in the top navbar to push changes live to physical display screens.",
       "Use the 'Discard' button if you wish to throw away uncommitted draft modifications.",
     ],
@@ -187,7 +187,7 @@ const GUIDES_DATA: DocumentationGuide[] = [
     targetUrl: "/dashboard/logo",
     pdfGuide: {
       title: "Customise Dashboard Visuals",
-      src: "/guides/ChangeVisuals.pdf",
+      src: "/guides/HowToEdit.pdf",
       description: "Visual customization guide covering logo and theme updates.",
     },
     steps: [
@@ -201,22 +201,21 @@ const GUIDES_DATA: DocumentationGuide[] = [
   {
     id: "background-styling",
     category: "styling",
-    title: "Managing Background Graphics & Themes",
-    subtitle: "Set custom background wallpapers, dark overlays, and ambient color fills.",
+    title: "Managing Dashboard Themes",
+    subtitle: "Set custom dashboard themes and layouts.",
     icon: Wallpaper,
     targetUrl: "/dashboard/background",
     pdfGuide: {
       title: "Customise Visuals & Backgrounds",
       src: "/guides/ChangeVisuals.pdf",
-      description: "Guide on configuring background images and color fills.",
+      description: "Guide on configuring dashboard themes.",
     },
     steps: [
-      "Navigate to Dashboard -> Background.",
-      "Choose between preset graphic themes or upload a custom high-res wallpaper image.",
-      "Adjust background opacity, overlay darkness, and blur effects for optimal readability.",
-      "Save your changes and click Apply.",
+      "Select the cog icon in the upper right.",
+      "Choose between preset graphic themes and light and dark modes.",
+      "Changes will be remembered automatically for this device",
     ],
-    tips: "Ensure contrast remains strong so text overlay elements are easily legible from a distance.",
+    tips: "Dark mode can be a lot easier on the eyes",
   },
   {
     id: "ui-elements",
@@ -227,10 +226,7 @@ const GUIDES_DATA: DocumentationGuide[] = [
     targetUrl: "/dashboard/ui-elements",
     steps: [
       "Navigate to Dashboard -> UI Elements.",
-      "Customize main container background colors, card border radius (corner rounding), and shadow values.",
-      "Adjust font scaling factors for large TV display visibility.",
-      "Configure card opacity and border line thickness.",
-      "Toggle light/dark theme preference presets.",
+      "Customize main container background colors and fonts.",
     ],
     tips: "Larger TV screens benefit from higher contrast text and slightly larger font scales.",
   },
@@ -244,7 +240,7 @@ const GUIDES_DATA: DocumentationGuide[] = [
     steps: [
       "Go to Dashboard -> Notice Board.",
       "Select Top, Middle, or Bottom notice slots using the tab selector.",
-      "Enter notice title, body message text, active schedule timestamps, and icon styling.",
+      "Enter notice title, interactivity, notices images or urls.",
       "Toggle 'Enable Notice' to make the announcement visible on the screen display.",
     ],
     tips: "Use Top Notice for critical high-priority announcements and Middle/Bottom for general club updates.",
@@ -275,10 +271,10 @@ const GUIDES_DATA: DocumentationGuide[] = [
     steps: [
       "Navigate to Dashboard -> Custom Tabs.",
       "Select CustomTab 1 through 4 to configure.",
-      "Set custom tab title labels, upload content images, and input rich description text.",
+      "Set custom tab title labels, upload content images or set urls to be displayed.",
       "Enable or disable tab visibility as needed for seasonal promotions.",
     ],
-    tips: "Custom tabs rotate automatically on TV screens when auto-rotation is enabled.",
+    tips: "Custom tabs are great way to display rules and more permanent information, they also support pdf uploads and videos.",
   },
   {
     id: "screensavers",
@@ -289,11 +285,10 @@ const GUIDES_DATA: DocumentationGuide[] = [
     targetUrl: "/dashboard/screensavers",
     steps: [
       "Navigate to Dashboard -> Screensavers.",
-      "Upload image slides for your screensaver carousel.",
-      "Set idle timeout delays (e.g. 5 minutes of inactivity) and slide rotation speeds.",
+      "Upload image and video slides for your screensaver carousel.",
       "Preview the screensaver mode in the live preview drawer.",
     ],
-    tips: "High-resolution landscape photos (1920x1080) work best for full-screen screensavers.",
+    tips: "High-resolution landscape photos (1080x1080) work best for full-screen screensavers.",
   },
   {
     id: "golf-coordinates",
@@ -302,11 +297,6 @@ const GUIDES_DATA: DocumentationGuide[] = [
     subtitle: "Pinpoint hole locations, tee boxes, and green co-ordinates on satellite mapping.",
     icon: LandPlot,
     targetUrl: "/dashboard/golf-course",
-    pdfGuide: {
-      title: "How to Edit Hole Co-ordinates",
-      src: "/guides/ChangingCoordinates.pdf",
-      description: "Step-by-step PDF guide for adjusting pin locations on interactive satellite maps.",
-    },
     steps: [
       "Navigate to Dashboard -> Golf Course (requires Golf Club screen license).",
       "Click 'Edit Hole Co-ordinates' or select a specific hole (1–18).",
@@ -318,16 +308,15 @@ const GUIDES_DATA: DocumentationGuide[] = [
   {
     id: "golf-checkin",
     category: "sports",
-    title: "Golf Check-In & Leaderboard Displays",
-    subtitle: "Display daily tee times, player check-in status, and handicap rankings.",
+    title: "Golf Check-In",
+    subtitle: "Display daily tee times, player check-in status.",
     icon: NotebookPen,
     targetUrl: "/dashboard/golf-check-in",
     steps: [
       "Navigate to Dashboard -> Golf Check In.",
-      "Manage today's check-in list, player names, tee times, and handicap values.",
-      "Publish live updates to screen scoreboards.",
+      "View and download check in data from your screens",
     ],
-    tips: "Check-in displays update automatically when connected to compatible tee time systems.",
+    tips: "Check-in displays update automatically when connected to compatible screens.",
   },
   {
     id: "match-centre",
@@ -338,9 +327,7 @@ const GUIDES_DATA: DocumentationGuide[] = [
     targetUrl: "/dashboard/match-centre",
     steps: [
       "Navigate to Dashboard -> Match Centre (available for Football Club licenses).",
-      "Fixtures & Scores: Input upcoming opponent name, kickoff time, match venue, and live score results.",
-      "Team Lineup: Configure starting XI players, substitutes, team formation layout, and squad numbers.",
-      "League Table Widget: Update team points, wins, draws, losses, and goal difference standings.",
+      "Update Lineup background, choose to hide or show scoreboards, set home and away team backgrounds",
       "Click Save and Apply to broadcast matchday info live to clubhouse screens.",
     ],
     tips: "Turn on Active Match Mode during matchday to enable real-time score updates.",
@@ -364,26 +351,7 @@ const GUIDES_DATA: DocumentationGuide[] = [
     ],
     tips: "Your profile name is displayed to team members when collaborating on screens.",
   },
-  {
-    id: "security-settings",
-    category: "account",
-    title: "Changing Email & Account Password",
-    subtitle: "Securely update your login email address and change system password.",
-    icon: ShieldCheck,
-    targetUrl: "/pages/settings",
-    pdfGuide: {
-      title: "Change Email or Password",
-      src: "/guides/ChangeEmailAndPassword.pdf",
-      description: "Step-by-step PDF manual for changing login email and password.",
-    },
-    steps: [
-      "Navigate to Pages -> Account Settings.",
-      "To update email: Click 'Change Email', enter your new email address, and confirm password.",
-      "To update password: Click 'Change Password', enter current password and set your new strong password.",
-      "Confirm changes to update authentication records.",
-    ],
-    tips: "Use a strong password with at least 8 characters including letters, numbers, and symbols.",
-  },
+
 ];
 
 const FAQS = [
