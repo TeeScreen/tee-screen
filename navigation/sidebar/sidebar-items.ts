@@ -6,7 +6,8 @@ import {
   Home, ImageUp, Camera,
   type LucideIcon, NotebookTabs,
   PanelsTopLeft, PanelTopBottomDashed, Trophy,
-  Wallpaper, FileQuestionMark, NotebookPen, ChartNoAxesCombined, Hourglass, ShieldUser, BookOpen,
+  Wallpaper, FileQuestionMark, NotebookPen, ChartNoAxesCombined, Hourglass, ShieldUser, BookOpen, CalendarCheck
+
 } from "lucide-react";
 
 export interface NavSubItem {
@@ -129,6 +130,13 @@ export const sidebarItems: NavGroup[] = [
         icon: NotebookPen,
         needsLoad: true,
         hasCheckIn: true,
+      },
+      {
+        title: "Daily Tee Sheet",
+        url: "/dashboard/tee-sheet",
+        icon: CalendarCheck,
+        needsLoad: true,
+        isGolf: true,
       },
       {
         title: "Analytics",
