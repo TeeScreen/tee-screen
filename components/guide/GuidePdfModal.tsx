@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { ZoomIn, ZoomOut, Maximize2, FileText, ExternalLink } from "lucide-react";
 
-interface GuidePdfModalProps {
+export interface GuidePdfModalProps {
   src: string;
   title: string;
   description?: string;

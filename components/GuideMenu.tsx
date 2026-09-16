@@ -26,72 +26,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+import {categories} from "@/data/guide";
+
 export function GuideMenu() {
   const [activeTab, setActiveTab] = React.useState<"guides" | "video">("guides");
   const [isOpen, setIsOpen] = React.useState(false);
-
-  const categories = [
-    {
-      name: "Essentials & First-Time Setup",
-      icon: BookOpen,
-      guides: [
-        {
-          label: "First-Time Setup: Connect Screen Account",
-          src: "/guides/AddAndLoadAccountForEditing.pdf",
-          title: "First-Time Setup & Connecting Screen Accounts",
-          description: "Step-by-step for new users adding screen credentials in Account Settings",
-        },
-        {
-          label: "Selecting & Loading Accounts",
-          src: "/guides/AddAndLoadAccountForEditing.pdf",
-          title: "Getting Started with Accounts",
-          description: "Overview of system accounts, switching screens, and basic navigation",
-        },
-        {
-          label: "Customise Dashboard Visuals",
-          src: "/guides/ChangeVisuals.pdf",
-          title: "Dashboard Customise Visuals",
-          description: "Overview of customisation options, branding, and updating colors",
-        },
-        {
-          label: "Edit Your Screen",
-          src: "/guides/HowToEdit.pdf",
-          title: "How to Edit your Screen",
-          description: "Overview of making draft changes and applying them to physical screens",
-        },
-      ],
-    },
-    {
-      name: "Users & Permissions",
-      icon: Users,
-      guides: [
-        {
-          label: "Change User Information",
-          src: "/guides/HowtoChangeYourBasicAccountSettings.pdf",
-          title: "Change User Information",
-          description: "Make changes to your basic account settings and user profile",
-        },
-        {
-          label: "Change Email or Password",
-          src: "/guides/ChangeEmailAndPassword.pdf",
-          title: "Change Email or Password",
-          description: "Make secure changes to your account email address or password",
-        },
-      ],
-    },
-    {
-      name: "Golf Features",
-      icon: LandPlot,
-      guides: [
-        {
-          label: "How to edit hole co-ordinates",
-          src: "/guides/ChangingCoordinates.pdf",
-          title: "Edit Hole Coordinates",
-          description: "How to edit pin co-ordinates for the interactive satellite map",
-        },
-      ],
-    },
-  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

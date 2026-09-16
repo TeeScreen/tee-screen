@@ -9,10 +9,13 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { GoogleSignInButton } from "@/components/profile/GoogleSignIn";
 import { useState } from "react";
+import {GuideMenu} from "@/components/GuideMenu";
+import {FirstTimeUserGuideMenu} from "@/components/guide/FirstTimeUserGuide";
 
 const SignIn = () => {
     const router = useRouter();
     const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [showFirstTimeUser, setShowFirstTimeUser] = useState(false);
 
     const {
         register,
@@ -39,6 +42,18 @@ const SignIn = () => {
                 router.push("/");
             } else {
                 toast.error(result.error);
+
+                const res = await fetch(
+                    `https://teescreenapp.com/api/validate_login.php?user=${data.email}&password=${data.password}`,
+                    { cache: "no-store" }
+                );
+
+                const check = await res.json();
+
+                if (check.success) {
+                    toast("Screen Account Detected, please refer to First Time User Guide");
+                    setShowFirstTimeUser(true);
+                }
 
                 if (result.error?.toLowerCase().includes("password")) {
                     setShowForgotPassword(true);
@@ -73,14 +88,12 @@ const SignIn = () => {
                 <InputField
                     name="email"
                     label="Email"
-                    type="email"
+                    type="text"
                     placeholder="Enter your email"
                     register={register}
                     error={errors.email}
                     validation={{
                         required: "Email is required",
-                        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                        message: "Email address is required",
                     }}
                 />
 
@@ -110,6 +123,10 @@ const SignIn = () => {
                 )}
 
                 <GoogleSignInButton />
+
+                {showFirstTimeUser && (
+                    <FirstTimeUserGuideMenu />
+                )}
 
                 <FooterLink text="Don't have an account?" linkText="Create account" href="/sign-up" />
             </form>

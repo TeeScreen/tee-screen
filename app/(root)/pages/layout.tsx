@@ -20,6 +20,7 @@ import {applyScreenChange, getUserInfo, isUserAdmin} from "@/lib/actions/user.ac
 import { ApplyDialog } from "@/components/ApplyDialogue";
 import {toast} from "sonner";
 import { DiscardDialog } from "@/components/DiscardDialogue";
+import {GuideMenu} from "@/components/GuideMenu";
 export const dynamic = "force-dynamic";
 export default async function Layout({ children }: Readonly<{ children: ReactNode }>) {
   if (!auth) {
@@ -78,6 +79,11 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
           </div>
         </header>
         <div className="h-full p-4 md:p-6">{children}</div>
+
+        {/* Floating Guide Menu*/}
+        <div className="fixed bottom-4 right-4 z-50">
+          <GuideMenu />
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );
