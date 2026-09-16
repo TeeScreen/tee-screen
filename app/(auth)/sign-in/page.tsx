@@ -9,8 +9,8 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { GoogleSignInButton } from "@/components/profile/GoogleSignIn";
 import { useState } from "react";
-import {GuideMenu} from "@/components/GuideMenu";
 import {FirstTimeUserGuideMenu} from "@/components/guide/FirstTimeUserGuide";
+import {GuideMenu} from "@/components/GuideMenu";
 
 const SignIn = () => {
     const router = useRouter();
@@ -125,8 +125,15 @@ const SignIn = () => {
                 <GoogleSignInButton />
 
                 {showFirstTimeUser && (
-                    <FirstTimeUserGuideMenu />
+                    <div className="bg-muted w-full flex flex-col items-center justify-center py-4 gap-2 text-center rounded-md">                        <span>Screen Login details not working? Please read</span>
+                        <FirstTimeUserGuideMenu />
+                    </div>
                 )}
+
+                {/* Floating Guide Menu*/}
+                <div className="fixed bottom-4 right-4 z-50">
+                    <FirstTimeUserGuideMenu />
+                </div>
 
                 <FooterLink text="Don't have an account?" linkText="Create account" href="/sign-up" />
             </form>
