@@ -165,12 +165,12 @@ export const sidebarItems: NavGroup[] = [
         url: "/pages/contact",
         icon: Contact,
       },
-      {
+      /*{
         title: "Old Portal",
         url: "https://www.teescreen.co.uk/old-portal/",
         icon: Hourglass,
         newTab: true,
-      },
+      },*/
       {
         title: "Report Bug",
         url: "/pages/bug-report",
