@@ -151,7 +151,7 @@ export const sidebarItems: NavGroup[] = [
     label: "Pages",
     items: [
       {
-        title: "User Documentation",
+        title: "Help & Guides",
         url: "/pages/guide",
         icon: BookOpen,
       },

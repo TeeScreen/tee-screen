@@ -4,7 +4,7 @@ import { DocumentationHub } from "@/components/guide/DocumentationHub";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "User Documentation & Guides | TeeScreen",
+  title: "Help & Guides | TeeScreen",
   description: "Comprehensive guides, PDF manuals, video walkthroughs, and help resources for TeeScreen displays.",
 };
 
