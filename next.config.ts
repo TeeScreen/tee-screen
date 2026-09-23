@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
         ignoreBuildErrors: false,
         tsconfigPath: 'tsconfig.json',
     },
+
+    images: {
+        unoptimized: true,
+    },
 };
 
 
