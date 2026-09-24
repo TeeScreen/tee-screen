@@ -67,3 +67,51 @@ export function toUnityIsoStringFrom(input: Date, hourOffset: number = 0): strin
 
     return `${year}-${month}-${day}T${hour}:${minute}:${second}.${ms}`;
 }
+
+export function toUnityIsoStringFromString(input: string | undefined, hourOffset: number = 0): string {
+    // Parse the incoming string into a Date
+
+    if(!input)
+    {
+        throw new Error(`Date String is null`);
+    }
+
+    const date = new Date(input);
+
+    if (isNaN(date.getTime())) {
+        throw new Error(`Invalid date string: "${input}"`);
+    }
+
+    // Format parts in London-local time
+    const fmt = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Europe/London",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+    });
+
+    const parts = fmt.formatToParts(date);
+    const get = (type: string) => parts.find(p => p.type === type)?.value ?? "00";
+
+    const year = get("year");
+    const month = get("month");
+    const day = get("day");
+
+    // Adjust hour only (wraparound safe)
+    const rawHour = Number(get("hour"));
+    const adjustedHour = ((rawHour + hourOffset) % 24 + 24) % 24;
+    const hour = String(adjustedHour).padStart(2, "0");
+
+    const minute = get("minute");
+    const second = get("second");
+
+    // Milliseconds from parsed date
+    const ms = String(date.getMilliseconds()).padStart(3, "0");
+
+    return `${year}-${month}-${day}T${hour}:${minute}:${second}.${ms}`;
+}
+
