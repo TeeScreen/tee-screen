@@ -305,7 +305,11 @@ export async function updateScreenJson(formData: FormData) {
 
 export async function applyScreenChange() {
     try {
+        await connectToDatabase();
         const userInfo = await getUserInfo();
+        if (!userInfo || !userInfo.screenJson) {
+            return { success: false, error: "No screen data found" };
+        }
         const data = userInfo.screenJson;
 
         // 1. Update timestamp
@@ -315,38 +319,54 @@ export async function applyScreenChange() {
         const json = JSON.stringify(data);
         const jsonBlob = new Blob([json], { type: "application/json" });
 
-        // 3. Upload JSON to PHP
+        // 3. Prepare upload form
         const jsonForm = new FormData();
         jsonForm.append("file", jsonBlob, `${data.name}.json`);
 
-        const jsonRes = await fetch(`${process.env.SERVER_URL}/upload_golf_course.php`, {
-            method: "POST",
-            body: jsonForm,
-        });
+        const folderName = data.FolderNameOnServer;
+
+        // 4. Upload JSON and restore images concurrently
+        const [jsonRes, restoreRes] = await Promise.all([
+            fetch(`${process.env.SERVER_URL}/upload_golf_course.php`, {
+                method: "POST",
+                body: jsonForm,
+            }),
+            folderName ? uploadFolder(folderName) : Promise.resolve({ success: true, message: "" }),
+        ]);
 
         if (!jsonRes.ok) {
             throw new Error("Failed to upload JSON");
         }
 
-        // ---------------------------------------------------------
-        // STEP 2: RESTORE IMAGES FROM TMP → ORIGINAL
-        // ---------------------------------------------------------
-        const folderName = data.FolderNameOnServer;
-
-        const restoreRes = await uploadFolder(folderName);
-
         if (!restoreRes.success) {
             throw new Error("Failed to restore images from tmp");
         }
 
-        // ---------------------------------------------------------
-        // STEP 3: CleanUp
-        // ---------------------------------------------------------
-        await resetScreenChange();
+        // 5. Concurrently update database, refresh tmp images, and broadcast update
+        await Promise.all([
+            ScreenInfoModel.findOneAndUpdate(
+                { screenName: data.name },
+                {
+                    screenJson: data,
+                    lastEdited: null,
+                    lastEditedBy: null,
+                    lastEditedByName: null,
+                },
+                { upsert: true }
+            ),
+            folderName ? downloadClubImages(folderName).catch((e) => console.warn("Failed to refresh club images:", e)) : Promise.resolve(),
+            Promise.resolve().then(() => {
+                broadcastScreenUpdate(userInfo.loadedScreen, {
+                    screen: userInfo.loadedScreen,
+                    editedBy: userInfo.userId ?? "0",
+                    editedByName: userInfo.fullName ?? "Unknown",
+                    version: Date.now(),
+                    type: "reset",
+                    message: "applied screen changes",
+                });
+            }),
+        ]);
 
-        // ---------------------------------------------------------
-        // STEP 4: Revalidate UI
-        // ---------------------------------------------------------
         revalidatePath("/");
 
         return { success: true };
@@ -393,10 +413,7 @@ export async function resetScreenChange(resetLoaded: boolean = false) {
             return { success: false, error: "No screen loaded to reset" };
         }
 
-        // Delete folder if folderName exists on the draft screen
-        if (userInfo.screenJson?.FolderNameOnServer) {
-            await deleteFolder(userInfo.screenJson.FolderNameOnServer);
-        }
+        const folderName = userInfo.screenJson?.FolderNameOnServer;
 
         const account = userInfo.accountDetails?.find(
             (a: any) => a.accountLogin === userInfo.loadedAccount
@@ -405,57 +422,68 @@ export async function resetScreenChange(resetLoaded: boolean = false) {
             return { success: false, error: "No account found" };
         }
 
-        const screenRes = await fetch(
+        // Concurrently delete tmp folder (if present) and fetch screen & analytics data
+        const deleteFolderPromise = folderName
+            ? deleteFolder(folderName).catch((e) => console.warn("deleteFolder failed", e))
+            : Promise.resolve();
+
+        const fetchScreenPromise = fetch(
             `https://teescreenapp.com/api/screen_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${userInfo.loadedScreen}`
         );
-        if (!screenRes.ok) {
+
+        const fetchAnalyticsPromise = fetch(
+            `https://teescreenapp.com/api/analytics_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${userInfo.loadedScreen}`
+        ).catch(() => null);
+
+        const [, screenRes, analyticsRes] = await Promise.all([
+            deleteFolderPromise,
+            fetchScreenPromise,
+            fetchAnalyticsPromise,
+        ]);
+
+        if (!screenRes || !screenRes.ok) {
             return { success: false, error: "Failed to fetch screen data" };
         }
 
         const screenData = await screenRes.json();
-
         let analyticsData: any = null;
-        try {
-            const analyticsRes = await fetch(
-                `https://teescreenapp.com/api/analytics_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenData.name}`
-            );
-            if (analyticsRes.ok) {
-                analyticsData = await analyticsRes.json();
-            }
-        } catch {
-            console.warn("Analytics request failed");
-        }
-
-        // Save original/fresh JSONs back to the screen document
-        await ScreenInfoModel.findOneAndUpdate(
-            { screenName: screenData.name},
-            {
-                screenJson: screenData,
-                analyticsJson: analyticsData,
-                lastEdited: null,
-                lastEditedBy: null,
-                lastEditedByName: null,
-            },
-            { upsert: true }
-        );
-
-        if (screenData.FolderNameOnServer) {
+        if (analyticsRes && analyticsRes.ok) {
             try {
-                await downloadClubImages(screenData.FolderNameOnServer);
+                analyticsData = await analyticsRes.json();
             } catch {
-                console.warn("Failed to download club images");
+                console.warn("Analytics JSON parsing failed");
             }
         }
 
-        broadcastScreenUpdate(userInfo.loadedScreen, {
-            screen: userInfo.loadedScreen,
-            editedBy: userInfo.userId ?? "0",
-            editedByName: userInfo.fullName ?? "Unknown",
-            version: Date.now(),
-            type: "reset",
-            message: "reset screen changes",
-        });
-
+        // Concurrently update DB, download fresh club images, and broadcast update
+        await Promise.all([
+            ScreenInfoModel.findOneAndUpdate(
+                { screenName: screenData.name },
+                {
+                    screenJson: screenData,
+                    analyticsJson: analyticsData,
+                    lastEdited: null,
+                    lastEditedBy: null,
+                    lastEditedByName: null,
+                },
+                { upsert: true }
+            ),
+            screenData.FolderNameOnServer
+                ? downloadClubImages(screenData.FolderNameOnServer).catch((e) =>
+                      console.warn("Failed to download club images:", e)
+                  )
+                : Promise.resolve(),
+            Promise.resolve().then(() => {
+                broadcastScreenUpdate(userInfo.loadedScreen, {
+                    screen: userInfo.loadedScreen,
+                    editedBy: userInfo.userId ?? "0",
+                    editedByName: userInfo.fullName ?? "Unknown",
+                    version: Date.now(),
+                    type: "reset",
+                    message: "reset screen changes",
+                });
+            }),
+        ]);
 
         revalidatePath("/");
         return { success: true, message: "Reset and refreshed screen" };

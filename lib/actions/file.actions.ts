@@ -277,54 +277,59 @@ export async function previewScreenChanges(targetScreens: string[], mode :string
 export async function confirmScreenChanges(
     previews: { targetScreen: string; merged: any }[], sourceFolder?: string, mode : string = "current",
 ) {
-    for (const { targetScreen, merged } of previews) {
-        merged.lastEdited = nowUnityIsoString();
+    const results = await Promise.all(
+        previews.map(async ({ targetScreen, merged }) => {
+            merged.lastEdited = nowUnityIsoString();
 
-        const blob = new Blob([JSON.stringify(merged)], { type: "application/json" });
-        const form = new FormData();
-        form.append("file", blob, `${targetScreen}.json`);
+            const blob = new Blob([JSON.stringify(merged)], { type: "application/json" });
+            const form = new FormData();
+            form.append("file", blob, `${targetScreen}.json`);
 
-        const uploadRes = await fetch(
-            `${process.env.SERVER_URL}/upload_golf_course.php`,
-            {
-                method: "POST",
-                body: form,
-            }
-        );
-
-        if (!uploadRes.ok) {
-            return { success: false, message: `Failed to copy to ${targetScreen}` };
-        }
-
-        if(sourceFolder) {
-            // Optionally trigger your PHP script that processes tmp folder
-            const processRes = await fetch(
-                `${process.env.SERVER_URL}/upload_changes_tmp?source=${sourceFolder}&target=${merged.FolderNameOnServer}&mode=${mode}`
+            const uploadRes = await fetch(
+                `${process.env.SERVER_URL}/upload_golf_course.php`,
+                {
+                    method: "POST",
+                    body: form,
+                }
             );
-            console.log(processRes);
-            if (!processRes.ok) {
-                return { success: false, message: `Failed to process files for ${targetScreen}: ${processRes.body}` };
+
+            if (!uploadRes.ok) {
+                return { success: false, message: `Failed to copy to ${targetScreen}` };
             }
-        }
 
-        await saveUserInfo({
-            loadedScreen: targetScreen,
-            screenJson: merged,
-            lastEdited: new Date(),
-            lastEditedBy: merged.lastEditedBy ?? "0",
-            lastEditedByName: merged.lastEditedByName ?? "Unknown",
-        });
+            if (sourceFolder) {
+                const processRes = await fetch(
+                    `${process.env.SERVER_URL}/upload_changes_tmp?source=${sourceFolder}&target=${merged.FolderNameOnServer}&mode=${mode}`
+                );
+                if (!processRes.ok) {
+                    return { success: false, message: `Failed to process files for ${targetScreen}: ${processRes.body}` };
+                }
+            }
 
-        broadcastScreenUpdate(targetScreen, {
-            screen: targetScreen,
-            editedBy: merged.lastEditedBy ?? "0",
-            editedByName: merged.lastEditedByName ?? "Unknown",
-            version: Date.now(),
-            message: "applied changes to " + targetScreen,
-        });
+            await saveUserInfo({
+                loadedScreen: targetScreen,
+                screenJson: merged,
+                lastEdited: new Date(),
+                lastEditedBy: merged.lastEditedBy ?? "0",
+                lastEditedByName: merged.lastEditedByName ?? "Unknown",
+            });
 
+            broadcastScreenUpdate(targetScreen, {
+                screen: targetScreen,
+                editedBy: merged.lastEditedBy ?? "0",
+                editedByName: merged.lastEditedByName ?? "Unknown",
+                version: Date.now(),
+                message: "applied changes to " + targetScreen,
+            });
+
+            return { success: true };
+        })
+    );
+
+    const failure = results.find((r) => !r.success);
+    if (failure) {
+        return failure;
     }
-
 
     revalidatePath("/");
     return { success: true, message: "Changes copied successfully" };
