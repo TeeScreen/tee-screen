@@ -7,6 +7,7 @@ import { useDirtyState, usePreviewState } from "@/stores/user-store";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import { FONT_OPTIONS, EFont } from "@/data/font";
+import {ColorPickerWrapper} from "@/components/ColorPicker";
 
 function getValue(obj: any, path: string) {
     return path.split(".").reduce((acc, key) => {
@@ -250,21 +251,29 @@ export function JsonFieldEditor({
                                             return { r, g, b, a: alpha };
                                         };
 
+                                        const hex = toHex(rgba);
+
                                         return (
                                             <div className="flex flex-col gap-2">
                                                 <label className="font-medium">{field.label}</label>
-                                                <input
-                                                    type="color"
-                                                    value={toHex(rgba)}
-                                                    onChange={(e) => {
-                                                        const updated = hexToRgba(e.target.value, rgba.a);
-                                                        handleChange(field.path, updated);
+
+                                                <ColorPickerWrapper
+                                                    defaultColor={hex}
+                                                    recentColors={[
+                                                        toHex(localJson.TopNoticeBoardColour),
+                                                        toHex(localJson.MiddleNoticeBoardColour),
+                                                        toHex(localJson.BottomNoticeBoardColour),
+                                                        toHex(localJson.UIColor),
+                                                    ]}
+                                                    onChange={(newHex) => {
+                                                        const updatedRgba = hexToRgba(newHex, rgba.a);
+                                                        handleChange(field.path, updatedRgba);
                                                     }}
-                                                    className="h-10 w-20 rounded border"
                                                 />
                                             </div>
                                         );
                                     }
+
 
                                     if (field.type === "number") {
                                         return (
