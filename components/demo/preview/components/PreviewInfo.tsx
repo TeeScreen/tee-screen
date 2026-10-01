@@ -24,7 +24,7 @@ export const PreviewInfo = memo(function PreviewInfo({
     return (
         <>
             {/* Info Button */}
-            <div className="absolute bottom-10 left-0 z-[100] p-1 h-[5%] w-full flex justify-start">
+            <div className="absolute bottom-10 left-0 z-[100] p-1 h-[5%] flex justify-start">
                 <Button variant="outline" onClick={() => setOpen(true)}>
                     <InfoIcon />
                 </Button>

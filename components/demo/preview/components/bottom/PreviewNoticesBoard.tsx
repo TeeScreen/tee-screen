@@ -32,7 +32,12 @@ export const PreviewNoticesBoard = memo(function PreviewNoticesBoard({
                                 if (notice.urlActive && notice.url) {
                                     onOpenOverlay({ type: "url", src: notice.url })
                                 } else if (notice.image) {
-                                    onOpenOverlay({ type: "image", src: notice.image })
+                                    if(notice.image.endsWith(".pdf")) {
+                                        onOpenOverlay({type: "pdf", src: notice.image})
+                                    }
+                                    else {
+                                        onOpenOverlay({type: "image", src: notice.image})
+                                    }
                                 }
                             }
                         }}
