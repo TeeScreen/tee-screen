@@ -9,7 +9,8 @@ export type OverlayType =
     | 'fbPdf'
     | 'ssImage'
     | 'ssVid'
-    | 'golfHole';
+    | 'golfHole'
+    | 'handicap';
 
 export interface OverlayContent {
     type: OverlayType;

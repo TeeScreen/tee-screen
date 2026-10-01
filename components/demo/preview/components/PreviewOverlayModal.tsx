@@ -167,6 +167,13 @@ export const PreviewOverlayModal = memo(function PreviewOverlayModal({
             }
             break;
 
+        case 'handicap':
+            return (
+                <div className="absolute top-[10%] bottom-[25%] left-0 right-0 z-50 flex items-center justify-center">
+
+                </div>
+            )
+
         default:
             return null
     }
