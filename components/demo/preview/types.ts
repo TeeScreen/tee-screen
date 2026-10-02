@@ -17,6 +17,7 @@ export interface OverlayContent {
     src: string;
     hole ?: GolfHole;
     tees?: TeeSettings;
+    handicapData?: HandicapTeeData[];
 }
 
 
@@ -51,6 +52,16 @@ export interface GolfHole {
     parNumber: number;
     siNumber: number;
 }
+
+export interface HandicapTeeData {
+    teeName: string
+    displayedName: string
+    gender: string
+    par: number
+    courseRating: number
+    slopeRating: number
+}
+
 
 
 export interface TabItem {

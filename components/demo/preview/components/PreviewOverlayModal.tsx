@@ -4,6 +4,7 @@ import React, {memo} from 'react'
 import Image from 'next/image'
 import type {OverlayContent} from '../types'
 import dynamic from "next/dynamic";
+import {PreviewHandicapCalculator} from "@/components/demo/preview/components/PreviewHandicap";
 
 const PreviewGolfMap = dynamic(() => import("./PreviewGolfMap"), {
     ssr: false,
@@ -168,11 +169,18 @@ export const PreviewOverlayModal = memo(function PreviewOverlayModal({
             break;
 
         case 'handicap':
-            return (
-                <div className="absolute top-[10%] bottom-[25%] left-0 right-0 z-50 flex items-center justify-center">
+            if(overlayContent.handicapData) {
+                return (
+                    <div className="absolute top-[10%] bottom-[25%] left-0 right-0 z-50 flex items-center justify-center">
+                        <PreviewHandicapCalculator
+                            handicapData={overlayContent.handicapData}
+                            onClose={onClose}
+                        />
+                    </div>
+                )
+            }
+            break;
 
-                </div>
-            )
 
         default:
             return null

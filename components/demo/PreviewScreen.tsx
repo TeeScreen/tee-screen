@@ -33,6 +33,7 @@ export default function PreviewScreen() {
         activeScheduleEntry,
         holeData,
         teeData,
+        handicapData,
     } = usePreviewData()
 
 
@@ -94,6 +95,21 @@ export default function PreviewScreen() {
                             font={uiConfig.font}
                             logoImage={images.logoImage}
                         />
+                        {uiConfig.isGolfClub && (
+                            <button
+                                onClick={() =>
+                                    handleOpenOverlay({
+                                        type: 'handicap',
+                                        src: '',
+                                        handicapData: handicapData
+                                    })
+                                }
+                                className="absolute top-4 right-4 bg-black/70 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-lg z-50"
+                            >
+                                Handicap
+                            </button>
+                        )}
+
 
                         {/* OVERVIEW */}
                         <PreviewOverview

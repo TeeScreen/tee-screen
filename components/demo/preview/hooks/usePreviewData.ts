@@ -14,7 +14,7 @@ import type {
     PreviewImages,
     PreviewUiConfig,
     ScheduleEntry,
-    GolfHole, TeeSettings
+    GolfHole, TeeSettings, HandicapTeeData
 } from '../types'
 
 const ApiUrl = "https://teescreenapp.com/api/schedule"
@@ -64,6 +64,9 @@ export function usePreviewData() {
         TeeColourYellow: {r: 255, g: 232, b: 0, a: 255},
         TeeColourRed: {r: 255, g: 0, b: 0, a: 255}
     })
+
+    const [handicapData, setHandicapData] = useState<HandicapTeeData[]>()
+
 
 
     const [tabs, setTabs] = useState<TabItem[]>([])
@@ -145,6 +148,8 @@ export function usePreviewData() {
 
 
         setHoleData(parsedHoles);
+
+        setHandicapData(data?.golfCoursesData?.[selectedCourse]?.handicapData ?? []);
 
 
         setImages(prev => ({
@@ -714,5 +719,6 @@ export function usePreviewData() {
         activeScheduleEntry: activeScheduleEntryRef.current,
         holeData,
         teeData,
+        handicapData,
     }
 }
