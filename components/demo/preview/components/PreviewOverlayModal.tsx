@@ -24,14 +24,23 @@ export const PreviewOverlayModal = memo(function PreviewOverlayModal({
                                                                      }: PreviewOverlayModalProps) {
     if (!overlayContent) return null
 
+    const getSafeUrl = (url: string) => {
+        // If it's a YouTube watch URL, convert it to embed
+        const ytMatch = url.match(/v=([^&]+)/);
+        if (ytMatch) {
+            return `https://www.youtube.com/embed/${ytMatch[1]}`;
+        }
+
+        return url; // fallback for other URLs
+    };
+
     switch (overlayContent.type) {
         case 'url':
             return (
                 <div className="absolute inset-0 z-50 flex items-center justify-center">
                     <iframe
-                        src={overlayContent.src}
+                        src={getSafeUrl(overlayContent.src)}
                         className="w-full h-full bg-white"
-                        sandbox="allow-scripts allow-same-origin allow-forms"
                     />
                     <button
                         className="absolute top-4 right-4 bg-red-600 text-white rounded-full h-[3.5vh] w-[3.5vh] flex items-center justify-center font-bold text-[1.5vh]"
@@ -40,7 +49,7 @@ export const PreviewOverlayModal = memo(function PreviewOverlayModal({
                         ×
                     </button>
                 </div>
-            )
+            );
 
         case 'full':
             return (

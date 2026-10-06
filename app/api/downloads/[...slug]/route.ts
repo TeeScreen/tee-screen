@@ -12,8 +12,6 @@ export const GET = async (req: NextRequest, { params }: { params: Params }) => {
     try {
         const { slug } = await params;
 
-        console.log("Hell yeah:" , slug);
-
         let folderLocation = "tmp";
         let folderName;
         let fileName;
