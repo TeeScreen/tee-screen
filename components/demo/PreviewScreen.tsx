@@ -95,20 +95,40 @@ export default function PreviewScreen() {
                             font={uiConfig.font}
                             logoImage={images.logoImage}
                         />
+
+
                         {uiConfig.isGolfClub && (
-                            <button
+                            <Button
                                 onClick={() =>
                                     handleOpenOverlay({
                                         type: 'handicap',
                                         src: '',
-                                        handicapData: handicapData
+                                        handicapData
                                     })
                                 }
-                                className="absolute top-4 right-4 bg-black/70 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-lg z-50"
+                                className="
+            absolute top-[9%] right-[2vh]
+            h-[8vh] px-[01vh]
+            rounded-1
+            bg-white border
+            text-black text-[1.2vh] font-semibold
+            flex items-center justify-center flex-col gap-[0.5vh]
+            shadow-lg z-5
+        "
                             >
+                                <div className="relative h-[7vh] w-full">
+                                    <Image
+                                        src="/assets/images/handicap.png"
+                                        alt="Handicap icon"
+                                        fill
+                                        className=""
+                                    />
+                                </div>
+
                                 Handicap
-                            </button>
+                            </Button>
                         )}
+
 
 
                         {/* OVERVIEW */}
