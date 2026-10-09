@@ -259,7 +259,6 @@ export async function previewScreenChanges(targetScreens: string[], mode :string
     const files = filesRes.ok ? await filesRes.json() : [];
 
     for (const targetScreen of targetScreens) {
-
         const res = await fetch(
             `https://teescreenapp.com/api/screen_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${targetScreen}`,
         );
@@ -307,12 +306,14 @@ export async function confirmScreenChanges(
             }
 
             await saveUserInfo({
-                loadedScreen: targetScreen,
+                targetScreen: targetScreen,
                 screenJson: merged,
                 lastEdited: new Date(),
                 lastEditedBy: merged.lastEditedBy ?? "0",
                 lastEditedByName: merged.lastEditedByName ?? "Unknown",
             });
+
+            await downloadClubImages(merged.FolderNameOnServer);
 
             broadcastScreenUpdate(targetScreen, {
                 screen: targetScreen,
@@ -354,7 +355,7 @@ function deepDiffMerge(
     original: Record<string, any>,
     modified: Record<string, any>,
 skipKeys: string[] = ["name", "FolderNameOnServer", "GolfCourseLatLon" , "CourseLogoURL",
-        "CourseOverviewURL", "AccountsThatHaveAccess", "CourseName", "lastEdited"],
+        "CourseOverviewURL", "AccountsThatHaveAccess", "CourseName", "lastEdited", "name"],
     path: string = "",
 ): { merged: Record<string, any>; diffs: DiffEntry[] } {
     const result: Record<string, any> = { ...original };

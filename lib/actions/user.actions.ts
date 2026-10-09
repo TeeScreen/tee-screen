@@ -99,6 +99,7 @@ export async function saveUserInfo(data: {
     loadedScreen?: string;
     screenNames?: string[];
     screenJson?: any;
+    targetScreen?: string;
     analyticsJson?: any;
     lastEdited?: Date | null;
     lastEditedBy?: string | null;
@@ -127,7 +128,11 @@ export async function saveUserInfo(data: {
             { upsert: true, returnDocument: 'after' }
         ).lean();
 
-        const screenName = userFields.loadedScreen !== undefined ? userFields.loadedScreen : currentUserRecord?.loadedScreen;
+        const screenName =
+            userFields.targetScreen ??
+            userFields.loadedScreen ??
+            currentUserRecord?.loadedScreen;
+
         const accountLogin = userFields.loadedAccount !== undefined ? userFields.loadedAccount : currentUserRecord?.loadedAccount;
 
         if (screenName && accountLogin && (screenJson !== undefined || analyticsJson !== undefined)) {
