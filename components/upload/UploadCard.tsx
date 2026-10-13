@@ -16,7 +16,7 @@ import { useState, useRef } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { useDirtyState } from "@/stores/user-store";
 import { useFileValidation } from "@/hooks/useFileValidation";
-import {triggerUpdateEvent} from "@/lib/actions/file.actions";
+import {deleteFile, triggerUpdateEvent} from "@/lib/actions/file.actions";
 
 export function UploadCard({ folderName, newFileName }: { folderName: string; newFileName: string }) {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -216,6 +216,8 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
             setIsUploading(false);
             return;
         }
+
+        await deleteFile(folderName, newFileName);
 
         if (!newFileName.toLowerCase().endsWith("." + ext)) {
             newFileName = newFileName + "." + ext;
