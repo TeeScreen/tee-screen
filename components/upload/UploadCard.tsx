@@ -73,6 +73,14 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0] || null;
 
+        if(!file)
+        {
+            setPreflightValid(false);
+            setPreflightMessage("File is Null");
+            setFileSelected(false);
+            return;
+        }
+
         const result = validate(file);
 
         console.info("[PREFLIGHT VALIDATION]", result.devMessage, {
@@ -87,6 +95,17 @@ export function UploadCard({ folderName, newFileName }: { folderName: string; ne
             setPreflightMessage(result.userMessage);
             setFileSelected(false);
             return;
+        }
+
+        const fileCheck = [".png",".pdf",".mp4"];
+        for (const end of fileCheck) {
+
+            if(newFileName.endsWith(end) && !file.name?.endsWith(end)) {
+                setPreflightValid(false);
+                setPreflightMessage(`File Error: This file must be of type ${end}`);
+                setFileSelected(false);
+                return;
+            }
         }
 
         // -------------------------------------------------------
