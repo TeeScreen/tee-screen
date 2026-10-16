@@ -107,27 +107,29 @@ export default function PreviewScreen() {
                                     })
                                 }
                                 className="
-            absolute top-[10%] right-[2vh]
+            absolute top-[10.5%] right-[2vh]
             h-[8vh] px-[1vh]
             rounded-1
-            bg-white5 border
+            bg-white/50 border
             text-black text-[1.2vh] font-semibold
             flex items-center justify-center flex-col gap-[0.5vh]
             shadow-lg z-5
         "
                             >
-                                <div className="relative h-full w-full">
+                                {/* Aspect‑ratio‑safe container */}
+                                <div className="relative w-full h-[7vh]">
                                     <Image
                                         src="/assets/images/handicap.png"
                                         alt="Handicap icon"
                                         fill
-                                        className=""
+                                        className="object-contain"
                                     />
                                 </div>
 
                                 Handicap
                             </Button>
                         )}
+
 
 
 
