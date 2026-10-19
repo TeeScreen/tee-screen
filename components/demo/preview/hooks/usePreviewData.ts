@@ -168,24 +168,30 @@ export function usePreviewData() {
                     name: data.CustomTab01Name,
                     urlActive: data.CustomTab01UrlActive,
                     url: data.CustomTab01Url,
+                    colour: data.CustomTab01Colour ?? data.UIColor,
                 },
                 {
                     active: data.CustomTab02Active,
                     name: data.CustomTab02Name,
                     urlActive: data.CustomTab02UrlActive,
                     url: data.CustomTab02Url,
+                    colour: data.CustomTab02Colour ?? data.UIColor,
+
                 },
                 {
                     active: data.CustomTab03Active,
                     name: data.CustomTab03Name,
                     urlActive: data.CustomTab03UrlActive,
                     url: data.CustomTab03Url,
+                    colour: data.CustomTab03Colour ?? data.UIColor,
+
                 },
                 {
                     active: data.CustomTab04Active,
                     name: data.CustomTab04Name,
                     urlActive: data.CustomTab04UrlActive,
                     url: data.CustomTab04Url,
+                    colour: data.CustomTab04Colour ?? data.UIColor,
                 },
             ]
 
@@ -198,6 +204,7 @@ export function usePreviewData() {
                         name: raw.name ?? prev.name,
                         urlActive: raw.urlActive ?? prev.urlActive,
                         url: raw.url ?? prev.url,
+                        colour: raw.colour ?? prev.colour,
                     }
                 })
                 .filter(t => t.active)
@@ -299,6 +306,7 @@ export function usePreviewData() {
                 overlayImage: resolveSafe(safeNames[idx++], "CustomTabImage01"),
                 urlActive: data.CustomTab01UrlActive,
                 url: data.CustomTab01Url,
+                colour: data.CustomTab01Colour,
             },
             {
                 active: data.CustomTab02Active,
@@ -307,6 +315,7 @@ export function usePreviewData() {
                 overlayImage: resolveSafe(safeNames[idx++], "CustomTabImage02"),
                 urlActive: data.CustomTab02UrlActive,
                 url: data.CustomTab02Url,
+                colour: data.CustomTab02Colour,
             },
             {
                 active: data.CustomTab03Active,
@@ -315,6 +324,7 @@ export function usePreviewData() {
                 overlayImage: resolveSafe(safeNames[idx++], "CustomTabImage03"),
                 urlActive: data.CustomTab03UrlActive,
                 url: data.CustomTab03Url,
+                colour: data.CustomTab03Colour,
             },
             {
                 active: data.CustomTab04Active,
@@ -323,6 +333,7 @@ export function usePreviewData() {
                 overlayImage: resolveSafe(safeNames[idx++], "CustomTabImage04"),
                 urlActive: data.CustomTab04UrlActive,
                 url: data.CustomTab04Url,
+                colour: data.CustomTab04Colour,
             },
         ].filter(t => t.active)
 
@@ -443,6 +454,20 @@ export function usePreviewData() {
                             }
                             : t
                     )
+                )
+            }
+
+            const tabColorMatch = path.match(/CustomTab(\d+)Colour\.(r|g|b|a)$/)
+            if (tabColorMatch) {
+                const [, tabNum, channel] = tabColorMatch
+                const idx = parseInt(tabNum, 10) - 1
+
+                setTabs(prev =>
+                    prev.map((t, i) => {
+                        if (i !== idx) return t
+                        const prevColor = typeof t.colour === "object" ? t.colour : { r: 0, g: 0, b: 0, a: 255 }
+                        return { ...t, colour: { ...prevColor, [channel]: newValue } }
+                    })
                 )
             }
         })

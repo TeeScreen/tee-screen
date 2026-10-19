@@ -33,6 +33,7 @@ export default async function Page() {
                                 paths={[
                                     { path: "CustomTab01Active", label: "Tab 01 Active", type: "bool", tag: "tab 1" },
                                     { path: "CustomTab01Name", label: "Tab 01 Name", type: "text", tag: "tab 1" },
+                                    { path: "CustomTab01Colour", label: "Tab 01 Colour", type: "color", tag: "tab 1" },
                                     { path: "CustomTab01UrlActive", label: "Tab 01 URL Active", type: "bool", tag: "tab 1" },
                                     { path: "CustomTab01Url", label: "Tab 01 URL", type: "text", tag: "tab 1" },
                                 ]}
@@ -52,6 +53,7 @@ export default async function Page() {
                                 paths={[
                                     { path: "CustomTab02Active", label: "Tab 02 Active", type: "bool", tag: "tab 2" },
                                     { path: "CustomTab02Name", label: "Tab 02 Name", type: "text", tag: "tab 2" },
+                                    { path: "CustomTab02Colour", label: "Tab 02 Colour", type: "color", tag: "tab 2" },
                                     { path: "CustomTab02UrlActive", label: "Tab 02 URL Active", type: "bool", tag: "tab 2" },
                                     { path: "CustomTab02Url", label: "Tab 02 URL", type: "text", tag: "tab 2" },
                                 ]}
@@ -71,6 +73,7 @@ export default async function Page() {
                                 paths={[
                                     { path: "CustomTab03Active", label: "Tab 03 Active", type: "bool", tag: "tab 3" },
                                     { path: "CustomTab03Name", label: "Tab 03 Name", type: "text", tag: "tab 3" },
+                                    { path: "CustomTab03Colour", label: "Tab 03 Colour", type: "color", tag: "tab 3" },
                                     { path: "CustomTab03UrlActive", label: "Tab 03 URL Active", type: "bool", tag: "tab 3" },
                                     { path: "CustomTab03Url", label: "Tab 03 URL", type: "text", tag: "tab 3" },
                                 ]}
@@ -90,6 +93,7 @@ export default async function Page() {
                                 paths={[
                                     { path: "CustomTab04Active", label: "Tab 04 Active", type: "bool", tag: "tab 4" },
                                     { path: "CustomTab04Name", label: "Tab 04 Name", type: "text", tag: "tab 4" },
+                                    { path: "CustomTab04Colour", label: "Tab 04 Colour", type: "color", tag: "tab 4" },
                                     { path: "CustomTab04UrlActive", label: "Tab 04 URL Active", type: "bool", tag: "tab 4" },
                                     { path: "CustomTab04Url", label: "Tab 04 URL", type: "text", tag: "tab 4" },
                                 ]}

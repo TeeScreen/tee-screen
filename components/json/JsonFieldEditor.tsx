@@ -123,6 +123,7 @@ export function JsonFieldEditor({
     function handleChange(path: string, value: any) {
         setIsEditing(true);
 
+        console.log(path, value);
         const updated = setValue(localJson, path, value);
         setLocalJson(updated);
         setDraftJson(updated);
@@ -157,7 +158,7 @@ export function JsonFieldEditor({
                     defaultValue = false;
                     break;
                 case "color":
-                    defaultValue = { r: 0, g: 0, b: 0, a: 1 };
+                    defaultValue = { r: 1, g: 1, b: 1, a: 1 };
                     break;
                 case "number":
                     defaultValue = field.options?.[0]?.value ?? 0;
@@ -239,10 +240,16 @@ export function JsonFieldEditor({
                                     if (field.type === "color") {
                                         const rgba = currentValue || { r: 0, g: 0, b: 0, a: 1 };
 
-                                        const toHex = (c: any) =>
-                                            `#${c.r.toString(16).padStart(2, "0")}${c.g
+                                        const toHex = (c: any) => {
+                                            if (!c || c.r == null || c.g == null || c.b == null) {
+                                                return "#000000"; // fallback
+                                            }
+
+                                            return `#${c.r.toString(16).padStart(2, "0")}${c.g
                                                 .toString(16)
                                                 .padStart(2, "0")}${c.b.toString(16).padStart(2, "0")}`;
+                                        };
+
 
                                         const hexToRgba = (hex: string, alpha: number) => {
                                             const r = parseInt(hex.slice(1, 3), 16);
@@ -265,10 +272,11 @@ export function JsonFieldEditor({
                                                         toHex(localJson.BottomNoticeBoardColour),
                                                         toHex(localJson.UIColor),
                                                     ]}
-                                                    onChange={(newHex) => {
-                                                        const updatedRgba = hexToRgba(newHex, rgba.a);
+                                                    onChange={({ hex, alpha }) => {
+                                                        const updatedRgba = hexToRgba(hex, alpha);
                                                         handleChange(field.path, updatedRgba);
                                                     }}
+
                                                 />
                                             </div>
                                         );

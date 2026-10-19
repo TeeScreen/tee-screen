@@ -67,11 +67,21 @@ export interface HandicapTeeData {
 export interface TabItem {
     active: boolean;
     name: string;
+    colour?: TabColor;
     icon?: string | null;
     overlayImage?: string | null;
     urlActive?: boolean;
     url?: string;
 }
+
+export interface TabColor {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+    [key: string]: number | undefined;
+}
+
 
 export interface NoticeColor {
     r: number;

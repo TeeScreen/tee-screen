@@ -3,7 +3,7 @@
 import React, { memo } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import type { TabItem, OverlayContent } from '../types'
+import type {TabItem, OverlayContent, TabColor} from '../types'
 
 interface PreviewTabsProps {
     tabs: TabItem[]
@@ -23,6 +23,22 @@ export const PreviewTabs = memo(function PreviewTabs({
     onOpenOverlay,
 }: PreviewTabsProps) {
     if (!tabs || tabs.length === 0) return null
+
+    const toCssRgba = (c?: TabColor): string | undefined => {
+        // If no colour object, fall back to uiColor
+        if (!c) return uiColor
+
+        const { r, g, b, a } = c
+
+        // If the colour is exactly {1,1,1,1}, fall back to uiColor
+        if (r === 1 && g === 1 && b === 1 && a === 1) {
+            return uiColor
+        }
+
+        // Normal RGBA conversion
+        return `rgba(${r}, ${g}, ${b}, ${a / 255})`
+    }
+
 
     const handleTabClick = (tab: TabItem) => {
         if (tab.urlActive && tab.url) {
@@ -46,7 +62,7 @@ export const PreviewTabs = memo(function PreviewTabs({
                     <Button
                         key={i}
                         className="relative p-0 h-[8vh] flex-1 max-w-[25%] rounded-sm flex flex-col items-center justify-center"
-                        style={{ backgroundColor: uiColor }}
+                        style={{ backgroundColor: toCssRgba(tab.colour)}}
                         onClick={() => handleTabClick(tab)}
                     >
                         {setTabIconsToFill ? (
