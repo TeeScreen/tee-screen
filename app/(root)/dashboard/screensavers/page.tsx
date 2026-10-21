@@ -45,8 +45,8 @@ export default async function Page() {
                 <UploadSection folderName={folderName} fileName="ScreensaverImage09" label="Screensaver 09" />
                 <PreviewScreensaver fileName="ScreensaverImage09" label="Screensaver 09"/>
 
-                <UploadSection folderName={folderName} fileName="ScreensaverImage10" label="Screensaver 10" />
-                <PreviewScreensaver fileName="ScreensaverImage10" label="Screensaver 10"/>
+                <UploadSection folderName={folderName} fileName="ScreensaverImage010" label="Screensaver 10" />
+                <PreviewScreensaver fileName="ScreensaverImage010" label="Screensaver 10"/>
             </div>
         </div>
     );
