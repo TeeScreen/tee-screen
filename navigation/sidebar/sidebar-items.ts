@@ -144,6 +144,12 @@ export const sidebarItems: NavGroup[] = [
         icon: ChartNoAxesCombined,
         needsLoad: true,
       },
+      {
+        title: "Pin Vision",
+        url: "/dashboard/pin-vision",
+        icon: ShieldUser,
+        isAdmin: true,
+      },
     ],
   },
   {
