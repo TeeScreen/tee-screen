@@ -8,7 +8,7 @@ import {
     Monitor, NotebookPen, NotebookTabs,
     PanelTopBottomDashed,
     RefreshCw, Trophy,
-    Users,
+    Users, Video,
     Wallpaper
 } from "lucide-react";
 
@@ -251,6 +251,25 @@ export const GUIDES_DATA: DocumentationGuide[] = [
             "Preview the screensaver mode in the live preview drawer.",
         ],
         tips: "High-resolution landscape photos (1080x1080) work best for full-screen screensavers.",
+    },
+    {
+        id: "video-encoding",
+        category: "content",
+        title: "Video Encoding",
+        subtitle: "Recommended settings for web-compatible video uploads.",
+        icon: Video,
+        targetUrl: "/dashboard/video-encoding",
+        steps: [
+            "Open your source video in HandBrake.",
+            "Set max dimensions to 1080p x 1080p",
+            "Set Format to MP4 and enable Web Optimized.",
+            "Set Video Encoder to H.264 (x264).",
+            "Set Framerate (FPS) to 30 and select Constant Framerate.",
+            "Set Encoder Preset to Fast with Fast Decode enabled.",
+            "Set Encoder Profile to Main and Encoder Level to 4.0.",
+            "Start the encode and upload the generated MP4 file."
+        ],
+        tips: "Recommended output settings: 1080 x1080, MP4 container, H.264 (x264), 30 FPS Constant Framerate, Main Profile, Level 4.0, and Web Optimized enabled. HandBrake is a free encoder available at https://handbrake.fr/",
     },
     {
         id: "golf-coordinates",
