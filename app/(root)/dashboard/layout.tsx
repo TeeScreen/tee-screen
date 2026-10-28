@@ -128,7 +128,7 @@ try {
                     </div>
 
                     {/* Sticky preview panel */}
-                    <div className="md:block sticky top-12 h-screen">
+                    <div className="md:block sticky top-12 h-[calc(99vh-3rem)]">
                         <PreviewPanel loadedScreen={loadedScreen} />
                     </div>
                 </div>
