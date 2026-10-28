@@ -107,6 +107,8 @@ try {
                         </div>
 
                         <div className="flex items-center gap-2">
+                            <GuideMenu />
+
                             <LayoutControls />
                             <div className="hidden sm:flex">
                                 <ThemeSwitcher />
@@ -131,12 +133,6 @@ try {
                     </div>
                 </div>
 
-
-
-                {/* Floating Guide Menu*/}
-                <div className="fixed bottom-4 right-4 z-50">
-                    <GuideMenu />
-                </div>
             </SidebarInset>
         </SidebarProvider>
     );

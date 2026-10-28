@@ -72,6 +72,8 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
               <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
             </div>
             <div className="flex items-center gap-2">
+              <GuideMenu />
+
               <LayoutControls />
               <ThemeSwitcher />
               <AccountSwitcher userName={userInfo.fullName} userRole={userInfo.role}/>
@@ -80,10 +82,6 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
         </header>
         <div className="h-full p-4 md:p-6">{children}</div>
 
-        {/* Floating Guide Menu*/}
-        <div className="fixed bottom-4 right-4 z-50">
-          <GuideMenu />
-        </div>
       </SidebarInset>
     </SidebarProvider>
   );
