@@ -74,7 +74,7 @@ export const PreviewTabs = memo(function PreviewTabs({
                                             alt={`${tab.name} icon`}
                                             fill
                                             sizes="(max-height: 1080px) 8vh, 12vh"
-                                            className="object-contain opacity-60"
+                                            className="object-contain"
                                         />
                                     )}
                                     <span
