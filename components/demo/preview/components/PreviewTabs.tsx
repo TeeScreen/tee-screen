@@ -1,9 +1,9 @@
 'use client'
 
-import React, { memo } from 'react'
+import React, {memo} from 'react'
 import Image from 'next/image'
-import { Button } from '@/components/ui/button'
-import type {TabItem, OverlayContent, TabColor} from '../types'
+import {Button} from '@/components/ui/button'
+import type {OverlayContent, TabColor, TabItem} from '../types'
 
 interface PreviewTabsProps {
     tabs: TabItem[]
@@ -15,20 +15,20 @@ interface PreviewTabsProps {
 }
 
 export const PreviewTabs = memo(function PreviewTabs({
-    tabs,
-    uiColor,
-    textColor,
-    font,
-    setTabIconsToFill,
-    onOpenOverlay,
-}: PreviewTabsProps) {
+                                                         tabs,
+                                                         uiColor,
+                                                         textColor,
+                                                         font,
+                                                         setTabIconsToFill,
+                                                         onOpenOverlay,
+                                                     }: PreviewTabsProps) {
     if (!tabs || tabs.length === 0) return null
 
     const toCssRgba = (c?: TabColor): string | undefined => {
         // If no colour object, fall back to uiColor
         if (!c) return uiColor
 
-        const { r, g, b, a } = c
+        const {r, g, b, a} = c
 
         // If the colour is exactly {1,1,1,1}, fall back to uiColor
         if (r === 1 && g === 1 && b === 1 && a === 1) {
@@ -42,15 +42,15 @@ export const PreviewTabs = memo(function PreviewTabs({
 
     const handleTabClick = (tab: TabItem) => {
         if (tab.urlActive && tab.url) {
-            onOpenOverlay({ type: "url", src: tab.url })
+            onOpenOverlay({type: "url", src: tab.url})
         } else if (tab.overlayImage) {
             const lower = tab.overlayImage.toLowerCase()
             if (lower.endsWith(".mp4")) {
-                onOpenOverlay({ type: "vid", src: tab.overlayImage })
+                onOpenOverlay({type: "vid", src: tab.overlayImage})
             } else if (lower.endsWith(".pdf")) {
-                onOpenOverlay({ type: "pdf", src: tab.overlayImage })
+                onOpenOverlay({type: "pdf", src: tab.overlayImage})
             } else {
-                onOpenOverlay({ type: "image", src: tab.overlayImage })
+                onOpenOverlay({type: "image", src: tab.overlayImage})
             }
         }
     }
@@ -60,58 +60,58 @@ export const PreviewTabs = memo(function PreviewTabs({
             <div className="flex justify-center gap-2 w-full">
                 {tabs.map((tab, i) => (
                     tab.active ? (
-                    <Button
-                        key={i}
-                        className="relative p-0 h-[8vh] flex-1 max-w-[25%] rounded-sm flex flex-col items-center justify-center"
-                        style={{ backgroundColor: toCssRgba(tab.colour)}}
-                        onClick={() => handleTabClick(tab)}
-                    >
-                        {setTabIconsToFill ? (
-                            <>
-                                {tab.icon && (
-                                    <Image
-                                        src={tab.icon}
-                                        alt={`${tab.name} icon`}
-                                        fill
-                                        sizes="(max-height: 1080px) 8vh, 12vh"
-                                        className="object-cover opacity-60"
-                                    />
-                                )}
-                                <span
-                                    className={`relative z-10 ${textColor} ${font} font-semibold text-center max-w-full px-1 text-[clamp(0.6rem,1.5vw,0.9rem)]`}
-                                >
+                        <Button
+                            key={i}
+                            className="relative p-0 h-[8vh] flex-1 max-w-[25%] rounded-sm flex flex-col items-center justify-center"
+                            style={{backgroundColor: toCssRgba(tab.colour)}}
+                            onClick={() => handleTabClick(tab)}
+                        >
+                            {setTabIconsToFill ? (
+                                <>
+                                    {tab.icon && (
+                                        <Image
+                                            src={tab.icon}
+                                            alt={`${tab.name} icon`}
+                                            fill
+                                            sizes="(max-height: 1080px) 8vh, 12vh"
+                                            className="object-contain opacity-60"
+                                        />
+                                    )}
+                                    <span
+                                        className={`relative z-10 ${textColor} ${font} font-semibold text-center max-w-full px-1 text-[clamp(0.6rem,1.5vw,0.9rem)]`}
+                                    >
                                     {tab.name}
                                 </span>
-                            </>
-                        ) : (
-                            <>
-                                {tab.icon ? (
-                                    <div className="flex-1 w-full h-full flex top-0">
-                                        <div className="relative w-full h-full">
-                                            <Image
-                                                src={tab.icon}
-                                                alt={`${tab.name} icon`}
-                                                fill
-                                                sizes="(max-height: 1080px) 8vh, 12vh"
-                                                className="object-contain"
-                                            />
+                                </>
+                            ) : (
+                                <>
+                                    {tab.icon ? (
+                                        <div className="flex-1 w-full h-full flex top-0">
+                                            <div className="relative w-full h-full">
+                                                <Image
+                                                    src={tab.icon}
+                                                    alt={`${tab.name} icon`}
+                                                    fill
+                                                    sizes="(max-height: 1080px) 8vh, 12vh"
+                                                    className="object-contain"
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
-                                ) : null}
+                                    ) : null}
 
-                                <span
-                                    className={`${textColor} ${font} font-semibold text-center break-words whitespace-normal w-full ${
-                                        tab.icon
-                                            ? "flex-[0] bottom-0 text-[1vh] leading-tight"
-                                            : "flex items-center justify-center h-full text-[2vh]"
-                                    }`}
-                                >
+                                    <span
+                                        className={`${textColor} ${font} font-semibold text-center break-words whitespace-normal w-full ${
+                                            tab.icon
+                                                ? "flex-[0] bottom-0 text-[1vh] leading-tight"
+                                                : "flex items-center justify-center h-full text-[2vh]"
+                                        }`}
+                                    >
                                     {tab.name}
                                 </span>
-                            </>
-                        )}
-                    </Button>
-                        ): null ))}
+                                </>
+                            )}
+                        </Button>
+                    ) : null))}
             </div>
         </div>
     )
