@@ -238,7 +238,17 @@ export function JsonFieldEditor({
                                     }
 
                                     if (field.type === "color") {
-                                        const rgba = currentValue || { r: 0, g: 0, b: 0, a: 1 };
+
+                                        let rgba = currentValue || { r: 0, g: 0, b: 0, a: 1 };
+
+                                        if (
+                                            rgba.r === 1 &&
+                                            rgba.g === 1 &&
+                                            rgba.b === 1 &&
+                                            rgba.a === 1
+                                        ) {
+                                            rgba = json.UIColor;
+                                        }
 
                                         const toHex = (c: any) => {
                                             if (!c || c.r == null || c.g == null || c.b == null) {
