@@ -41,7 +41,7 @@ export default function MapPickerModal({
 
     return (
         <>
-            <Button className={"z-100"} variant="outline" size="sm" onClick={() => setOpen(true)}>
+            <Button className={""} variant="outline" size="sm" onClick={() => setOpen(true)}>
                 Pick on Map
             </Button>
 
