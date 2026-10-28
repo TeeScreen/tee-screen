@@ -59,6 +59,7 @@ export const PreviewTabs = memo(function PreviewTabs({
         <div className="relative w-full px-2 z-30 -mt-[2%]">
             <div className="flex justify-center gap-2 w-full">
                 {tabs.map((tab, i) => (
+                    tab.active ? (
                     <Button
                         key={i}
                         className="relative p-0 h-[8vh] flex-1 max-w-[25%] rounded-sm flex flex-col items-center justify-center"
@@ -110,7 +111,7 @@ export const PreviewTabs = memo(function PreviewTabs({
                             </>
                         )}
                     </Button>
-                ))}
+                        ): null ))}
             </div>
         </div>
     )

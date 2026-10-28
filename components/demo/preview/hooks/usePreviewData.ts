@@ -205,9 +205,12 @@ export function usePreviewData() {
                         urlActive: raw.urlActive ?? prev.urlActive,
                         url: raw.url ?? prev.url,
                         colour: raw.colour ?? prev.colour,
+                        icon: prev.icon,
+                        overlayImage: prev.overlayImage,
+
                     }
                 })
-                .filter(t => t.active)
+                //.filter(t => t.active)
         })
 
         setNotices(prevNotices => {
@@ -248,6 +251,7 @@ export function usePreviewData() {
                     interactive: def.interactive ?? prev.interactive,
                     urlActive: def.urlActive ?? prev.urlActive,
                     url: def.url ?? prev.url,
+                    image: prev.image,
                 }
             })
         })
@@ -335,7 +339,7 @@ export function usePreviewData() {
                 url: data.CustomTab04Url,
                 colour: data.CustomTab04Colour,
             },
-        ].filter(t => t.active)
+        ]//.filter(t => t.active)
 
         setTabs(tabDefs)
 
