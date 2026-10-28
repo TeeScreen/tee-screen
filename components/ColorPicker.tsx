@@ -14,6 +14,9 @@ export const ColorPickerWrapper: React.FC<ColorPickerWrapperProps> = ({
                                                                           onChange,
                                                                       }) => {
     const [hex, setHex] = useState(defaultColor);
+
+    if(defaultAlpha == 1) defaultAlpha = 255;
+    
     const [alpha, setAlpha] = useState(defaultAlpha);
     const [open, setOpen] = useState(false);
 

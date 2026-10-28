@@ -266,6 +266,7 @@ export function JsonFieldEditor({
 
                                                 <ColorPickerWrapper
                                                     defaultColor={hex}
+                                                    defaultAlpha={rgba.a}
                                                     recentColors={[
                                                         toHex(localJson.TopNoticeBoardColour),
                                                         toHex(localJson.MiddleNoticeBoardColour),
