@@ -34,6 +34,8 @@ export default function PreviewScreen() {
         holeData,
         teeData,
         handicapData,
+        courseColour,
+        courses,
     } = usePreviewData()
 
 
@@ -145,13 +147,13 @@ export default function PreviewScreen() {
                             isGolfClub={uiConfig.isGolfClub}
                             hideHolesOnScreen={uiConfig.hideHolesOnScreen}
                             onSelectHole={handleSelectGolfHole}
+                            holeColour={courseColour}
                         />
 
                         {/* Tabs */}
                         <PreviewTabs
                             tabs={tabs}
                             uiColor={uiConfig.uiColor}
-                            textColor={uiConfig.textColor}
                             font={uiConfig.font}
                             setTabIconsToFill={uiConfig.setTabIconsToFill}
                             onOpenOverlay={handleOpenOverlay}

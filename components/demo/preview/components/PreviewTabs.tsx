@@ -8,7 +8,6 @@ import type {OverlayContent, TabColor, TabItem} from '../types'
 interface PreviewTabsProps {
     tabs: TabItem[]
     uiColor: string
-    textColor: string
     font: string
     setTabIconsToFill: boolean
     onOpenOverlay: (overlay: OverlayContent) => void
@@ -17,7 +16,7 @@ interface PreviewTabsProps {
 export const PreviewTabs = memo(function PreviewTabs({
                                                          tabs,
                                                          uiColor,
-                                                         textColor,
+
                                                          font,
                                                          setTabIconsToFill,
                                                          onOpenOverlay,
@@ -40,6 +39,8 @@ export const PreviewTabs = memo(function PreviewTabs({
     }
 
 
+
+
     const handleTabClick = (tab: TabItem) => {
         if (tab.urlActive && tab.url) {
             onOpenOverlay({type: "url", src: tab.url})
@@ -55,11 +56,22 @@ export const PreviewTabs = memo(function PreviewTabs({
         }
     }
 
+    function getBrightness(color: { r: number; g: number; b: number }) {
+        if(color.r==1 && color.g==1 && color.b==1)return 1;
+        return (color.r + color.g + color.b) / (3 * 255)
+    }
+
     return (
         <div className="relative w-full px-2 z-30 -mt-[2%]">
             <div className="flex justify-center gap-2 w-full">
-                {tabs.map((tab, i) => (
-                    tab.active ? (
+                {tabs.map((tab, i) => {
+                    if (!tab.active) return null
+
+                    const { r = 0, g = 0, b = 0 } = tab.colour ?? {}
+                    const brightness = getBrightness({ r, g, b })
+                    let textColor = brightness < 0.5 ? "text-neutral-100" : "text-neutral-900"
+
+                    return (
                         <Button
                             key={i}
                             className="relative p-0 h-[8vh] flex-1 max-w-[25%] rounded-sm flex flex-col items-center justify-center"
@@ -111,7 +123,7 @@ export const PreviewTabs = memo(function PreviewTabs({
                                 </>
                             )}
                         </Button>
-                    ) : null))}
+                    ) })}
             </div>
         </div>
     )

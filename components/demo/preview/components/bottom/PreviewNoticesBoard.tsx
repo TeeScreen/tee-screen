@@ -10,7 +10,7 @@ interface PreviewNoticesBoardProps {
     onOpenOverlay: (overlay: OverlayContent) => void
 }
 
-export const PreviewNoticesBoard = memo(function PreviewNoticesBoard({
+const PreviewNoticesBoard = memo(function PreviewNoticesBoard({
     notices,
     font,
     onOpenOverlay,
@@ -61,3 +61,4 @@ export const PreviewNoticesBoard = memo(function PreviewNoticesBoard({
         </div>
     )
 })
+export default PreviewNoticesBoard

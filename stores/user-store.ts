@@ -1,5 +1,5 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import {create} from 'zustand'
+import {persist} from 'zustand/middleware'
 
 interface UserState {
     userData: UserData
@@ -8,12 +8,12 @@ interface UserState {
 
 export const useUserState = create<UserState>()(
     persist((set) => ({
-        userData: {} as UserData,
-        setUser: (newUserData: UserData) => set((s) => ({
-            userData: newUserData,
-        })),
-    }),
-    { name: 'user-storage' }))
+            userData: {} as UserData,
+            setUser: (newUserData: UserData) => set((s) => ({
+                userData: newUserData,
+            })),
+        }),
+        {name: 'user-storage'}))
 
 interface DirtyState {
     dirty: boolean
@@ -33,10 +33,10 @@ export const useDirtyState = create<DirtyState>()(
                 dirty: isChanged,
                 version: isChanged ? (s.version == 0 ? 1 : s.version + 1) : (s.version == 0 ? 1 : 0),
             })),
-            bumpVersion: () => set((s) => ({ version: s.version + 1 })),
-            bumpExternalVersion: () => set((s) => ({ externalEditVersion: s.externalEditVersion + 1 })),
+            bumpVersion: () => set((s) => ({version: s.version + 1})),
+            bumpExternalVersion: () => set((s) => ({externalEditVersion: s.externalEditVersion + 1})),
         }),
-        { name: 'dirty-storage' })
+        {name: 'dirty-storage'})
 )
 
 interface PreviewState {
@@ -60,8 +60,23 @@ export const usePreviewState = create<PreviewState>()(
                 screensaver: newSaver,
             })),
             draftJson: null,
-            setDraftJson: (json: any) => set(() => ({ draftJson: json })),
-            updateDraftJson: (updater: (prev: any) => any) => set((s) => ({ draftJson: updater(s.draftJson) })),
+            setDraftJson: (json: any) => set(() => ({draftJson: json})),
+            updateDraftJson: (updater: (prev: any) => any) => set((s) => ({draftJson: updater(s.draftJson)})),
         }),
-        { name: 'preview-storage' })
+        {name: 'preview-storage'})
+)
+
+interface SelectedCourse {
+    selectedCourse: string;
+    setSelectedCourse: (newCourse: string) => void;
+}
+
+export const useSelectedCourse = create<SelectedCourse>()(
+    persist((set) => ({
+            selectedCourse: '',
+            setSelectedCourse: (newCourse: string) => set((s) => ({
+                selectedCourse: newCourse
+            })),
+        }),
+        {name: 'course-storage'})
 )

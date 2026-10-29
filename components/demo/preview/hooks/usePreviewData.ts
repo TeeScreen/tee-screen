@@ -1,20 +1,24 @@
 'use client'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { getUserInfo } from '@/lib/actions/user.actions'
-import { DiffEntry, findFileSafeName, findFileSafeNames, previewScreenChanges } from '@/lib/actions/file.actions'
-import { useDirtyState, usePreviewState } from "@/stores/user-store"
-import { getFontInfo } from "@/data/font"
-import type { PreviewResult } from "@/components/screen/CopyConfirmDialog"
-import type {
-    OverlayContent,
-    TabItem,
+import {useCallback, useEffect, useRef, useState} from 'react'
+import {getUserInfo} from '@/lib/actions/user.actions'
+import {DiffEntry, findFileSafeName, findFileSafeNames, previewScreenChanges} from '@/lib/actions/file.actions'
+import {useDirtyState, usePreviewState, useSelectedCourse} from "@/stores/user-store"
+import {getFontInfo} from "@/data/font"
+import type {PreviewResult} from "@/components/screen/CopyConfirmDialog"
+import {
+    Colour,
+    CourseData,
+    GolfHole,
+    HandicapTeeData,
     NoticeItem,
+    OverlayContent,
     PreviewImages,
     PreviewUiConfig,
     ScheduleEntry,
-    GolfHole, TeeSettings, HandicapTeeData
+    TabItem,
+    TeeSettings
 } from '../types'
 
 const ApiUrl = "https://teescreenapp.com/api/schedule"
@@ -58,6 +62,9 @@ export function usePreviewData() {
         footballNews: "https://www.teescreen.co.uk/",
     })
 
+    const [courseData, setCourseData] = useState<CourseData[]>()
+    const [courses, setCourses] = useState<string[]>([])
+    const [courseColour, setCourseColour] = useState<Colour>({r: 255, g: 255, b: 255, a: 255})
     const [holeData, setHoleData] = useState<GolfHole[]>()
     const [teeData, setTeeData] = useState<TeeSettings>({
         TeeColourWhite: {r: 255, g: 255, b: 255, a: 255},
@@ -68,19 +75,19 @@ export function usePreviewData() {
     const [handicapData, setHandicapData] = useState<HandicapTeeData[]>()
 
 
-
     const [tabs, setTabs] = useState<TabItem[]>([])
     const [notices, setNotices] = useState<NoticeItem[]>([])
 
-    const { version, dirty } = useDirtyState()
-    const { preview, screensaver, setScreensaver, draftJson } = usePreviewState()
+    const {version, dirty} = useDirtyState()
+    const {preview, screensaver, setScreensaver, draftJson} = usePreviewState()
+    const {selectedCourse, setSelectedCourse} = useSelectedCourse()
 
     const updateOtherFields = useCallback((data: any) => {
         if (!data) return
 
         let brightnessVal = 1
         if (data?.UIColor) {
-            const { r, g, b } = data.UIColor
+            const {r, g, b} = data.UIColor
             brightnessVal = (r + g + b) / (3 * 255)
         }
 
@@ -112,9 +119,34 @@ export function usePreviewData() {
         /** -------------------------------
          *  PARSE GOLF HOLE DATA (x/y DTO)
          *  ------------------------------- */
-        const selectedCourse = Object.keys(data?.golfCoursesData ?? {})[0] ?? null;
+
+        /** const parsedCourses: CourseData[] = Object.entries(data.golfCoursesData).map(
+         ([courseName, course]: [string, any]) => ({
+         courseName: courseName,
+         holeData: course.holesData,
+         handicapData: course.handicapData,
+         courseColour: {
+         r: course?.courseColour?.r ?? 255,
+         g: course?.courseColour?.g ?? 255,
+         b: course?.courseColour?.b ?? 255,
+         a: course?.courseColour?.a ?? 255,
+         },
+         }))
+         setCourseData(parsedCourses);**/
+
+
+        const parsedCourses: string[] = Object.entries(data.golfCoursesData).map(
+            ([courseName]: [string, any]) => courseName
+        );
+
+        setCourses(parsedCourses);
+        let rawSelectedCourse = selectedCourse;
+        if (rawSelectedCourse == '' || !parsedCourses.includes(rawSelectedCourse)) {
+            rawSelectedCourse = Object.keys(data?.golfCoursesData ?? {})[0] ?? null;
+        }
+
         const rawHoles =
-            data?.golfCoursesData?.[selectedCourse]?.holesData ??
+            data?.golfCoursesData?.[rawSelectedCourse]?.holesData ??
             [];
 
         const parsedHoles: GolfHole[] = rawHoles.map((h: any) => ({
@@ -146,11 +178,13 @@ export function usePreviewData() {
             siNumber: Number(h.siNumber),
         }));
 
+        setCourseColour(data?.golfCoursesData?.[rawSelectedCourse]?.courseColour ?? {r: 255, g: 255, b: 255, a: 255});
 
         setHoleData(parsedHoles);
 
-        setHandicapData(data?.golfCoursesData?.[selectedCourse]?.handicapData ?? []);
+        setHandicapData(data?.golfCoursesData?.[rawSelectedCourse]?.handicapData ?? []);
 
+        setSelectedCourse(rawSelectedCourse);
 
         setImages(prev => ({
             ...prev,
@@ -210,7 +244,7 @@ export function usePreviewData() {
 
                     }
                 })
-                //.filter(t => t.active)
+            //.filter(t => t.active)
         })
 
         setNotices(prevNotices => {
@@ -378,68 +412,68 @@ export function usePreviewData() {
 
     const applyJsonDiffs = useCallback((diffs: DiffEntry[]) => {
         diffs.forEach(diff => {
-            const { path, newValue } = diff
+            const {path, newValue} = diff
 
             if (path.endsWith("TopNoticeText")) {
-                setNotices(prev => prev.map((n, i) => i === 0 ? { ...n, text: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 0 ? {...n, text: newValue} : n))
             }
             if (path.endsWith("MiddleNoticeText")) {
-                setNotices(prev => prev.map((n, i) => i === 1 ? { ...n, text: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 1 ? {...n, text: newValue} : n))
             }
             if (path.endsWith("BottomNoticeText")) {
-                setNotices(prev => prev.map((n, i) => i === 2 ? { ...n, text: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 2 ? {...n, text: newValue} : n))
             }
 
             const noticeColorMatch = path.match(/(Top|Middle|Bottom)NoticeBoardColour\.(r|g|b|a)$/)
             if (noticeColorMatch) {
-                const [ , which, channel ] = noticeColorMatch
+                const [, which, channel] = noticeColorMatch
                 const idx = which === "Top" ? 0 : which === "Middle" ? 1 : 2
                 setNotices(prev => prev.map((n, i) => {
                     if (i !== idx) return n
-                    const prevColor = typeof n.color === "object" ? n.color : { r: 0, g: 0, b: 0, a: 255 }
-                    const updatedColor = { ...prevColor, [channel]: newValue }
-                    return { ...n, color: updatedColor }
+                    const prevColor = typeof n.color === "object" ? n.color : {r: 0, g: 0, b: 0, a: 255}
+                    const updatedColor = {...prevColor, [channel]: newValue}
+                    return {...n, color: updatedColor}
                 }))
             }
 
             if (path.endsWith("noticeTopIsActive")) {
-                setNotices(prev => prev.map((n, i) => i === 0 ? { ...n, active: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 0 ? {...n, active: newValue} : n))
             }
             if (path.endsWith("noticeMiddleIsActive")) {
-                setNotices(prev => prev.map((n, i) => i === 1 ? { ...n, active: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 1 ? {...n, active: newValue} : n))
             }
             if (path.endsWith("noticeBottomIsActive")) {
-                setNotices(prev => prev.map((n, i) => i === 2 ? { ...n, active: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 2 ? {...n, active: newValue} : n))
             }
 
             if (path.endsWith("TopNoticeButtonActive")) {
-                setNotices(prev => prev.map((n, i) => i === 0 ? { ...n, interactive: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 0 ? {...n, interactive: newValue} : n))
             }
             if (path.endsWith("MiddleNoticeButtonActive")) {
-                setNotices(prev => prev.map((n, i) => i === 1 ? { ...n, interactive: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 1 ? {...n, interactive: newValue} : n))
             }
             if (path.endsWith("BottomNoticeButtonActive")) {
-                setNotices(prev => prev.map((n, i) => i === 2 ? { ...n, interactive: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 2 ? {...n, interactive: newValue} : n))
             }
 
             if (path.endsWith("showUrlNoticeButtonTop")) {
-                setNotices(prev => prev.map((n, i) => i === 0 ? { ...n, urlActive: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 0 ? {...n, urlActive: newValue} : n))
             }
             if (path.endsWith("showUrlNoticeButtonMiddle")) {
-                setNotices(prev => prev.map((n, i) => i === 1 ? { ...n, urlActive: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 1 ? {...n, urlActive: newValue} : n))
             }
             if (path.endsWith("showUrlNoticeButtonBottom")) {
-                setNotices(prev => prev.map((n, i) => i === 2 ? { ...n, urlActive: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 2 ? {...n, urlActive: newValue} : n))
             }
 
             if (path.endsWith("urlNoticeButtonTop")) {
-                setNotices(prev => prev.map((n, i) => i === 0 ? { ...n, url: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 0 ? {...n, url: newValue} : n))
             }
             if (path.endsWith("urlNoticeButtonMiddle")) {
-                setNotices(prev => prev.map((n, i) => i === 1 ? { ...n, url: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 1 ? {...n, url: newValue} : n))
             }
             if (path.endsWith("urlNoticeButtonBottom")) {
-                setNotices(prev => prev.map((n, i) => i === 2 ? { ...n, url: newValue } : n))
+                setNotices(prev => prev.map((n, i) => i === 2 ? {...n, url: newValue} : n))
             }
 
             const tabIdxMatch = path.match(/CustomTab(\d+)(Active|Name|UrlActive|Url)$/)
@@ -469,8 +503,8 @@ export function usePreviewData() {
                 setTabs(prev =>
                     prev.map((t, i) => {
                         if (i !== idx) return t
-                        const prevColor = typeof t.colour === "object" ? t.colour : { r: 0, g: 0, b: 0, a: 255 }
-                        return { ...t, colour: { ...prevColor, [channel]: newValue } }
+                        const prevColor = typeof t.colour === "object" ? t.colour : {r: 0, g: 0, b: 0, a: 255}
+                        return {...t, colour: {...prevColor, [channel]: newValue}}
                     })
                 )
             }
@@ -479,13 +513,13 @@ export function usePreviewData() {
 
     const updateTabImage = useCallback((index: number, field: "icon" | "overlayImage", value: string) => {
         setTabs((prev) =>
-            prev.map((tab, i) => (i === index ? { ...tab, [field]: value } : tab))
+            prev.map((tab, i) => (i === index ? {...tab, [field]: value} : tab))
         )
     }, [])
 
     const updateNoticeImage = useCallback((index: number, value: string) => {
         setNotices((prev) =>
-            prev.map((notice, i) => (i === index ? { ...notice, image: value } : notice))
+            prev.map((notice, i) => (i === index ? {...notice, image: value} : notice))
         )
     }, [])
 
@@ -496,14 +530,14 @@ export function usePreviewData() {
                 const baseName = file.substring(file.indexOf("-") + 1, file.lastIndexOf("."))
                 const fileUrl = `/api/downloads/${folderName}/${file}`
 
-                if (baseName === "Background") setImages(prev => ({ ...prev, backgroundImage: isAdding ? fileUrl : "" }))
-                if (baseName === "Overview") setImages(prev => ({ ...prev, overviewImage: isAdding ? fileUrl : "" }))
-                if (baseName === "Logo") setImages(prev => ({ ...prev, logoImage: isAdding ? fileUrl : "" }))
-                if (baseName === "HomeBG") setImages(prev => ({ ...prev, homeBG: isAdding ? fileUrl : "" }))
-                if (baseName === "AwayBG") setImages(prev => ({ ...prev, awayBG: isAdding ? fileUrl : "" }))
-                if (baseName === "LineUpBG") setImages(prev => ({ ...prev, lineUpBG: isAdding ? fileUrl : "" }))
-                if (baseName === "HideMatchImage") setImages(prev => ({ ...prev, hideScoreBG: isAdding ? fileUrl : "" }))
-                if (baseName === "FanGuide") setImages(prev => ({ ...prev, fanGuidePDF: isAdding ? fileUrl : "" }))
+                if (baseName === "Background") setImages(prev => ({...prev, backgroundImage: isAdding ? fileUrl : ""}))
+                if (baseName === "Overview") setImages(prev => ({...prev, overviewImage: isAdding ? fileUrl : ""}))
+                if (baseName === "Logo") setImages(prev => ({...prev, logoImage: isAdding ? fileUrl : ""}))
+                if (baseName === "HomeBG") setImages(prev => ({...prev, homeBG: isAdding ? fileUrl : ""}))
+                if (baseName === "AwayBG") setImages(prev => ({...prev, awayBG: isAdding ? fileUrl : ""}))
+                if (baseName === "LineUpBG") setImages(prev => ({...prev, lineUpBG: isAdding ? fileUrl : ""}))
+                if (baseName === "HideMatchImage") setImages(prev => ({...prev, hideScoreBG: isAdding ? fileUrl : ""}))
+                if (baseName === "FanGuide") setImages(prev => ({...prev, fanGuidePDF: isAdding ? fileUrl : ""}))
 
                 const tabMatch = baseName.match(/CustomTab(?:Icon|Image)(\d+)/)
                 if (tabMatch) {
@@ -715,9 +749,9 @@ export function usePreviewData() {
             if (!isMounted || safeFileName === screensaver) return
 
             if (safeFileName.endsWith(".png")) {
-                setOverlayContent({ type: 'ssImage', src: `/api/downloads/${folder}/${safeFileName}` })
+                setOverlayContent({type: 'ssImage', src: `/api/downloads/${folder}/${safeFileName}`})
             } else if (safeFileName.endsWith(".mp4")) {
-                setOverlayContent({ type: 'ssVid', src: `/api/downloads/${folder}/${safeFileName}` })
+                setOverlayContent({type: 'ssVid', src: `/api/downloads/${folder}/${safeFileName}`})
             }
         }
         setup()
@@ -749,5 +783,7 @@ export function usePreviewData() {
         holeData,
         teeData,
         handicapData,
+        courseColour,
+        courses
     }
 }
