@@ -15,15 +15,16 @@ export default function SSODEVPage() {
             throw new Error("Missing clubId");
         }
 
-        // Generate SSO JWT
         const token = jwt.sign(
-            { club_id: clubId, email: "arthur@teescreen.co.uk" },
-            SSO_SECRET,
-            {
-                algorithm: "HS256",
-                expiresIn: "5m",
-            }
-        );
+        {
+            club_id: '2283',
+                email: 'arthur@teescreen.co.uk',
+            given_name: 'Arthur',
+            family_name: 'Johnson',
+        },
+        SSO_SECRET,
+            { algorithm: 'HS256', expiresIn: '5m' }
+    );
 
         // Exchange token with partner API
         const exchange = await fetch("https://partner.pinvision.app/v1/auth/sso", {
