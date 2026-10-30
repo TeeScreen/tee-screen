@@ -4,7 +4,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react'
 import {getUserInfo} from '@/lib/actions/user.actions'
 import {DiffEntry, findFileSafeName, findFileSafeNames, previewScreenChanges} from '@/lib/actions/file.actions'
-import {useDirtyState, usePreviewState, useSelectedCourse} from "@/stores/user-store"
+import {useDirtyState, usePreviewState} from "@/stores/user-store"
 import {getFontInfo} from "@/data/font"
 import type {PreviewResult} from "@/components/screen/CopyConfirmDialog"
 import {
@@ -79,8 +79,8 @@ export function usePreviewData() {
     const [notices, setNotices] = useState<NoticeItem[]>([])
 
     const {version, dirty} = useDirtyState()
-    const {preview, screensaver, setScreensaver, draftJson} = usePreviewState()
-    const {selectedCourse, setSelectedCourse} = useSelectedCourse()
+    const {preview, screensaver, setScreensaver,
+        draftJson, selectedCourse, setSelectedCourse} = usePreviewState()
 
     const updateOtherFields = useCallback((data: any) => {
         if (!data) return
@@ -143,6 +143,7 @@ export function usePreviewData() {
         let rawSelectedCourse = selectedCourse;
         if (rawSelectedCourse == '' || !parsedCourses.includes(rawSelectedCourse)) {
             rawSelectedCourse = Object.keys(data?.golfCoursesData ?? {})[0] ?? null;
+            setSelectedCourse(rawSelectedCourse);
         }
 
         const rawHoles =
@@ -183,8 +184,6 @@ export function usePreviewData() {
         setHoleData(parsedHoles);
 
         setHandicapData(data?.golfCoursesData?.[rawSelectedCourse]?.handicapData ?? []);
-
-        setSelectedCourse(rawSelectedCourse);
 
         setImages(prev => ({
             ...prev,
@@ -761,6 +760,64 @@ export function usePreviewData() {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [screensaver])
+
+    // Screensaver setup
+    useEffect(() => {
+
+        const data  = userInfo?.screenJson;
+
+        if (selectedCourse === "" || !data) return
+
+        const parsedCourses: string[] = Object.entries(data.golfCoursesData).map(
+            ([courseName]: [string, any]) => courseName
+        );
+
+        let rawSelectedCourse = selectedCourse;
+        if (rawSelectedCourse == '' || !parsedCourses.includes(rawSelectedCourse)) {
+            return;
+        }
+
+        const rawHoles =
+            data?.golfCoursesData?.[rawSelectedCourse]?.holesData ??
+            [];
+
+        const parsedHoles: GolfHole[] = rawHoles.map((h: any) => ({
+            holeNumber: h.holeNumber,
+
+            holePointLatLong: {
+                x: h.holePointLatLong?.x,
+                y: h.holePointLatLong?.y,
+            },
+            whiteTeePointLatLong: {
+                x: h.whiteTeePointLatLong?.x,
+                y: h.whiteTeePointLatLong?.y,
+            },
+            redTeePointLatLong: {
+                x: h.redTeePointLatLong?.x,
+                y: h.redTeePointLatLong?.y,
+            },
+            yellowTeePointLatLong: {
+                x: h.yellowTeePointLatLong?.x,
+                y: h.yellowTeePointLatLong?.y,
+            },
+
+            yardsToHole: h.yardsToHole,
+            redYardsToHole: h.redYardsToHole,
+            yellowYardsToHole: h.yellowYardsToHole,
+            whiteYardsToHole: h.whiteYardsToHole,
+
+            parNumber: Number(h.parNumber),
+            siNumber: Number(h.siNumber),
+        }));
+
+        setCourseColour(data?.golfCoursesData?.[rawSelectedCourse]?.courseColour ?? {r: 255, g: 255, b: 255, a: 255});
+
+        setHoleData(parsedHoles);
+
+        setHandicapData(data?.golfCoursesData?.[rawSelectedCourse]?.handicapData ?? []);
+
+
+    }, [selectedCourse])
 
     const clearScreensaver = useCallback(() => {
         setScreensaver("")

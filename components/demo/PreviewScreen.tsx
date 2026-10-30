@@ -17,6 +17,7 @@ import {
     OverlayContent, GolfHole,
 } from './preview'
 import {PreviewInfo} from "@/components/demo/preview/components/PreviewInfo";
+import {PreviewCourses} from "@/components/demo/preview/components/PreviewCourses";
 
 export default function PreviewScreen() {
     const {
@@ -97,6 +98,10 @@ export default function PreviewScreen() {
                             font={uiConfig.font}
                             logoImage={images.logoImage}
                         />
+
+                        {uiConfig.isGolfClub && courses.length>1 && (
+                            <PreviewCourses courses={courses} />
+                        )}
 
 
                         {uiConfig.isGolfClub && (

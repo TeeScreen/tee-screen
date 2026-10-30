@@ -123,7 +123,6 @@ export function JsonFieldEditor({
     function handleChange(path: string, value: any) {
         setIsEditing(true);
 
-        console.log(path, value);
         const updated = setValue(localJson, path, value);
         setLocalJson(updated);
         setDraftJson(updated);

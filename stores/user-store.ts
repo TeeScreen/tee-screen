@@ -47,6 +47,8 @@ interface PreviewState {
     draftJson: any | null
     setDraftJson: (json: any) => void
     updateDraftJson: (updater: (prev: any) => any) => void
+    selectedCourse: string;
+    setSelectedCourse: (newCourse: string) => void;
 }
 
 export const usePreviewState = create<PreviewState>()(
@@ -62,21 +64,10 @@ export const usePreviewState = create<PreviewState>()(
             draftJson: null,
             setDraftJson: (json: any) => set(() => ({draftJson: json})),
             updateDraftJson: (updater: (prev: any) => any) => set((s) => ({draftJson: updater(s.draftJson)})),
-        }),
-        {name: 'preview-storage'})
-)
-
-interface SelectedCourse {
-    selectedCourse: string;
-    setSelectedCourse: (newCourse: string) => void;
-}
-
-export const useSelectedCourse = create<SelectedCourse>()(
-    persist((set) => ({
             selectedCourse: '',
             setSelectedCourse: (newCourse: string) => set((s) => ({
                 selectedCourse: newCourse
             })),
         }),
-        {name: 'course-storage'})
+        {name: 'preview-storage'})
 )
