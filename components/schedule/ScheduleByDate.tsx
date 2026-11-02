@@ -19,14 +19,29 @@ import {nowUnityIsoString, toUnityIsoStringFrom} from "@/lib/helper";
 
 function groupByDate(entries: ScheduleEntry[]) {
   const grouped: Record<string, ScheduleEntry[]> = {};
+
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 3);
+
   entries.forEach((entry) => {
-    const date = new Date(entry.start).toISOString().slice(0, 10);
+    const startDate = new Date(entry.start);
+
+    // Skip entries more than 7 days old
+    if (startDate < oneWeekAgo) return;
+
+    const date = startDate.toISOString().slice(0, 10);
+
     if (!grouped[date]) grouped[date] = [];
     grouped[date].push(entry);
   });
+
   Object.keys(grouped).forEach((d) => {
-    grouped[d].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+    grouped[d].sort(
+        (a, b) =>
+            new Date(a.start).getTime() - new Date(b.start).getTime()
+    );
   });
+
   return grouped;
 }
 
