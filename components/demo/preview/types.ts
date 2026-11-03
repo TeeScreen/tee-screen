@@ -15,17 +15,32 @@ export type OverlayType =
 export interface OverlayContent {
     type: OverlayType;
     src: string;
-    hole ?: GolfHole;
+    hole?: GolfHole;
     tees?: TeeSettings;
     handicapData?: HandicapTeeData[];
 }
 
 
 export interface TeeSettings {
-    TeeColourWhite:{r:number,g:number,b:number,a:number},
-    TeeColourYellow:{r:number,g:number,b:number,a:number},
-    TeeColourRed:{r:number,g:number,b:number,a:number},
+    TeeColourWhite: Colour,
+    TeeColourYellow: Colour,
+    TeeColourRed: Colour,
 }
+
+export interface CourseData {
+    courseName: string;
+    holeData: GolfHole[];
+    handicapData: HandicapTeeData[];
+    courseColour: Colour;
+}
+
+export interface Colour {
+    r: number,
+    g: number,
+    b: number,
+    a: number
+}
+
 
 export interface GolfHole {
     holeNumber: number;
@@ -63,7 +78,6 @@ export interface HandicapTeeData {
 }
 
 
-
 export interface TabItem {
     active: boolean;
     name: string;
@@ -79,6 +93,7 @@ export interface TabColor {
     g: number;
     b: number;
     a: number;
+
     [key: string]: number | undefined;
 }
 
@@ -88,6 +103,7 @@ export interface NoticeColor {
     g: number;
     b: number;
     a: number;
+
     [key: string]: number | undefined;
 }
 

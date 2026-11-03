@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
     Accordion,
@@ -23,6 +23,8 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import {TeeSettingsEditor} from "@/components/golf/TeeSettingEditor";
+import {updateScreenJson} from "@/lib/actions/user.actions";
+import {JsonFieldEditor} from "@/components/json/JsonFieldEditor";
 
 export function GolfCoursesEditor({
                                       json,
@@ -280,6 +282,16 @@ export function GolfCoursesEditor({
                             </AccordionTrigger>
 
                             <AccordionContent className="space-y-6">
+
+                                <JsonFieldEditor
+                                    json={localJson}
+                                    paths={[
+                                        { path: `golfCoursesData.${courseName}.courseColour`, label: "Course Hole Colour", type: "color", tag: "course settings" },
+                                    ]}
+                                    action={updateScreenJson}
+                                />
+
+
                                 <HolesEditorWrapper
                                     courseName={courseName}
                                     holesData={courseData.holesData}
