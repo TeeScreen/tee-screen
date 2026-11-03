@@ -142,7 +142,6 @@ export const sidebarItems: NavGroup[] = [
         title: "Analytics",
         url: "/dashboard/analytics",
         icon: ChartNoAxesCombined,
-        needsLoad: true,
       },
     ],
   },
