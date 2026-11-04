@@ -56,9 +56,36 @@ export const PreviewTabs = memo(function PreviewTabs({
         }
     }
 
-    function getBrightness(color: { r: number; g: number; b: number }) {
-        if(color.r==1 && color.g==1 && color.b==1)return 1;
-        return (color.r + color.g + color.b) / (3 * 255)
+// Helper to extract r, g, b from an rgba() or rgb() CSS string
+    const parseRgbaString = (colorStr: string): { r: number; g: number; b: number } | undefined => {
+        const match = colorStr.match(/^rgba?\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)/i)
+        if (!match) return undefined
+        return {
+            r: parseFloat(match[1]),
+            g: parseFloat(match[2]),
+            b: parseFloat(match[3])
+        }
+    }
+
+    function getBrightness(color: { r: number; g: number; b: number }): number {
+        let r = color.r
+        let g = color.g
+        let b = color.b
+
+        // If it's the fallback sentinel, resolve it from uiColor
+        if (r === 1 && g === 1 && b === 1) {
+            const fallbackRgb = parseRgbaString(uiColor)
+            if (fallbackRgb) {
+                r = fallbackRgb.r
+                g = fallbackRgb.g
+                b = fallbackRgb.b
+            } else {
+                return 1 // Default fallback brightness if parsing fails
+            }
+        }
+
+        // Calculate normalized brightness on a 0-255 scale
+        return (r + g + b) / (3 * 255)
     }
 
     return (
