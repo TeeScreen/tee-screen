@@ -1,17 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
     MapContainer,
     TileLayer,
     Marker,
     ZoomControl,
     useMapEvents,
+    GeoJSON,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import type { PathOptions, CircleMarkerOptions } from "leaflet";
+import type { Feature, GeoJsonObject } from "geojson";
 import { Button } from "@/components/ui/button";
-import { Globe, Map as MapIcon, Info, Loader2, Plus, Minus } from "lucide-react";
+import { Globe, Map as MapIcon, Info, Loader2, Plus, Minus, Layers } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -37,6 +40,22 @@ export type HoleData = {
     redTeePointLatLong: LatLon;
 };
 
+// Polygon Styles for Pin Vision Map data
+const COURSE_STYLES: Record<string, PathOptions> = {
+    green: { color: '#000000', weight: 0.5, fillColor: '#bbe999', fillOpacity: 0.85 },
+    fairway: { color: '#000000', weight: 0.5, fillColor: '#8ace5e', fillOpacity: 0.75 },
+    teebox: { color: '#000000', weight: 0.5, fillColor: '#8ace5e', fillOpacity: 0.85 },
+    bunker: { color: '#000000', weight: 0.5, fillColor: '#f8efc6', fillOpacity: 0.9 },
+    water: { color: 'rgba(0,0,0,0)', weight: 1, fillColor: '#99ddff', fillOpacity: 0.8 },
+    path: { color: '#ffffff', weight: 1, fillOpacity: 0 },
+    hole: { color: 'rgba(0,0,0,0.3)', weight: 1, fillColor: '#ffffff', fillOpacity: 0 },
+};
+
+const DEFAULT_COURSE_STYLE: PathOptions = { color: '#475569', weight: 1, fillOpacity: 0 };
+
+// Module-level cache for the course GeoJSON
+let cachedGeoJsonData: GeoJsonObject | null = null;
+
 function ZoomWatcher({ onZoom }: { onZoom: (z: number) => void }) {
     useMapEvents({
         zoom(e) {
@@ -51,7 +70,9 @@ export default function GlobalCourseMap({
                                             clubLocation,
                                             onConfirm,
                                             onCancel,
-                                            teeSettings
+                                            teeSettings,
+                                            clubId = 2283,
+                                            partnerKey = "416aaf8e2778b61f442f23bdac14e62794bebea6"
                                         }: {
     holes: HoleData[];
     clubLocation: LatLon;
@@ -61,26 +82,56 @@ export default function GlobalCourseMap({
         whiteTeeLabel: string;
         yellowTeeLabel: string;
         redTeeLabel: string;
-
         TeeColourWhite: RGBA;
         TeeColourYellow: RGBA;
         TeeColourRed: RGBA;
     };
+    clubId?: number;
+    partnerKey?: string;
 }) {
     const [zoom, setZoom] = useState(16);
     const [mapType, setMapType] = useState<"satellite" | "street">("satellite");
     const [infoOpen, setInfoOpen] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [showCourseMap, setShowCourseMap] = useState(true);
+    const [geoJsonData, setGeoJsonData] = useState<GeoJsonObject | null>(cachedGeoJsonData);
 
     const [localHoles, setLocalHoles] = useState<HoleData[]>(holes);
-
-    // ⭐ Hole filter state
     const [visibleHoles, setVisibleHoles] = useState<number[]>(holes.map(h => h.holeNumber));
 
     useEffect(() => {
         setLocalHoles(holes);
         setVisibleHoles(holes.map(h => h.holeNumber));
     }, [holes]);
+
+    // Fetch Pin Vision GeoJSON data if not cached
+    useEffect(() => {
+        if (cachedGeoJsonData) {
+            setGeoJsonData(cachedGeoJsonData);
+            return;
+        }
+
+        async function fetchGeoJSON() {
+            try {
+                const response = await fetch(`https://partner.pinvision.app/v1/club/${clubId}/geojson`, {
+                    headers: {
+                        'x-partner-key': partnerKey,
+                    },
+                });
+                const resData = await response.json();
+                if (resData?.data?.url) {
+                    const geojsonRes = await fetch(resData.data.url);
+                    const geojson = await geojsonRes.json();
+                    cachedGeoJsonData = geojson;
+                    setGeoJsonData(geojson);
+                }
+            } catch (err) {
+                console.error("Failed to load Pin Vision course GeoJSON:", err);
+            }
+        }
+
+        fetchGeoJSON();
+    }, [clubId, partnerKey]);
 
     const scale = Math.pow(1.15, zoom - 16);
 
@@ -172,12 +223,28 @@ export default function GlobalCourseMap({
         setSaving(false);
     };
 
+    const getFeatureStyle = (feature?: Feature): PathOptions => {
+        const type = feature?.properties?.type;
+        return type ? COURSE_STYLES[type] || DEFAULT_COURSE_STYLE : DEFAULT_COURSE_STYLE;
+    };
+
+    const pointToLayer = (feature: Feature, latlng: L.LatLng) => {
+        const type = feature?.properties?.type;
+        const isCenter = type === 'teeboxcenter' || type === 'greencenter';
+        return L.circleMarker(latlng, {
+            radius: isCenter ? 5 : 3,
+            color: isCenter ? '#0f172a' : '#334155',
+            weight: 1.5,
+            fillColor: isCenter ? '#ffffff' : '#cbd5e1',
+            fillOpacity: 1,
+        });
+    };
+
     return (
         <div className="relative w-full h-full">
 
             {/* ⭐ Vertical Hole Filter Panel */}
-            <div className="absolute top-3 left-3 z-[1000] backdrop-blur-md px-3 py-3 rounded shadow flex flex-col gap-2 w-24">
-
+            <div className="absolute top-3 left-3 z-[1000] backdrop-blur-md bg-background/80 px-3 py-3 rounded shadow flex flex-col gap-2 w-24">
                 <Button
                     size="sm"
                     variant={visibleHoles.length === holes.length ? "default" : "outline"}
@@ -242,6 +309,16 @@ export default function GlobalCourseMap({
             {/* ⭐ Controls (Top Right) */}
             <div className="absolute top-3 right-3 z-[1000] flex items-center gap-2">
 
+                {/* Toggle Course Map Polygons */}
+                <Button
+                    size="icon"
+                    variant={showCourseMap ? "default" : "secondary"}
+                    onClick={() => setShowCourseMap(prev => !prev)}
+                    title={showCourseMap ? "Hide Course Layout" : "Show Course Layout"}
+                >
+                    <Layers className="h-4 w-4" />
+                </Button>
+
                 {/* Zoom Out */}
                 <Button
                     size="icon"
@@ -291,8 +368,7 @@ export default function GlobalCourseMap({
                     <DialogHeader>
                         <DialogTitle>Global Course Map</DialogTitle>
                         <DialogDescription>
-                            Drag markers to reposition them.
-                            Changes are only saved when you click Confirm.
+                            Drag markers to reposition them. Use the layer toggle in the top-right to show or hide course layouts. Changes are only saved when you click Confirm.
                         </DialogDescription>
                     </DialogHeader>
                 </DialogContent>
@@ -300,7 +376,7 @@ export default function GlobalCourseMap({
 
             {/* ⭐ Legend (shifted right to avoid overlap) */}
             <div
-                className="absolute bottom-3 z-[1000] bg-muted shadow-md rounded-md px-3 py-2 text-xs space-y-1"
+                className="absolute bottom-3 z-[1000] bg-muted/90 backdrop-blur-sm shadow-md rounded-md px-3 py-2 text-xs space-y-1"
                 style={{ left: "140px" }}
             >
                 <p className="font-semibold text-[11px] tracking-tight">Legend</p>
@@ -340,8 +416,19 @@ export default function GlobalCourseMap({
 
                 <TileLayer
                     url={mapType === "satellite" ? satelliteTiles : streetTiles}
+                    maxZoom={22}
                 />
 
+                {/* Render Pin Vision Course Polygons when toggled on */}
+                {showCourseMap && geoJsonData && (
+                    <GeoJSON
+                        data={geoJsonData}
+                        style={getFeatureStyle}
+                        pointToLayer={pointToLayer}
+                    />
+                )}
+
+                {/* Render Draggable Tee & Hole Markers */}
                 {localHoles
                     .filter(h => visibleHoles.includes(h.holeNumber))
                     .map((hole) => {

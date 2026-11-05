@@ -15,7 +15,6 @@ export const GET = async (req: NextRequest, { params }: { params: Params }) => {
         }
 
         const url = `${process.env.SERVER_URL}/golf-club-images/${screenName}/ScreenPreview.png`;
-        console.log("api test:", url);
 
         // Fetch the image from your external server
         const res = await fetch(url);

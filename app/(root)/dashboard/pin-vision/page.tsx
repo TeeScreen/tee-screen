@@ -1,6 +1,7 @@
 // app/sso-dev/page.tsx
 import jwt from "jsonwebtoken";
 import { redirect } from "next/navigation";
+import PinVisionMap from "@/components/golf/PinVisionTest";
 
 const SSO_SECRET = process.env.PV_SSO_SECRET!;
 const PARTNER_KEY = process.env.PV_PARTNER_KEY!;
@@ -17,8 +18,8 @@ export default function SSODEVPage() {
 
         const token = jwt.sign(
         {
-            club_id: '2283',
-                email: 'arthur@teescreen.co.uk',
+            //club_id: '2283',
+               // email: 'arthur@teescreen.co.uk',
             given_name: 'Arthur',
             family_name: 'Johnson',
         },
@@ -38,6 +39,7 @@ export default function SSODEVPage() {
         });
 
         console.log(exchange);
+
 
         if (!exchange.ok) {
             throw new Error(`SSO exchange failed: ${exchange.status}`);
@@ -83,6 +85,8 @@ export default function SSODEVPage() {
                     Run SSO
                 </button>
             </form>
+
+            <PinVisionMap/>
         </div>
     );
 }
