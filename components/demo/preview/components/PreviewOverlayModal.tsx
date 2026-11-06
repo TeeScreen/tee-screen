@@ -35,21 +35,24 @@ export const PreviewOverlayModal = memo(function PreviewOverlayModal({
     };
 
     switch (overlayContent.type) {
-        case 'url':
+        case 'url': {
+            const proxyUrl = `/api/proxy?url=${encodeURIComponent(overlayContent.src)}`;
+
             return (
-                <div className="absolute inset-0 z-50 flex items-center justify-center">
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white">
                     <iframe
-                        src={getSafeUrl(overlayContent.src)}
-                        className="w-full h-full bg-white"
+                        src={proxyUrl}
+                        className="w-full h-full bg-white relative z-10"
                     />
                     <button
-                        className="absolute top-4 right-4 bg-red-600 text-white rounded-full h-[3.5vh] w-[3.5vh] flex items-center justify-center font-bold text-[1.5vh]"
+                        className="absolute top-4 right-4 z-30 bg-red-600 text-white rounded-full h-[3.5vh] w-[3.5vh] flex items-center justify-center font-bold text-[1.5vh]"
                         onClick={onClose}
                     >
                         ×
                     </button>
                 </div>
             );
+        }
 
         case 'full':
             return (
