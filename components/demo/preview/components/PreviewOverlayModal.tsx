@@ -37,13 +37,26 @@ export const PreviewOverlayModal = memo(function PreviewOverlayModal({
     switch (overlayContent.type) {
         case 'url': {
             const proxyUrl = `/api/proxy?url=${encodeURIComponent(overlayContent.src)}`;
+            const [isLoading, setIsLoading] = React.useState(true);
 
             return (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-white">
+                    {/* Loading Spinner Overlay */}
+                    {isLoading && (
+                        <div
+                            className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm transition-opacity">
+                            <div
+                                className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+                            <p className="text-sm font-medium text-gray-600">Loading website ...</p>
+                        </div>
+                    )}
+
                     <iframe
                         src={proxyUrl}
                         className="w-full h-full bg-white relative z-10"
+                        onLoad={() => setIsLoading(false)}
                     />
+
                     <button
                         className="absolute top-4 right-4 z-30 bg-red-600 text-white rounded-full h-[3.5vh] w-[3.5vh] flex items-center justify-center font-bold text-[1.5vh]"
                         onClick={onClose}
@@ -181,9 +194,10 @@ export const PreviewOverlayModal = memo(function PreviewOverlayModal({
             break;
 
         case 'handicap':
-            if(overlayContent.handicapData) {
+            if (overlayContent.handicapData) {
                 return (
-                    <div className="absolute top-[10%] bottom-[25%] left-0 right-0 z-50 flex items-center justify-center">
+                    <div
+                        className="absolute top-[10%] bottom-[25%] left-0 right-0 z-50 flex items-center justify-center">
                         <PreviewHandicapCalculator
                             handicapData={overlayContent.handicapData}
                             onClose={onClose}
