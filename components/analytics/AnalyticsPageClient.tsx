@@ -1,7 +1,7 @@
 "use client";
 
-import React, {useState, useTransition, useCallback, useEffect} from "react";
-import { Monitor, PanelTopBottomDashed, BarChart2, X, GitCompareArrows, ChevronDown } from "lucide-react";
+import React, { useState, useTransition, useCallback, useEffect, useMemo, useRef } from "react";
+import { Monitor, PanelTopBottomDashed, X, GitCompareArrows } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Select,
@@ -13,8 +13,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { getScreenAnalytics } from "@/lib/actions/user.actions";
-import InteractionsDashboard, { type InteractionEntry } from "@/components/InteractionDashboard";
+import InteractionsDashboard, {
+    type InteractionEntry,
+    type ScreenComparisonItem,
+} from "@/components/InteractionDashboard";
 import CompareScreensDashboard from "@/components/analytics/CompareScreensDashboard";
+import { normalizeInteraction } from "@/lib/analytics-utils";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                       */
@@ -43,34 +47,13 @@ export default function AnalyticsPageClient({
     const defaultScreen = initialData?.screenName ?? loadedScreen ?? screenNames[0] ?? null;
     const [activeScreen, setActiveScreen] = useState<string | null>(defaultScreen);
 
-    /* Cache fetched data so we don't re-fetch on tab switch */
+    /* Cache fetched data so we don't re-fetch on switch */
     const [dataCache, setDataCache] = useState<Record<string, ScreenAnalyticsData>>(() => {
         if (initialData) {
             return { [initialData.screenName]: initialData };
         }
         return {};
     });
-
-    useEffect(() => {
-        const loadInitialScreen = async () => {
-            if (
-                !initialData &&
-                screenNames.length > 0 &&
-                !dataCache[screenNames[0]]
-            ) {
-                const data = await fetchScreen(screenNames[0]);
-
-                if (data) {
-                    setDataCache(prev => ({
-                        ...prev,
-                        [data.screenName]: data,
-                    }));
-                }
-            }
-        };
-
-        loadInitialScreen();
-    }, [initialData, screenNames]);
 
     const [isPending, startTransition] = useTransition();
 
@@ -79,6 +62,8 @@ export default function AnalyticsPageClient({
     const [compareScreens, setCompareScreens] = useState<string[]>([]);
     const [compareData, setCompareData] = useState<ScreenAnalyticsData[]>([]);
     const [isLoadingCompare, setIsLoadingCompare] = useState(false);
+
+    const fetchedRef = useRef<Set<string>>(new Set());
 
     /* ---- fetch helper ---- */
     const fetchScreen = useCallback(
@@ -95,6 +80,77 @@ export default function AnalyticsPageClient({
         },
         [dataCache]
     );
+
+    // Track initialData in ref
+    useEffect(() => {
+        if (initialData?.screenName) {
+            fetchedRef.current.add(initialData.screenName);
+        }
+    }, [initialData]);
+
+    // Initial load for first screen if not pre-fetched
+    useEffect(() => {
+        if (!initialData && screenNames.length > 0 && !dataCache[screenNames[0]]) {
+            const firstScreen = screenNames[0];
+            if (!fetchedRef.current.has(firstScreen)) {
+                fetchedRef.current.add(firstScreen);
+                fetchScreen(firstScreen).then((data) => {
+                    if (data) {
+                        setDataCache((prev) => ({
+                            ...prev,
+                            [data.screenName]: data,
+                        }));
+                    }
+                });
+            }
+        }
+    }, [initialData, screenNames, fetchScreen, dataCache]);
+
+    // Background fetch other screens so screen comparison on single screen view has total interactions
+    useEffect(() => {
+        if (screenNames.length <= 1) return;
+
+        screenNames.forEach(async (name) => {
+            if (fetchedRef.current.has(name)) return;
+            fetchedRef.current.add(name);
+            const result = await getScreenAnalytics(name);
+            if (result) {
+                setDataCache((prev) => ({
+                    ...prev,
+                    [result.screenName]: {
+                        screenName: result.screenName,
+                        interactions: result.interactions,
+                    },
+                }));
+            }
+        });
+    }, [screenNames]);
+
+    // Compute screen comparison totals (adding all segments together)
+    const screenComparison = useMemo<ScreenComparisonItem[]>(() => {
+        if (screenNames.length <= 1) return [];
+
+        return screenNames.map((name) => {
+            const cached = dataCache[name];
+            if (!cached) {
+                return {
+                    screenName: name,
+                    total: null,
+                    isLoading: true,
+                };
+            }
+
+            const total = cached.interactions.reduce((sum, item) => {
+                return sum + normalizeInteraction(item).total;
+            }, 0);
+
+            return {
+                screenName: name,
+                total,
+                isLoading: false,
+            };
+        });
+    }, [screenNames, dataCache]);
 
     /* ---- single-screen switcher ---- */
     const handleScreenChange = (name: string) => {
@@ -116,7 +172,6 @@ export default function AnalyticsPageClient({
         setCompareScreens(newSelection);
 
         if (!alreadySelected) {
-            // Fetch data if not already cached
             setIsLoadingCompare(true);
             const data = await fetchScreen(name);
             setIsLoadingCompare(false);
@@ -134,8 +189,15 @@ export default function AnalyticsPageClient({
     /* ---- enter compare mode ---- */
     const handleEnterCompare = async () => {
         setCompareMode(true);
-        setCompareScreens([]);
-        setCompareData([]);
+        // Pre-select all available screens (or up to 4)
+        const initial = screenNames.slice(0, Math.min(screenNames.length, 4));
+        setCompareScreens(initial);
+
+        setIsLoadingCompare(true);
+        const results = await Promise.all(initial.map((name) => fetchScreen(name)));
+        setIsLoadingCompare(false);
+        const validResults = results.filter((r): r is ScreenAnalyticsData => r !== null);
+        setCompareData(validResults);
     };
 
     /* ---- exit compare mode ---- */
@@ -204,7 +266,7 @@ export default function AnalyticsPageClient({
                                 {/* Compare mode header */}
                                 <span className="text-sm font-medium text-muted-foreground flex items-center gap-1">
                                     <GitCompareArrows className="h-4 w-4" />
-                                    Compare mode — select screens:
+                                    Compare screens:
                                 </span>
 
                                 <div className="flex flex-wrap gap-1">
@@ -272,10 +334,10 @@ export default function AnalyticsPageClient({
                 </div>
             ) : (
                 /* ---- SINGLE SCREEN VIEW ---- */
-                <div>
+                <div className="space-y-6">
                     {/* Screen badge */}
                     {activeScreen && (
-                        <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center gap-2">
                             <Badge variant="secondary" className="flex items-center gap-1.5 py-1 px-3">
                                 <Monitor className="h-3.5 w-3.5" />
                                 {activeScreen}
@@ -294,7 +356,12 @@ export default function AnalyticsPageClient({
                             Loading analytics for {activeScreen}…
                         </div>
                     ) : activeData ? (
-                        <InteractionsDashboard interactions={activeData.interactions} />
+                        <InteractionsDashboard
+                            interactions={activeData.interactions}
+                            screenName={activeScreen ?? undefined}
+                            screenComparison={screenComparison}
+                            onSelectScreen={handleScreenChange}
+                        />
                     ) : (
                         <div className="p-8 border border-dashed rounded-2xl text-center text-muted-foreground">
                             {activeScreen

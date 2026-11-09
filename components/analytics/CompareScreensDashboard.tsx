@@ -28,9 +28,15 @@ import {
     SelectItem,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Monitor, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Monitor, TrendingUp, TrendingDown, Home, Calendar } from "lucide-react";
 import DateTimeRangePicker from "@/components/DateRangePicker";
-import { type InteractionEntry } from "@/components/InteractionDashboard";
+import {
+    normalizeInteraction,
+    getLocalBucket,
+    formatLocalBucket,
+    type InteractionEntry,
+    type TimeGrouping,
+} from "@/lib/analytics-utils";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -43,8 +49,6 @@ interface ScreenAnalyticsData {
 interface Props {
     data: ScreenAnalyticsData[];
 }
-
-type TimeGrouping = "day" | "hour" | "10min";
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                    */
@@ -64,23 +68,23 @@ function colorForIndex(i: number) {
     return COLORS[i % COLORS.length];
 }
 
-function bucketKey(date: Date, grouping: TimeGrouping): string {
-    const iso = date.toISOString();
-    if (grouping === "day") return iso.slice(0, 10);
-    if (grouping === "hour") {
-        return `${iso.slice(0, 10)}T${String(date.getHours()).padStart(2, "0")}:00`;
-    }
-    const m = Math.floor(date.getMinutes() / 10) * 10;
-    return `${iso.slice(0, 10)}T${String(date.getHours()).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
+function filterEntries(
+    interactions: InteractionEntry[],
+    range: { from: Date | undefined; to: Date | undefined }
+) {
+    const fromTime = range.from ? range.from.getTime() : -Infinity;
+    let toTime = range.to ? range.to.getTime() : Infinity;
 
-function formatBucket(bucket: string, grouping: TimeGrouping) {
-    const d = new Date(bucket);
-    if (grouping === "day") return d.toLocaleDateString();
-    if (grouping === "hour") return `${d.toLocaleDateString()} ${d.getHours()}:00`;
-    const m = d.getMinutes();
-    const rounded = Math.floor(m / 10) * 10;
-    return `${d.toLocaleDateString()} ${d.getHours()}:${String(rounded).padStart(2, "0")}`;
+    if (range.to && range.to.getHours() === 0 && range.to.getMinutes() === 0 && range.to.getSeconds() === 0) {
+        const end = new Date(range.to);
+        end.setHours(23, 59, 59, 999);
+        toTime = end.getTime();
+    }
+
+    return interactions.map(normalizeInteraction).filter((i) => {
+        const t = i.date.getTime();
+        return t >= fromTime && t <= toTime;
+    });
 }
 
 function buildChartData(
@@ -88,21 +92,25 @@ function buildChartData(
     grouping: TimeGrouping,
     range: { from: Date | undefined; to: Date | undefined }
 ) {
-    // Collect all bucket keys across all screens
+    const allScreenNames = data.map((d) => d.screenName);
     const bucketMap = new Map<string, Record<string, number>>();
 
     data.forEach(({ screenName, interactions }) => {
-        const filtered = interactions.filter((i) => {
-            if (!range.from || !range.to) return true;
-            const d = new Date(i.loggedTime);
-            return d >= range.from! && d <= range.to!;
-        });
+        const normalized = filterEntries(interactions, range);
 
-        filtered.forEach((i) => {
-            const bucket = bucketKey(new Date(i.loggedTime), grouping);
-            if (!bucketMap.has(bucket)) bucketMap.set(bucket, {});
+        normalized.forEach((i) => {
+            const bucket = getLocalBucket(i.date, grouping);
+
+            if (!bucketMap.has(bucket)) {
+                const initialRow: Record<string, number> = {};
+                allScreenNames.forEach((name) => {
+                    initialRow[name] = 0;
+                });
+                bucketMap.set(bucket, initialRow);
+            }
+
             const row = bucketMap.get(bucket)!;
-            row[screenName] = (row[screenName] ?? 0) + i.numOfInteractions;
+            row[screenName] = (row[screenName] ?? 0) + i.total;
         });
     });
 
@@ -116,21 +124,14 @@ function buildSummaryStats(
     range: { from: Date | undefined; to: Date | undefined }
 ) {
     return data.map(({ screenName, interactions }) => {
-        const filtered = interactions.filter((i) => {
-            if (!range.from || !range.to) return true;
-            const d = new Date(i.loggedTime);
-            return d >= range.from! && d <= range.to!;
-        });
+        const normalizedList = filterEntries(interactions, range);
+        const total = normalizedList.reduce((sum, item) => sum + item.total, 0);
+        const avg = normalizedList.length > 0 ? Math.round(total / normalizedList.length) : 0;
 
-        const total = filtered.reduce((sum, i) => sum + i.numOfInteractions, 0);
-        const avg =
-            filtered.length > 0 ? Math.round(total / filtered.length) : 0;
-
-        // Segment breakdown
+        // Segment breakdown (all unaccounted interactions go to Home Page)
         const segmentTotals: Record<string, number> = {};
-        filtered.forEach((i) => {
-            const segs = i.segmentInteractions ?? {};
-            Object.entries(segs).forEach(([k, v]) => {
+        normalizedList.forEach((item) => {
+            Object.entries(item.segments).forEach(([k, v]) => {
                 segmentTotals[k] = (segmentTotals[k] ?? 0) + v;
             });
         });
@@ -138,7 +139,7 @@ function buildSummaryStats(
         const topSegment =
             Object.entries(segmentTotals).sort((a, b) => b[1] - a[1])[0] ?? null;
 
-        return { screenName, total, avg, topSegment, dataPoints: filtered.length };
+        return { screenName, total, avg, topSegment, dataPoints: normalizedList.length };
     });
 }
 
@@ -237,7 +238,7 @@ export default function CompareScreensDashboard({ data }: Props) {
                                         <span className="font-medium text-foreground">
                                             {stat.topSegment[0]}
                                         </span>{" "}
-                                        ({stat.topSegment[1]})
+                                        ({stat.topSegment[1].toLocaleString()})
                                     </div>
                                 )}
                                 {isBest && (
@@ -269,11 +270,12 @@ export default function CompareScreensDashboard({ data }: Props) {
                 </CardHeader>
                 <CardContent>
                     {chartData.length === 0 ? (
-                        <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">
-                            No data to display for the selected range.
+                        <div className="h-[300px] flex flex-col items-center justify-center text-muted-foreground text-sm gap-2">
+                            <Calendar className="h-8 w-8 opacity-40" />
+                            <p>No interaction data recorded for the selected range.</p>
                         </div>
                     ) : (
-                        <div className="h-[300px] w-full">
+                        <div className="h-[320px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={chartData}>
                                     <defs>
@@ -303,7 +305,7 @@ export default function CompareScreensDashboard({ data }: Props) {
                                     <XAxis
                                         dataKey="bucket"
                                         tickFormatter={(v) =>
-                                            hydrated ? formatBucket(v, grouping) : v
+                                            hydrated ? formatLocalBucket(v, grouping) : v
                                         }
                                         tickLine={false}
                                         axisLine={false}
@@ -316,10 +318,11 @@ export default function CompareScreensDashboard({ data }: Props) {
                                         axisLine={false}
                                         tickMargin={8}
                                         tick={{ fontSize: 11 }}
+                                        allowDecimals={false}
                                     />
                                     <Tooltip
                                         labelFormatter={(v) =>
-                                            hydrated ? formatBucket(v, grouping) : v
+                                            hydrated ? formatLocalBucket(v, grouping) : v
                                         }
                                         contentStyle={{
                                             borderRadius: "8px",
@@ -337,7 +340,7 @@ export default function CompareScreensDashboard({ data }: Props) {
                                             stroke={colorForIndex(i)}
                                             strokeWidth={2}
                                             stackId={stacked ? "stack" : undefined}
-                                            dot={false}
+                                            dot={chartData.length <= 1 ? { r: 4, fill: colorForIndex(i) } : false}
                                         />
                                     ))}
                                 </AreaChart>
@@ -353,17 +356,12 @@ export default function CompareScreensDashboard({ data }: Props) {
                 <div className="grid gap-6 md:grid-cols-2">
                     {data.map((screen, i) => {
                         const color = colorForIndex(i);
-                        const filtered = screen.interactions.filter((int) => {
-                            if (!range.from || !range.to) return true;
-                            const d = new Date(int.loggedTime);
-                            return d >= range.from! && d <= range.to!;
-                        });
+                        const normalizedList = filterEntries(screen.interactions, range);
 
                         // Build mini per-segment totals
                         const segTotals: Record<string, number> = {};
-                        filtered.forEach((int) => {
-                            const segs = int.segmentInteractions ?? {};
-                            Object.entries(segs).forEach(([k, v]) => {
+                        normalizedList.forEach((int) => {
+                            Object.entries(int.segments).forEach(([k, v]) => {
                                 segTotals[k] = (segTotals[k] ?? 0) + v;
                             });
                         });
@@ -408,15 +406,21 @@ export default function CompareScreensDashboard({ data }: Props) {
                                                         (s, [, c]) => s + c,
                                                         0
                                                     );
-                                                    const pct = grand > 0
-                                                        ? Math.round((count / grand) * 100)
-                                                        : 0;
+                                                    const pct =
+                                                        grand > 0
+                                                            ? Math.round((count / grand) * 100)
+                                                            : 0;
                                                     return (
                                                         <tr
                                                             key={seg}
                                                             className="border-b last:border-0"
                                                         >
-                                                            <td className="py-1.5 px-2">{seg}</td>
+                                                            <td className="py-1.5 px-2 flex items-center gap-1.5">
+                                                                {seg === "Home Page" && (
+                                                                    <Home className="h-3.5 w-3.5 text-blue-500" />
+                                                                )}
+                                                                <span>{seg}</span>
+                                                            </td>
                                                             <td className="py-1.5 px-2 text-right font-medium">
                                                                 {count.toLocaleString()}
                                                             </td>

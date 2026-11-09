@@ -32,7 +32,9 @@ export default async function Page() {
     if (loadedScreen && user?.analyticsJson) {
         initialData = {
             screenName: loadedScreen,
-            interactions: user.analyticsJson?.interactions ?? [],
+            interactions: Array.isArray(user.analyticsJson)
+                ? user.analyticsJson
+                : (user.analyticsJson?.interactions ?? []),
         };
     }
 

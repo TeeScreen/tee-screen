@@ -788,7 +788,8 @@ export async function getScreenAnalytics(screenName: string): Promise<{
             analyticsData = screenInfo?.analyticsJson ?? null;
         }
 
-        const interactions = analyticsData?.interactions ?? [];
+        const rawList = analyticsData?.interactions ?? analyticsData ?? [];
+        const interactions = Array.isArray(rawList) ? rawList : [];
         return JSON.parse(JSON.stringify({ interactions, screenName }));
     } catch (e) {
         console.error("getScreenAnalytics error:", e);
