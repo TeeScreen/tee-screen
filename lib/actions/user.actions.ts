@@ -738,6 +738,65 @@ export async function getAdminScreenData()
     }
 }
 
+/**
+ * Fetch analytics data for any screen that belongs to the current user's account.
+ * Tries the live API first; falls back to the DB-cached version if unavailable.
+ */
+export async function getScreenAnalytics(screenName: string): Promise<{
+    interactions: any[];
+    screenName: string;
+} | null> {
+    try {
+        await connectToDatabase();
+        if (!auth) throw new Error("Auth module not initialised");
+
+        const session = await auth.api.getSession({ headers: await headers() });
+        if (!session?.user) return null;
+
+        const userId = session.user.id;
+        const userInfo = await UserInfoModel.findOne({ userId }).lean();
+        if (!userInfo) return null;
+
+        const accountLogin = userInfo.loadedAccount;
+        const account = userInfo.accountDetails?.find(
+            (a: any) => a.accountLogin === accountLogin
+        );
+        if (!account) return null;
+
+        // Try live API first
+        let analyticsData: any = null;
+        try {
+            const res = await fetch(
+                `https://teescreenapp.com/api/analytics_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenName}`
+            );
+            if (res.ok) {
+                analyticsData = await res.json();
+                // Persist the refreshed data to DB
+                await ScreenInfoModel.findOneAndUpdate(
+                    { screenName },
+                    { analyticsJson: analyticsData },
+                    { upsert: true }
+                );
+            }
+        } catch {
+            console.warn("Live analytics fetch failed for", screenName, "– falling back to DB");
+        }
+
+        // Fallback: DB cache
+        if (!analyticsData) {
+            const screenInfo = await ScreenInfoModel.findOne({ screenName }).lean();
+            analyticsData = screenInfo?.analyticsJson ?? null;
+        }
+
+        const rawList = analyticsData?.interactions ?? analyticsData ?? [];
+        const interactions = Array.isArray(rawList) ? rawList : [];
+        return JSON.parse(JSON.stringify({ interactions, screenName }));
+    } catch (e) {
+        console.error("getScreenAnalytics error:", e);
+        return null;
+    }
+}
+
 
 
 

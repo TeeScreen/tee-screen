@@ -28,7 +28,12 @@ interface Props {
 }
 
 export default function DateTimeRangePicker({ value, onChange }: Props) {
-    const setPreset = (preset: "today" | "7d" | "30d") => {
+    const setPreset = (preset: "all" | "today" | "7d" | "30d") => {
+        if (preset === "all") {
+            onChange({ from: undefined, to: undefined });
+            return;
+        }
+
         const now = new Date();
         const to = endOfDay(now);
         let from: Date;
@@ -40,6 +45,18 @@ export default function DateTimeRangePicker({ value, onChange }: Props) {
         } else {
             from = startOfDay(new Date(now.getTime() - 29 * 24 * 60 * 60 * 1000));
         }
+
+        onChange({ from, to });
+    };
+
+    const handleCalendarSelect = (range: any) => {
+        if (!range) {
+            onChange({ from: undefined, to: undefined });
+            return;
+        }
+
+        let from = range.from ? startOfDay(range.from) : undefined;
+        let to = range.to ? endOfDay(range.to) : undefined;
 
         onChange({ from, to });
     };
@@ -70,9 +87,18 @@ export default function DateTimeRangePicker({ value, onChange }: Props) {
         ).padStart(2, "0")}`
         : "";
 
+    const isFiltered = Boolean(value.from || value.to);
+
     return (
         <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-2">
+                <Button
+                    variant={!isFiltered ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setPreset("all")}
+                >
+                    All time
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => setPreset("today")}>
                     Today
                 </Button>
@@ -86,49 +112,53 @@ export default function DateTimeRangePicker({ value, onChange }: Props) {
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button
-                            variant="outline"
+                            variant={isFiltered ? "secondary" : "outline"}
                             className="w-[260px] justify-start text-left font-normal"
                         >
                             {value.from && value.to
                                 ? `${value.from.toLocaleDateString()} → ${value.to.toLocaleDateString()}`
-                                : "Select date range"}
+                                : value.from
+                                ? `From ${value.from.toLocaleDateString()}`
+                                : "Custom range…"}
                         </Button>
                     </PopoverTrigger>
 
-                    <PopoverContent className="p-0">
+                    <PopoverContent className="p-0" align="start">
                         <Calendar
                             mode="range"
                             selected={value}
-                            onSelect={(range) => onChange(range as any)}
+                            onSelect={handleCalendarSelect}
                             numberOfMonths={2}
                         />
                     </PopoverContent>
                 </Popover>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">From time</span>
-                    <input
-                        type="time"
-                        className="h-9 rounded-md border px-2 text-sm"
-                        value={fromTime}
-                        onChange={(e) => handleTimeChange("from", e.target.value)}
-                        disabled={!value.from}
-                    />
-                </div>
+            {isFiltered && (
+                <div className="flex flex-wrap items-center gap-3 animate-in fade-in-50 duration-150">
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground font-medium">From time</span>
+                        <input
+                            type="time"
+                            className="h-8 rounded-md border bg-background px-2 text-xs"
+                            value={fromTime}
+                            onChange={(e) => handleTimeChange("from", e.target.value)}
+                            disabled={!value.from}
+                        />
+                    </div>
 
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">To time</span>
-                    <input
-                        type="time"
-                        className="h-9 rounded-md border px-2 text-sm"
-                        value={toTime}
-                        onChange={(e) => handleTimeChange("to", e.target.value)}
-                        disabled={!value.to}
-                    />
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground font-medium">To time</span>
+                        <input
+                            type="time"
+                            className="h-8 rounded-md border bg-background px-2 text-xs"
+                            value={toTime}
+                            onChange={(e) => handleTimeChange("to", e.target.value)}
+                            disabled={!value.to}
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

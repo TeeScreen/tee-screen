@@ -1,14 +1,13 @@
 import React from "react";
-import { PanelTopBottomDashed } from "lucide-react";
 import { getUserInfo } from "@/lib/actions/user.actions";
 import dynamicImport from "next/dynamic";
 
-const InteractionsDashboard = dynamicImport(
-    () => import("@/components/InteractionDashboard"),
+const AnalyticsPageClient = dynamicImport(
+    () => import("@/components/analytics/AnalyticsPageClient"),
     {
         loading: () => (
             <div className="p-8 border rounded-2xl bg-card text-center text-muted-foreground animate-pulse">
-                Loading analytics dashboard...
+                Loading analytics dashboard…
             </div>
         ),
     }
@@ -21,20 +20,29 @@ export default async function Page() {
     try {
         user = await getUserInfo();
     } catch (e) {
-        console.warn('Failed to fetch user info', e);
+        console.warn("Failed to fetch user info", e);
     }
-    const analyticsJson = user?.analyticsJson;
 
-    // Pull interactions instead of check-ins
-    const interactions = analyticsJson?.interactions ?? [];
+    const screenNames: string[] = user?.screenNames ?? [];
+    const loadedScreen: string | null = user?.loadedScreen || null;
+    const loadedAccount: string | null = user?.loadedAccount || null;
+
+    // Pre-fetch analytics for the currently loaded screen (if any)
+    let initialData: { screenName: string; interactions: any[] } | null = null;
+    if (loadedScreen && user?.analyticsJson) {
+        initialData = {
+            screenName: loadedScreen,
+            interactions: Array.isArray(user.analyticsJson)
+                ? user.analyticsJson
+                : (user.analyticsJson?.interactions ?? []),
+        };
+    }
 
     return (
-        <div className="p-4">
-            <h1 className="h-12 flex flex-row gap-4 text-2xl font-bold w-auto">
-                <PanelTopBottomDashed /> Interactions
-            </h1>
-
-            <InteractionsDashboard interactions={interactions} />
-        </div>
+        <AnalyticsPageClient
+            screenNames={screenNames}
+            loadedScreen={loadedScreen}
+            initialData={initialData}
+        />
     );
 }
