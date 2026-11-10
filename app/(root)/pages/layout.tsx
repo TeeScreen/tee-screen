@@ -16,7 +16,7 @@ import { ThemeSwitcher } from "@/components/sidebar/theme-switcher";
 import {redirect} from "next/navigation";
 import {auth} from "@/lib/better-auth/auth";
 import {headers} from "next/dist/server/request/headers";
-import {applyScreenChange, getUserInfo, isUserAdmin} from "@/lib/actions/user.actions";
+import {applyScreenChange, getUserInfo, isAccountAdmin} from "@/lib/actions/user.actions";
 import { ApplyDialog } from "@/components/ApplyDialogue";
 import {toast} from "sonner";
 import { DiscardDialog } from "@/components/DiscardDialogue";
@@ -36,7 +36,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
   const isFootball = userInfo?.screenJson?.isFootballClub ?? false;
   const isGolf = (userInfo?.screenJson?.isGolfClub && userInfo?.screenJson?.CanEditHoles) ?? false;
   const hasCheckIn = userInfo?.screenJson?.hasCheckInFunctionality ?? false;
-  const isAdmin = await isUserAdmin(userInfo?.loadedAccount);
+  const isAdmin = await isAccountAdmin(userInfo?.loadedAccount);
 
 
   const cookieStore = await cookies();

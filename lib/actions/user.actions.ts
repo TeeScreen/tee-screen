@@ -707,11 +707,19 @@ export async function reloadAccountAction(login: string) {
     revalidatePath("/pages/settings");
 }
 
-export async function isUserAdmin(user: string): Promise<boolean> {
+export async function isAccountAdmin(user: string): Promise<boolean> {
     if (!user) return false;
 
     const admins = getAdmins();
     return admins.includes(user);
+}
+
+export async function isUserAdmin(): Promise<boolean> {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) return false;
+    const admins = getAdmins();
+
+    return admins.includes(session.user.email);
 }
 
 const getAdmins = (): string[] => {
@@ -745,6 +753,7 @@ export async function getAdminScreenData()
 export async function getScreenAnalytics(screenName: string): Promise<{
     interactions: any[];
     screenName: string;
+    total: number;
 } | null> {
     try {
         await connectToDatabase();
@@ -765,12 +774,15 @@ export async function getScreenAnalytics(screenName: string): Promise<{
 
         // Try live API first
         let analyticsData: any = null;
+        let json: any = null;
         try {
             const res = await fetch(
                 `https://teescreenapp.com/api/analytics_data?user=${account.accountLogin}&password=${account.accountPW}&screen=${screenName}`
             );
             if (res.ok) {
-                analyticsData = await res.json();
+
+                json = await res.json();
+                analyticsData = json.analytics;
                 // Persist the refreshed data to DB
                 await ScreenInfoModel.findOneAndUpdate(
                     { screenName },
@@ -790,7 +802,12 @@ export async function getScreenAnalytics(screenName: string): Promise<{
 
         const rawList = analyticsData?.interactions ?? analyticsData ?? [];
         const interactions = Array.isArray(rawList) ? rawList : [];
-        return JSON.parse(JSON.stringify({ interactions, screenName }));
+        const total = json?.Total_Interactions ?? 0;
+        return JSON.parse(JSON.stringify({
+            interactions,
+            screenName,
+            total,
+        }));
     } catch (e) {
         console.error("getScreenAnalytics error:", e);
         return null;

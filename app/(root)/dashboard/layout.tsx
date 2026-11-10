@@ -14,7 +14,7 @@ import { ThemeSwitcher } from "@/components/sidebar/theme-switcher";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/better-auth/auth";
 import { headers } from "next/dist/server/request/headers";
-import {getUserInfo, isUserAdmin} from "@/lib/actions/user.actions";
+import {getUserInfo, isAccountAdmin} from "@/lib/actions/user.actions";
 import { ApplyDialog } from "@/components/ApplyDialogue";
 import { DiscardDialog } from "@/components/DiscardDialogue";
 import { ScreenCollaborators } from "@/components/screen/ScreenCollaborators";
@@ -54,7 +54,7 @@ try {
     const isGolf = (userInfo?.screenJson?.isGolfClub && userInfo?.screenJson?.CanEditHoles) ?? false;
     const hasCheckIn = userInfo?.screenJson?.hasCheckInFunctionality ?? false;
 
-    const isAdmin = await isUserAdmin(userInfo?.loadedAccount);
+    const isAdmin = await isAccountAdmin(userInfo?.loadedAccount);
 
     const loadedScreen = userInfo?.loadedScreen ?? "";
     const cookieStore = await cookies();

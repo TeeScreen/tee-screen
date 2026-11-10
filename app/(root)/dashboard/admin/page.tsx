@@ -1,5 +1,5 @@
 import {ScreenItem} from "@/components/screen/ScreenItem";
-import {getAdminScreenData, getUserInfo, isUserAdmin} from "@/lib/actions/user.actions";
+import {getAdminScreenData, getUserInfo, isAccountAdmin} from "@/lib/actions/user.actions";
 import {redirect} from "next/navigation";
 import {ShieldUser} from "lucide-react";
 import {AdminScreenList} from "@/components/admin/AdminScreenList";
@@ -7,7 +7,7 @@ import {AdminScreenList} from "@/components/admin/AdminScreenList";
 export default async function Page() {
     const user = await getUserInfo();
     const loadedAccount = user?.loadedAccount ?? "";
-    const admin = await isUserAdmin(loadedAccount);
+    const admin = await isAccountAdmin(loadedAccount);
 
     if (!admin) {
         redirect("/dashboard/home");

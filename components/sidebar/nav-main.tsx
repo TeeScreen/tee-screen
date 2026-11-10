@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import type { NavGroup, NavMainItem } from "@/navigation/sidebar/sidebar-items";
-import {isUserAdmin} from "@/lib/actions/user.actions";
+import {isAccountAdmin} from "@/lib/actions/user.actions";
 
 export interface SubScreenTypes {
   isFootball?: boolean;

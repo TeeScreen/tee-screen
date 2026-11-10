@@ -28,13 +28,14 @@ export default async function Page() {
     const loadedAccount: string | null = user?.loadedAccount || null;
 
     // Pre-fetch analytics for the currently loaded screen (if any)
-    let initialData: { screenName: string; interactions: any[] } | null = null;
+    let initialData: { screenName: string; interactions: any[], total: number } | null = null;
     if (loadedScreen && user?.analyticsJson) {
         initialData = {
             screenName: loadedScreen,
             interactions: Array.isArray(user.analyticsJson)
                 ? user.analyticsJson
                 : (user.analyticsJson?.interactions ?? []),
+            total:0
         };
     }
 

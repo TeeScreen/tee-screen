@@ -26,6 +26,7 @@ import { normalizeInteraction } from "@/lib/analytics-utils";
 interface ScreenAnalyticsData {
     screenName: string;
     interactions: InteractionEntry[];
+    total: number;
 }
 
 interface Props {
@@ -74,6 +75,7 @@ export default function AnalyticsPageClient({
             const data: ScreenAnalyticsData = {
                 screenName: result.screenName,
                 interactions: result.interactions,
+                total: result.total,
             };
             setDataCache((prev) => ({ ...prev, [name]: data }));
             return data;
@@ -120,6 +122,7 @@ export default function AnalyticsPageClient({
                     [result.screenName]: {
                         screenName: result.screenName,
                         interactions: result.interactions,
+                        total: result.total,
                     },
                 }));
             }
