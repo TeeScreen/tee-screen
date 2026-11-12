@@ -34,9 +34,36 @@ export const PreviewOverlayModal = memo(function PreviewOverlayModal({
         return url; // fallback for other URLs
     };
 
+    const requiresProxy = (url: string) => {
+        try {
+            const hostname = new URL(url).hostname.toLowerCase();
+
+            const proxyDomains = [
+                "www.thebelfry.com",
+                "https://www.thebelfry.com",
+                "www.basingstokegolfclub.co.uk",
+                "https://www.basingstokegolfclub.co.uk",
+                "https://www.headingleygolfclub.co.uk",
+                "www.headingleygolfclub.co.uk",
+                // Add known sites that require proxying
+            ];
+
+            return proxyDomains.some(
+                domain => hostname === domain || hostname.startsWith(`${domain}`)
+            );
+        } catch {
+            return false;
+        }
+    };
+
     switch (overlayContent.type) {
         case 'url': {
-            const proxyUrl = `/api/proxy?url=${encodeURIComponent(overlayContent.src)}`;
+            let url = overlayContent.src;
+
+            if(requiresProxy(url))
+            {
+                url = `/api/proxy?url=${encodeURIComponent(overlayContent.src)}`;
+            }
             const [isLoading, setIsLoading] = React.useState(true);
 
             return (
@@ -52,7 +79,7 @@ export const PreviewOverlayModal = memo(function PreviewOverlayModal({
                     )}
 
                     <iframe
-                        src={proxyUrl}
+                        src={url}
                         className="w-full h-full bg-white relative z-10"
                         onLoad={() => setIsLoading(false)}
                     />
