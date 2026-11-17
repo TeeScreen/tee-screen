@@ -45,6 +45,9 @@ export const PreviewOverlayModal = memo(function PreviewOverlayModal({
                 "https://www.basingstokegolfclub.co.uk",
                 "https://www.headingleygolfclub.co.uk",
                 "www.headingleygolfclub.co.uk",
+                "https://www.hockleygolfclub.com",
+                "www.hockleygolfclub.com",
+
                 // Add known sites that require proxying
             ];
 
