@@ -36,6 +36,7 @@ export function GolfCoursesEditor({
     const [localJson, setLocalJson] = useState(json);
     const hiddenRef = useRef<HTMLInputElement>(null);
     const saveTimer = useRef<NodeJS.Timeout | null>(null);
+    const isEditingRef = useRef(false);
 
     const { setDirty } = useDirtyState();
     const [isSaving, setIsSaving] = useState(false);
@@ -77,6 +78,7 @@ export function GolfCoursesEditor({
     // AUTOSAVE
     // -----------------------------
     useEffect(() => {
+        if (isEditingRef.current) return;
         setLocalJson(json);
         if (hiddenRef.current) hiddenRef.current.value = JSON.stringify(json);
     }, [json]);
@@ -92,12 +94,14 @@ export function GolfCoursesEditor({
 
             await action(formData);
 
+            isEditingRef.current = false;
             setIsSaving(false);
             setDirty(true);
         }, 500);
     };
 
     function updateJson(newJson: any) {
+        isEditingRef.current = true;
         setLocalJson(newJson);
         if (hiddenRef.current) {
             hiddenRef.current.value = JSON.stringify(newJson);

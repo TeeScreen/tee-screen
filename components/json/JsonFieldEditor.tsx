@@ -78,9 +78,19 @@ export function JsonFieldEditor({
     });
 
     /* -------------------------------------------------------
-       Sync when server sends new JSON
+       Track whether user is actively editing (ref so it's
+       always current inside effects/closures without stale
+       captures)
+    ------------------------------------------------------- */
+    const isEditingRef = useRef(false);
+
+    /* -------------------------------------------------------
+       Sync when server sends new JSON — but ONLY when the
+       user is not mid-edit. This prevents the saved response
+       from jumping/resetting the inputs while they type.
     ------------------------------------------------------- */
     useEffect(() => {
+        if (isEditingRef.current) return;
         setLocalJson(json);
         setDraftJson(json);
         if (hiddenInputRef.current) {
@@ -99,9 +109,10 @@ export function JsonFieldEditor({
         if (editingTimer.current) clearTimeout(editingTimer.current);
 
         editingTimer.current = setTimeout(() => {
+            isEditingRef.current = false;
             setIsEditing(false);
             autoSave(updatedJson);
-        }, 1000); // user stopped typing for 600ms
+        }, 1000);
     }
 
     const autoSave = async (updatedJson: any) => {
@@ -121,6 +132,7 @@ export function JsonFieldEditor({
        Handle field change
     ------------------------------------------------------- */
     function handleChange(path: string, value: any) {
+        isEditingRef.current = true;
         setIsEditing(true);
 
         const updated = setValue(localJson, path, value);
