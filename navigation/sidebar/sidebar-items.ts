@@ -32,6 +32,7 @@ export interface NavMainItem {
   isGolf?: boolean;
   hasCheckIn?: boolean;
   isAdmin?: boolean;
+  hasGolfGenius?: boolean;
 }
 
 export interface NavGroup {
@@ -130,6 +131,13 @@ export const sidebarItems: NavGroup[] = [
         icon: NotebookPen,
         needsLoad: true,
         hasCheckIn: true,
+      },
+      {
+        title: "Golf Genius",
+        url: "/dashboard/golf-genius",
+        icon: Trophy,
+        needsLoad: true,
+        hasGolfGenius: true,
       },
       // {
       //   title: "Daily Tee Sheet",

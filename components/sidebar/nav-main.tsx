@@ -39,6 +39,7 @@ export interface SubScreenTypes {
   isGolf?: boolean;
   hasCheckIn?: boolean;
   isAdmin?: boolean;
+  hasGolfGenius?: boolean;
 }
 
 interface NavMainProps {
@@ -232,8 +233,9 @@ export function NavMain({
                     const matchesSubScreen =
                         (item.isFootball === undefined || item.isFootball === subScreenTypes?.isFootball) &&
                         (item.isGolf === undefined || item.isGolf === subScreenTypes?.isGolf) &&
-                      (item.hasCheckIn === undefined || item.hasCheckIn === subScreenTypes?.hasCheckIn) &&
-                        (item.isAdmin === undefined || item.isAdmin === subScreenTypes?.isAdmin);
+                        (item.hasCheckIn === undefined || item.hasCheckIn === subScreenTypes?.hasCheckIn) &&
+                        (item.isAdmin === undefined || item.isAdmin === subScreenTypes?.isAdmin) &&
+                        (item.hasGolfGenius === undefined || item.hasGolfGenius === subScreenTypes?.hasGolfGenius);
                     if (!matchesSubScreen) return null;
 
                     // Collapsed desktop
