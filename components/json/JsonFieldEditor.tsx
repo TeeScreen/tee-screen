@@ -218,12 +218,12 @@ export function JsonFieldEditor({
     ------------------------------------------------------- */
     return (
         <div className={`space-y-6`}>
-            {isSaving && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {/*{isSaving && (
+                <div className="absolute top-0 right-0 flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Saving…
                 </div>
-            )}
+            )}*/}
 
             {Object.entries(groups).map(([tag, fields]) => (
                 <div key={tag} className="space-y-4 border rounded-lg p-4">
