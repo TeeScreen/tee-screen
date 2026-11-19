@@ -51,11 +51,11 @@ const FilePreview = ({ folderName, fileName }: { folderName: string; fileName: s
         setDirty(true);
     };
 
-    if (loading) {
+    console.log("file name", resolvedFileName);
+    if (loading && resolvedFileName === fileName) {
         return (
             <div className="text-center py-12 rounded-lg border">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-500 mx-auto"></div>
-                <p className="mt-2 text-sm">Loading preview...</p>
+                <p >Loading preview...</p>
             </div>
         );
     }
