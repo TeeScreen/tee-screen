@@ -23,6 +23,7 @@ export interface NavMainItem {
   title: string;
   url: string;
   icon?: LucideIcon;
+  assetIcon?: string;
   subItems?: NavSubItem[];
   needsLoad?: boolean;
   comingSoon?: boolean;
@@ -135,7 +136,7 @@ export const sidebarItems: NavGroup[] = [
       {
         title: "Golf Genius",
         url: "/dashboard/golf-genius",
-        icon: Trophy,
+        assetIcon: "/assets/icons/golf-genius-logo.png",
         needsLoad: true,
         hasGolfGenius: true,
       },

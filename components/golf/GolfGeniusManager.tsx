@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import {
-    Trophy,
     Calendar,
     Key,
     RefreshCw,
@@ -257,7 +256,7 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
             if (found?.name && found.name !== tournamentName) {
                 setTournamentName(found.name);
                 // Also update the saved config so the tournament name is persisted
-                executeSave({ tournamentName: found.name });
+                //executeSave({ tournamentName: found.name });
             }
         }
     }, [selectedTournamentId, tournaments]);
@@ -269,10 +268,10 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
         apiKey?: string;
         eventId?: string;
         roundId?: string;
-        tournamentId?: string;
+        tournamentId?: string;/*
         tournamentName?: string;
         eventName?: string;
-        roundName?: string;
+        roundName?: string;*/
     }) => {
         setIsSaving(true);
         setSaveStatus("saving");
@@ -280,20 +279,20 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
         const targetApiKey = cfg.apiKey !== undefined ? cfg.apiKey : apiKey;
         const targetEventId = cfg.eventId !== undefined ? cfg.eventId : selectedEventId;
         const targetRoundId = cfg.roundId !== undefined ? cfg.roundId : selectedRoundId;
-        const targetTournamentId = cfg.tournamentId !== undefined ? cfg.tournamentId : selectedTournamentId;
+        const targetTournamentId = cfg.tournamentId !== undefined ? cfg.tournamentId : selectedTournamentId;/*
         const targetTournamentName = cfg.tournamentName !== undefined ? cfg.tournamentName : tournamentName;
         const targetEventName = cfg.eventName !== undefined ? cfg.eventName : eventName;
-        const targetRoundName = cfg.roundName !== undefined ? cfg.roundName : roundName;
+        const targetRoundName = cfg.roundName !== undefined ? cfg.roundName : roundName;*/
 
         try {
             const res = await saveGolfGeniusConfig({
                 apiKey: targetApiKey,
                 eventId: targetEventId,
                 roundId: targetRoundId,
-                tournamentId: targetTournamentId,
+                tournamentId: targetTournamentId,/*
                 tournamentName: targetTournamentName,
                 eventName: targetEventName,
-                roundName: targetRoundName,
+                roundName: targetRoundName,*/
             });
 
             if (res.success) {
@@ -303,10 +302,10 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
                         golfgenius_api_key: targetApiKey.trim(),
                         golfgenius_event_id: targetEventId.trim(),
                         golfgenius_round_id: targetRoundId.trim(),
-                        golfgenius_tournament_id: targetTournamentId.trim(),
+                        golfgenius_tournament_id: targetTournamentId.trim(),/*
                         golfgenius_tournament_name: targetTournamentName.trim(),
                         golfgenius_event_name: targetEventName.trim(),
-                        golfgenius_round_name: targetRoundName.trim(),
+                        golfgenius_round_name: targetRoundName.trim(),*/
                     };
                     setDraftJson(updated);
                 }
@@ -329,10 +328,10 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
         apiKey?: string;
         eventId?: string;
         roundId?: string;
-        tournamentId?: string;
+        tournamentId?: string;/*
         tournamentName?: string;
         eventName?: string;
-        roundName?: string;
+        roundName?: string;*/
     }) => {
         setSaveStatus("idle");
         if (saveTimeoutRef.current) {
@@ -358,8 +357,6 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
         setRoundName("");
         setTournamentName("");
         setTournaments([]);
-        setPreviewData(null);
-        setShowPreview(false);
         if (eventId) {
             fetchRounds(eventId);
         } else {
@@ -370,10 +367,10 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
         executeSave({
             eventId,
             roundId: "",
-            tournamentId: "",
+            tournamentId: "",/*
             eventName: newEventName,
             roundName: "",
-            tournamentName: "",
+            tournamentName: "",*/
         });
     };
 
@@ -386,8 +383,6 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
         }
         setSelectedTournamentId("");
         setTournamentName("");
-        setPreviewData(null);
-        setShowPreview(false);
         if (roundId && selectedEventId) {
             fetchTournaments(selectedEventId, roundId);
         } else {
@@ -398,10 +393,10 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
         executeSave({
             eventId: selectedEventId,
             roundId,
-            tournamentId: "",
+            tournamentId: "",/*
             eventName: selectedEventObj?.name || eventName,
             roundName: newRoundName,
-            tournamentName: "",
+            tournamentName: "",*/
         });
     };
 
@@ -412,17 +407,15 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
         if (newTournName) {
             setTournamentName(newTournName);
         }
-        setPreviewData(null);
-        setShowPreview(false);
 
         if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
         executeSave({
             eventId: selectedEventId,
             roundId: selectedRoundId,
-            tournamentId,
+            tournamentId,/*
             eventName: selectedEventObj?.name || eventName,
             roundName: selectedRoundObj?.name || roundName,
-            tournamentName: newTournName || tournamentName,
+            tournamentName: newTournName || tournamentName,*/
         });
     };
 
@@ -467,10 +460,10 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
             apiKey: initialApiKey,
             eventId: initialEventId,
             roundId: initialRoundId,
-            tournamentId: initialTournamentId,
+            tournamentId: initialTournamentId,/*
             tournamentName: initialTournamentName,
             eventName: initialEventName,
-            roundName: initialRoundName,
+            roundName: initialRoundName,*/
         });
         toast.info("Reverted to previous values and saved");
     };
@@ -522,8 +515,6 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
             toast.error("Please pick an Event, Round, and Competition first");
             return;
         }
-        setPreviewLoading(true);
-        setShowPreview(true);
         try {
             const res = await getGolfGeniusTournamentResults(
                 selectedEventId,
@@ -532,7 +523,6 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
                 apiKey
             );
             if (res.success) {
-                setPreviewData(res.data);
                 const detectedName =
                     res.data?.event?.name ||
                     res.data?.tournament?.name ||
@@ -542,14 +532,10 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
                 }
                 toast.success("Leaderboard results retrieved!");
             } else {
-                setPreviewData(null);
                 toast.info("No leaderboard data yet or results not released for this tournament.");
             }
         } catch (err: any) {
-            setPreviewData(null);
             toast.error("Could not fetch preview: " + err.message);
-        } finally {
-            setPreviewLoading(false);
         }
     };
 
@@ -570,12 +556,12 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
     return (
         <div className="space-y-6">
             {/* OVERVIEW & STATUS CARD */}
-            <Card className="border-t-4 border-t-emerald-600 shadow-xs">
+            <Card className="border-t-4 border-t-orange-600 shadow-xs">
                 <CardHeader className="pb-3">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                                <Trophy className="h-5 w-5 text-emerald-600" />
+                                <img src={"/assets/icons/golf-genius-logo.png"} className="h-5 w-5" />
                                 <CardTitle className="text-xl font-bold">
                                     Golf Genius Live Scoring & Tournaments
                                 </CardTitle>
@@ -617,7 +603,7 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
                             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">
                                 Screen Type
                             </span>
-                            <span className="text-sm font-semibold flex items-center gap-1 text-emerald-600 mt-0.5">
+                            <span className="text-sm font-semibold flex items-center gap-1 text-orange-600 mt-0.5">
                                 <CheckCircle2 className="h-3.5 w-3.5" /> Golf Club Screen
                             </span>
                         </div>
@@ -628,7 +614,7 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
                             </span>
                             <span className="text-sm font-semibold flex items-center gap-1 mt-0.5">
                                 {apiKey ? (
-                                    <span className="text-emerald-600 flex items-center gap-1">
+                                    <span className="text-orange-600 flex items-center gap-1">
                                         <CheckCircle2 className="h-3.5 w-3.5" /> Connected
                                     </span>
                                 ) : (
@@ -643,7 +629,7 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
                             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">
                                 Selected Tournament
                             </span>
-                            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 truncate block mt-0.5" title={selectedTournamentObj?.name || tournamentName || selectedEventObj?.name || eventName}>
+                            <span className="text-sm font-bold text-orange-600 dark:text-orange-400 truncate block mt-0.5" title={selectedTournamentObj?.name || tournamentName || selectedEventObj?.name || eventName}>
                                 {selectedTournamentObj?.name ||
                                     tournamentName ||
                                     selectedEventObj?.name ||
@@ -664,7 +650,7 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
                                         <Loader2 className="h-3 w-3 animate-spin" /> Saving changes…
                                     </Badge>
                                 ) : saveStatus === "saved" ? (
-                                    <Badge variant="outline" className="border-emerald-500/50 text-emerald-600 bg-emerald-500/10 text-xs flex items-center gap-1.5 w-fit">
+                                    <Badge variant="outline" className="border-orange-500/50 text-orange-600 bg-orange-500/10 text-xs flex items-center gap-1.5 w-fit">
                                         <CheckCircle2 className="h-3 w-3" /> Saved automatically
                                     </Badge>
                                 ) : saveStatus === "error" ? (
@@ -759,7 +745,7 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
                         <p
                             className={`text-xs ${
                                 connectionStatus.success
-                                    ? "text-emerald-600 dark:text-emerald-400"
+                                    ? "text-orange-600 dark:text-orange-400"
                                     : "text-destructive"
                             }`}
                         >
@@ -995,10 +981,10 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
                             </Select>
 
                             {(selectedTournamentObj || tournamentName) && (
-                                <div className="bg-emerald-500/10 border-2 border-emerald-500/30 p-3.5 rounded-xl text-xs space-y-1.5">
+                                <div className="bg-orange-500/10 border-2 border-orange-500/30 p-3.5 rounded-xl text-xs space-y-1.5">
                                     <div className="flex items-center justify-between gap-2">
-                                        <span className="text-[11px] uppercase font-bold tracking-wider text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                                            <Trophy className="h-4 w-4 text-emerald-600" />
+                                        <span className="text-[11px] uppercase font-bold tracking-wider text-orange-800 dark:text-orange-300 flex items-center gap-1.5">
+                <img src={"/assets/icons/golf-genius-logo.png"} className="h-4 w-4" />
                                             Active Tournament Name
                                         </span>
                                         {selectedTournamentObj?.format && (
@@ -1116,7 +1102,7 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
                                     Saving changes…
                                 </span>
                             ) : saveStatus === "saved" ? (
-                                <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-medium">
+                                <span className="text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1.5 font-medium">
                                     <CheckCircle2 className="h-3.5 w-3.5" />
                                     Saved automatically {lastSavedAt ? `(${lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })})` : ""}
                                 </span>
@@ -1190,7 +1176,7 @@ export default function GolfGeniusManager({ screenName, screenJson }: Props) {
                             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">
                                 Tournament Name
                             </span>
-                            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 block truncate mt-0.5" title={selectedTournamentObj?.name || tournamentName}>
+                            <span className="text-sm font-bold text-orange-600 dark:text-orange-400 block truncate mt-0.5" title={selectedTournamentObj?.name || tournamentName}>
                                 {selectedTournamentObj?.name || tournamentName || (selectedTournamentId ? `Tournament #${selectedTournamentId}` : "Not selected")}
                             </span>
                         </div>

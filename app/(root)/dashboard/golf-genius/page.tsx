@@ -24,7 +24,7 @@ export default async function Page() {
     return (
         <div className="space-y-6">
             <h1 className="h-12 flex flex-row items-center gap-3 text-2xl font-bold">
-                <Trophy className="h-7 w-7 text-emerald-600" />
+                <img src={"/assets/icons/golf-genius-logo.png"} className="h-7 w-7" />
                 <span>Golf Genius</span>
             </h1>
 
