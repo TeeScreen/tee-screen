@@ -23,6 +23,7 @@ export interface NavMainItem {
   title: string;
   url: string;
   icon?: LucideIcon;
+  assetIcon?: string;
   subItems?: NavSubItem[];
   needsLoad?: boolean;
   comingSoon?: boolean;
@@ -32,6 +33,7 @@ export interface NavMainItem {
   isGolf?: boolean;
   hasCheckIn?: boolean;
   isAdmin?: boolean;
+  hasGolfGenius?: boolean;
 }
 
 export interface NavGroup {
@@ -130,6 +132,13 @@ export const sidebarItems: NavGroup[] = [
         icon: NotebookPen,
         needsLoad: true,
         hasCheckIn: true,
+      },
+      {
+        title: "Golf Genius",
+        url: "/dashboard/golf-genius",
+        assetIcon: "/assets/icons/golf-genius-logo.png",
+        needsLoad: true,
+        hasGolfGenius: true,
       },
       // {
       //   title: "Daily Tee Sheet",

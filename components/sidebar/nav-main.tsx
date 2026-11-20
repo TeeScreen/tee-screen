@@ -39,6 +39,7 @@ export interface SubScreenTypes {
   isGolf?: boolean;
   hasCheckIn?: boolean;
   isAdmin?: boolean;
+  hasGolfGenius?: boolean;
 }
 
 interface NavMainProps {
@@ -86,7 +87,15 @@ const NavItemExpanded = ({
                     isActive={isActive(item.url, item.subItems)}
                     tooltip={item.title}
                 >
-                  {item.icon && <item.icon />}
+                    {item.icon ? (
+                        <item.icon/>
+                    ) : item.assetIcon ? (
+                        <img
+                            src={item.assetIcon}
+                            alt={item.title}
+                            className="h-4 w-4"
+                        />
+                    ) : null}
                   <span>{item.title}</span>
                   {item.comingSoon && <IsComingSoon />}
                   <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -105,7 +114,16 @@ const NavItemExpanded = ({
                       target={item.newTab ? "_blank" : undefined}
                       onClick={onItemSelect}
                   >
-                    {item.icon && <item.icon />}
+                      {item.icon ? (
+                          <item.icon/>
+                      ) : item.assetIcon ? (
+                          <img
+                              src={item.assetIcon}
+                              alt={item.title}
+                              className="h-4 w-4"
+
+                          />
+                      ) : null}
                     <span>{item.title}</span>
                     {item.comingSoon && <IsComingSoon />}
                   </Link>
@@ -166,7 +184,16 @@ const NavItemCollapsed = ({
                 tooltip={item.title}
                 isActive={isActive(item.url, item.subItems)}
             >
-              {item.icon && <item.icon />}
+                {item.icon ? (
+                    <item.icon/>
+                ) : item.assetIcon ? (
+                    <img
+                        src={item.assetIcon}
+                        alt={item.title}
+                        className="h-4 w-4"
+
+                    />
+                ) : null}
               <span>{item.title}</span>
               <ChevronRight />
             </SidebarMenuButton>
@@ -232,8 +259,9 @@ export function NavMain({
                     const matchesSubScreen =
                         (item.isFootball === undefined || item.isFootball === subScreenTypes?.isFootball) &&
                         (item.isGolf === undefined || item.isGolf === subScreenTypes?.isGolf) &&
-                      (item.hasCheckIn === undefined || item.hasCheckIn === subScreenTypes?.hasCheckIn) &&
-                        (item.isAdmin === undefined || item.isAdmin === subScreenTypes?.isAdmin);
+                        (item.hasCheckIn === undefined || item.hasCheckIn === subScreenTypes?.hasCheckIn) &&
+                        (item.isAdmin === undefined || item.isAdmin === subScreenTypes?.isAdmin) &&
+                        (item.hasGolfGenius === undefined || item.hasGolfGenius === subScreenTypes?.hasGolfGenius);
                     if (!matchesSubScreen) return null;
 
                     // Collapsed desktop
@@ -253,7 +281,16 @@ export function NavMain({
                                     target={item.newTab ? "_blank" : undefined}
                                     onLoad={onItemSelect}
                                 >
-                                  {item.icon && <item.icon />}
+                                    {item.icon ? (
+                                        <item.icon/>
+                                    ) : item.assetIcon ? (
+                                        <img
+                                            src={item.assetIcon}
+                                            alt={item.title}
+                                            className="h-4 w-4"
+
+                                        />
+                                    ) : null}
                                   <span>{item.title}</span>
                                 </Link>
                               </SidebarMenuButton>

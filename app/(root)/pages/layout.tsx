@@ -36,6 +36,11 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
   const isFootball = userInfo?.screenJson?.isFootballClub ?? false;
   const isGolf = (userInfo?.screenJson?.isGolfClub && userInfo?.screenJson?.CanEditHoles) ?? false;
   const hasCheckIn = userInfo?.screenJson?.hasCheckInFunctionality ?? false;
+  const hasGolfGenius = Boolean(
+      userInfo?.screenJson?.isGolfClub &&
+      userInfo?.screenJson?.golfgenius_api_key &&
+      String(userInfo?.screenJson?.golfgenius_api_key).trim() !== ""
+  );
   const isAdmin = await isAccountAdmin(userInfo?.loadedAccount);
 
 
@@ -49,7 +54,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar variant={variant} collapsible={collapsible} loadedScreen={loadedScreen} user={session?.user}
-                  subScreenTypes={{ isFootball, isGolf, hasCheckIn, isAdmin}}
+                  subScreenTypes={{ isFootball, isGolf, hasCheckIn, isAdmin, hasGolfGenius }}
       />
       <SidebarInset
         className={cn(

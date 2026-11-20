@@ -53,6 +53,11 @@ try {
     const isFootball = userInfo?.screenJson?.isFootballClub ?? false;
     const isGolf = (userInfo?.screenJson?.isGolfClub && userInfo?.screenJson?.CanEditHoles) ?? false;
     const hasCheckIn = userInfo?.screenJson?.hasCheckInFunctionality ?? false;
+    const hasGolfGenius = Boolean(
+        userInfo?.screenJson?.isGolfClub &&
+        userInfo?.screenJson?.golfgenius_api_key &&
+        String(userInfo?.screenJson?.golfgenius_api_key).trim() !== ""
+    );
 
     const isAdmin = await isAccountAdmin(userInfo?.loadedAccount);
 
@@ -71,7 +76,7 @@ try {
                 variant={variant}
                 collapsible={collapsible}
                 loadedScreen={loadedScreen}
-                subScreenTypes={{ isFootball, isGolf, hasCheckIn, isAdmin}}
+                subScreenTypes={{ isFootball, isGolf, hasCheckIn, isAdmin, hasGolfGenius }}
                 user={session?.user}
             />
 
