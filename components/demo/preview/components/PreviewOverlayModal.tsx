@@ -41,12 +41,16 @@ export const PreviewOverlayModal = memo(function PreviewOverlayModal({
             const proxyDomains = [
                 "www.thebelfry.com",
                 "https://www.thebelfry.com",
-                "www.basingstokegolfclub.co.uk",
+                "www.basingstokegolfclub",
                 "https://www.basingstokegolfclub.co.uk",
+                "https://basingstoke.intelligentgolf",
                 "https://www.headingleygolfclub.co.uk",
                 "www.headingleygolfclub.co.uk",
                 "https://www.hockleygolfclub.com",
                 "www.hockleygolfclub.com",
+                "https://wrexham.intelligentgolf",
+                "https://www.wrexhamgolfclub.co.uk"
+
 
                 // Add known sites that require proxying
             ];
