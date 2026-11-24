@@ -14,7 +14,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@lucide/lab": "^0.1.2",
-    "@netlify/plugin-nextjs": "^5.15.8",
+    "@netlify/plugin-nextjs": "^5.16.9",
     "@tanstack/react-table": "^8.21.3",
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^1.0.4",
